@@ -1,0 +1,3631 @@
+{
+  "files": [
+    {
+      "path": "PROJECT_PARTS_MANIFEST_Prompt556.json",
+      "size": 269226,
+      "sha256": "a57c8b301f0f91557a8a879c1843b3b7cc1d7c4d5f1f6c0f79a16303ce19604c",
+      "part": 1
+    },
+    {
+      "path": "PROJECT_PARTS_MANIFEST_Prompt561.json",
+      "size": 274208,
+      "sha256": "5c10b9e4cb7fc9829b2da766c5eeafb1b172f56c6b4ab0bd7ec02e7fa15dbee9",
+      "part": 1
+    },
+    {
+      "path": "PROJECT_PARTS_MANIFEST_Prompt563.json",
+      "size": 128426,
+      "sha256": "c419676376b256e9db5d94319b577aa396621cf63c95fc22a44339a99a4f4b74",
+      "part": 1
+    },
+    {
+      "path": "app/build.gradle",
+      "size": 1084,
+      "sha256": "1862671244ea8cdaff269d820bfd5392c664bdffc6eeab4e133d260ea81e3dd3",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/AndroidManifest.xml",
+      "size": 945,
+      "sha256": "0831362dea3e5e2f5073ce8389370020a3b0a3d9598461bb4e0467a28fbc430b",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/java/com/erfan/standaloneai/MainActivity.java",
+      "size": 1560,
+      "sha256": "5f834ad73a1f49e495b00360774b5f3bc92be94d6ff2b39a98d183ea51c5e0e9",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/ael/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/ael/ael_parser.py",
+      "size": 4958,
+      "sha256": "d7bc785abea7664448244df973d9be0cc2bbe74a0d689f12040877f5c72e2bb1",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/ael/interpreter.py",
+      "size": 8065,
+      "sha256": "8c96be945ef91e5ba33c7290d6483801d7acd1beba7d14ab846dd9a7f8f3984b",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/ael/tokenizer.py",
+      "size": 3444,
+      "sha256": "925501c5c5d61b5fb7501bc8bc45d0a9444010ebb12cc8e057b29955f52d9a41",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/ael/validator.py",
+      "size": 4521,
+      "sha256": "2aa757b1e89f9beb09dac5156954fbd45ac5eb2c7e7175f91304d50296f1afc9",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/__init__.py",
+      "size": 1631,
+      "sha256": "5a2f5aa2220261f8fd585288a4e2e6119d91e392975fdca900057660676f7b85",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/agent_loop.py",
+      "size": 195316,
+      "sha256": "b69e217564345cad5ae30b76fe6af97c0d6d263098ad4344954d5946b7631157",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_evaluation.py",
+      "size": 12028,
+      "sha256": "ea8f16d51d2268cd309fdf642256cff7ecebb0ee96da274b5f3d3bdb99d2443f",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_rollback.py",
+      "size": 7953,
+      "sha256": "ba3f0dc1a20c29261502e7bbfdb254ad9afc116d881451bb793dc3299efb2734",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_self_upgrade_adapter.py",
+      "size": 12513,
+      "sha256": "8b5b908686e7ea9ae52a337be88e54600125ac3306ca76db4cd2a96b8be9af0c",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_self_upgrade_audit.py",
+      "size": 10024,
+      "sha256": "2ef9a18fca9e431f044f2d4e1f4fca5a806b5fe3daeb482939947378dd4bf9ae",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_self_upgrade_validation.py",
+      "size": 11646,
+      "sha256": "eb12deeaec01657fd7877d2199919a5935c67b9567ebe7ef61d31fba3becb92e",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_upgrade_result.py",
+      "size": 13350,
+      "sha256": "bf903781e2371812f556583e19b6509da8be7fccf1edba7567d8afe0d7676a30",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_upgrade_state.py",
+      "size": 8512,
+      "sha256": "2bf660da4a8cd3155354f9be33b5cb276823c805405847c4e2dbdd9497fab4df",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_change_version_snapshot.py",
+      "size": 11228,
+      "sha256": "f3d599afd9f12dc296d40881683a568aa080ec9e330f4601eb17cf48f2c11a67",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_correction_application.py",
+      "size": 9108,
+      "sha256": "75e290b6dfcc0e02475ddf17377e2163b9fd8f7d0b747ce620064d721060fe91",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_correction_learning.py",
+      "size": 9873,
+      "sha256": "3f9e173c0a4ff1a58b9c1ea8011057741cdeb1a98a72c6c8a98313956f3c6e36",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_correction_pattern_retrieval.py",
+      "size": 6091,
+      "sha256": "edcb9055b8f691a938b950a0ac33bf592e3160f0a47d287f235e5d24463fecd0",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_correction_proposal.py",
+      "size": 19901,
+      "sha256": "1c220883033ae6d441d3258ab1719f2e80b75f59dda5462bc149b2b797dd4fd5",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_correction_proposal_validation.py",
+      "size": 9222,
+      "sha256": "f38b712424f4f7e1e41301e22131f0d4f5a125c5b6f11dc94e07db4dabb2b64d",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_correction_retest.py",
+      "size": 12132,
+      "sha256": "51871376f1f0086af08ae9aa5cd5a074f99f2ee5b8aa878414f1117f1239792e",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/code_error_analysis.py",
+      "size": 13142,
+      "sha256": "01b5926d418d73db5af9808c71cb6402166fca297099571b148ceada2a572f1b",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/generated_code_execution_evaluation.py",
+      "size": 7532,
+      "sha256": "071c51eeb655f02458d8c331a488f492d1b5e7b713e5a2acc877fcd86db61719",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/agent/test_result_evaluation.py",
+      "size": 10558,
+      "sha256": "5660ca7930681a0699d797c2c330ea3d35cb42022cd1c6d4a61fa202d11bafed",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/android_entry.py",
+      "size": 3231,
+      "sha256": "4dd8f4c49eea8347f838ee67d644fb2227396a9d6f910dfbf698c53d4748af14",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/capabilities/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/capabilities/capability_system.py",
+      "size": 2928,
+      "sha256": "de12a4a07e0172ed081ebce16b407f76a8697ccf0d78c4a7c091f07d9073b216",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_generation/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_generation/code_generation_result.py",
+      "size": 5516,
+      "sha256": "132c5f5dda9b566f3440f45abaa2cb2dadb2ba1d173a41e542bdc7e01ba88902",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_generation/generated_code_applier.py",
+      "size": 8155,
+      "sha256": "3af778bb13ba7b114d1bc02fe84986f38aec92c771dec72f190eeafd7e9b1fda",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_generation/generated_code_execution.py",
+      "size": 14369,
+      "sha256": "1223de0908a51d3bf4a8773f8d8db2616614f874b8345969596975a9d1322607",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_generation/generated_code_validator.py",
+      "size": 7548,
+      "sha256": "151e696953b27727fdd2e9ace552604d8f51ecb180b22f34f16ba0ac96dc829c",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_generation/local_function_generator.py",
+      "size": 12794,
+      "sha256": "10eb4f70b1fd3542716a699333b902e062656c817765721f66846baaae481e6e",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_intelligence/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/code_intelligence/python_inspector.py",
+      "size": 3323,
+      "sha256": "96210bb5a648609ec91d16ce03d1ed59044b3b4c1c5c6040281ba8ae5c4af370",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/concepts/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/concepts/concept_system.py",
+      "size": 1754,
+      "sha256": "01540b2a8f7d6b135643ebf7145494e88306b4f3773321ebd695d2c2cddec9e8",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/active_topic.py",
+      "size": 22276,
+      "sha256": "cec3a8b4e9df0941ab3decdbe25844f4d275f4a94e1c02985cf16f8ef38d89e3",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/context_entry.py",
+      "size": 3547,
+      "sha256": "6cce3817b4fd45507751e9116aee66e74854097d491fc63be03ec8989dba3650",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/conversation_context.py",
+      "size": 7633,
+      "sha256": "5c9b6e34bf667ae2ec06147b6ece758eee1832564a243c191b0492559a58c7f5",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/conversation_state.py",
+      "size": 17943,
+      "sha256": "ac69e0ee01a1eacc90670a42b8be4d60fb97bac66b557e119aa07bf69f485b88",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/importance.py",
+      "size": 2164,
+      "sha256": "2229cdd869281e22c4dbdc71bc4552f66f25cc7630e5f389c9dbb4e5401c823f",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/message_reference_resolution.py",
+      "size": 10032,
+      "sha256": "3cf1bd84af9ea88bc01d6c62582053c4339b3d6eee045c5cdb5d65d25ee6b945",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/reference_resolution.py",
+      "size": 10415,
+      "sha256": "9227bdbf1ace5b97538ca6d3786e75f6d37fcf2985178e788854759e57a7a3cb",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/relevance.py",
+      "size": 11699,
+      "sha256": "13c774af45a9c433283453c053b7ddd137a0f480f4084297de4a7eb6eda2956b",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/context/topic_awareness.py",
+      "size": 5909,
+      "sha256": "bd805d1880854f12317e58db03583605beb13f9397f19be8101accc416ca90bd",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/core/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/core/config.py",
+      "size": 2131,
+      "sha256": "79b1266142def409e7402dffad91f82d270287665c4b5c3ae9ee4a76705adc30",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/core/core.py",
+      "size": 108357,
+      "sha256": "1baf7928be7c43daac87ea66a4e6aec2a247bd252a022a461eda5db0aa579a99",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/data/memory.db",
+      "size": 172032,
+      "sha256": "e32954da0a9ab23965563a41a3483e548938ff0518364cee9cef7c4232ae490c",
+      "part": 1
+    },
+    {
+      "path": "app/src/main/python/diagnostics/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/diagnostics/health_system.py",
+      "size": 4853,
+      "sha256": "d66d08da86168bd8f917d28fc69fc199ea0bb5ad5f58468370d6999b024e2597",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/diagnostics/section1_architecture_capability_audit.py",
+      "size": 15013,
+      "sha256": "165c017a7a45a5bcb86692e05a60b017e2b1ffe97d407c5cada137a621f5d336",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/diagnostics/section2_correction_learning_storage_audit_prompt561.py",
+      "size": 23479,
+      "sha256": "2de9ccfd3f86d2566806cf39d3c0cbd122196768b37ac54f06ba476aaf15b506",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/diagnostics/section2_correction_retrieval_application_audit_prompt563.py",
+      "size": 19139,
+      "sha256": "48354bf497ba5181fdb06c054b563284b03468b179a2cadf211df8300a2f5f0f",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/diagnostics/section2_language_intelligence_audit.py",
+      "size": 23059,
+      "sha256": "b6b5b5551a1c8b88cc34b6521eede4b80839d64789edb13bf96a41b2c496cfd2",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/diagnostics/self_upgrade_health_check.py",
+      "size": 18847,
+      "sha256": "35d0eb2d088132b31dd9505ba1cbee12be75c706b8489390ba36632f8b8574d8",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/__init__.py",
+      "size": 11780,
+      "sha256": "bf7babf0dc5ae845dfcea752892350f61418b4252efc865f54d6f085569208d6",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/capability.py",
+      "size": 18379,
+      "sha256": "9755e7e9e0a35639301144262ef390dec9b383fb1757c8f42e652b063466b224",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/capability_handlers.py",
+      "size": 23595,
+      "sha256": "c57436f06b49a35c80b5602440d0cb6eb91e255513c35ade58a144dccdae0fa9",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/capability_output.py",
+      "size": 22201,
+      "sha256": "e3e03fa1b4fbe12581e99198cf51c3c27f9d303fee3130ffec5f41976f0b7ab4",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/code_analysis_capability.py",
+      "size": 9510,
+      "sha256": "533cdff9461eaa63026736c695639aa2377d3785814a459549f46ab92e2503f7",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/code_change_apply_and_test_capability.py",
+      "size": 12531,
+      "sha256": "667d8e9fddb71bbc741d98946e08a4fd161ae9b358f6e04dfe20ec53c2295259",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/code_change_apply_capability.py",
+      "size": 12858,
+      "sha256": "89bf9433f1389cf5326c81665c6304b42335cdf6f21c07da28ef4fb1c485b2f5",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/code_change_plan_capability.py",
+      "size": 12483,
+      "sha256": "08f3a8190132de3f1152c083f956c645baf76aa25c652cdbe06f26ee5d3adeb6",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/executable_registry.py",
+      "size": 12251,
+      "sha256": "4b41d7b1a71b8a779245c77918cc35159eb27f94e492bed35822360b6d07a08d",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/execution_context.py",
+      "size": 17332,
+      "sha256": "22b11dfabc57e981ea5f9cd027572c7fe66b9183f6fef7a65b46e9905903253e",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/execution_context_builder.py",
+      "size": 17314,
+      "sha256": "5b6ac03d432c39436e67c9bce76dbeb27f160a6521e38472cb09c79a01ab12b4",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/execution_engine.py",
+      "size": 70587,
+      "sha256": "6709d14ad7b8d6c75d721074694f650bf8a610c0183d53af436fd2497aaddf4a",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/execution_event.py",
+      "size": 12061,
+      "sha256": "e4290b82ed3c89c07a6aadfe0ba4df55ea48dcd61b8d5dc5bfa8bfe52021ec8e",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/execution_event_log.py",
+      "size": 6436,
+      "sha256": "be2849188b5169d12e4df1cfe819a6a7897d28d150a80bea60dcca24b538fb49",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/execution_history.py",
+      "size": 6369,
+      "sha256": "5b73f7117eb8b81b956ba5fb46bf0627e1a0af28e7133d6f29bb7b1c871ff559",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/execution_result.py",
+      "size": 13912,
+      "sha256": "9901972f3754e0df65d9b4623acca3900c954317919492b53bf0a7fab9790376",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/plan_execution_controller.py",
+      "size": 30192,
+      "sha256": "ffe6b81d63e8d996fa2e174520e6bbf4b2ad2f3f297ae284ea696e28cdb6503c",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/plan_execution_coordinator.py",
+      "size": 16032,
+      "sha256": "7a320c02fc9306137c4e078b8d346cd355ca973adb34d7e1d682c8644276f92e",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/preflight.py",
+      "size": 10060,
+      "sha256": "fb15bdc9193ca63efb1919d1ed62c0bbf2178e3ecd0a55adabf02a52aba5ef2c",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/project_structure_inspect_capability.py",
+      "size": 10894,
+      "sha256": "da86bece356fb52745cc8b2fe261f704bbaf9d1a94f4475383f54743e7d0256a",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/python_test_runner_capability.py",
+      "size": 18732,
+      "sha256": "2785a289d8af6be6cd2023008875963cdbc2fc8e04514d3264b5a3f0f914c922",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/step_execution_controller.py",
+      "size": 25861,
+      "sha256": "cdbaa3961b1c8225d9370f1f157d61efafb14c9f04a2cdf61346970df9643ed3",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/step_execution_preparation.py",
+      "size": 21274,
+      "sha256": "f808f92f8e35da2a368189452cc0941ae0478795ff8c116c623e19c2bb3786d3",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/text_file_edit_capability.py",
+      "size": 9494,
+      "sha256": "a888eaf3b6bf569130b0fb658c3deb3bdf6b28d1929deee32df78715fb15183e",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/text_file_read_capability.py",
+      "size": 11511,
+      "sha256": "0ecf109154d640c29a666cc07b815d1b52878aa187d2d3d112f757c39b9734cc",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/execution/text_file_write_capability.py",
+      "size": 9957,
+      "sha256": "0d757b8a9d43c116dc29c0eef4108b439324e3be168b2edb0112977bb5773ef3",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/__init__.py",
+      "size": 2686,
+      "sha256": "25cd6fd44c9c6edefd3665c884ddd0705b19c828946be43159a870f2a61cc257",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/financial_goal.py",
+      "size": 8863,
+      "sha256": "3f794c6af912c1fdcb009552ab522ed2d85c87f7b17c0084cb3e37fe25171632",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/financial_goal_manager.py",
+      "size": 8756,
+      "sha256": "36d64e2e6c9c7807c8947b167cd060921dd9649b9a2090e4e1b4c599573a7826",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_learning.py",
+      "size": 11390,
+      "sha256": "40465947efb4edef6ad62527829302be1bb01399d19ce45b1eccf4155cc52258",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_learning_analyzer.py",
+      "size": 7389,
+      "sha256": "8e411ce4c5c4972fc73d39f0515ec26373f6bdb067363eea72764d309b0c8eff",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_learning_pattern.py",
+      "size": 13637,
+      "sha256": "34aaf53be7cf5cc06b02f9572c8e28f08af284dc65fa9eb6ab55a64703c66215",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_learning_pattern_store.py",
+      "size": 146217,
+      "sha256": "41f90733f12766daa7befbee42e82a33df6ea730ca8776653dc9dfc38d6991e9",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_learning_store.py",
+      "size": 8784,
+      "sha256": "2dd2a459bcea6690f06ce09695335439e88c3f51864ae79bdef556720a8f25a0",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_opportunity.py",
+      "size": 56627,
+      "sha256": "ac75dd2b08f598c7f20a26200cc2781d814ab6d1888104b961a9ba310eb112ee",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_opportunity_manager.py",
+      "size": 11930,
+      "sha256": "ece8542d777c395ffb87adf59556520e2da182879c43bfdf32e063b2ba3f0d94",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_opportunity_planner.py",
+      "size": 12660,
+      "sha256": "0c963e4895a4ec527e0f959cb2c1d7e0063149c856160609674356a2140acef9",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_selector.py",
+      "size": 13663,
+      "sha256": "a66d10e1dd9c0a76253de19772a07ac1a08b5794ee068c3df6479caa36f0f351",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_strategy.py",
+      "size": 12662,
+      "sha256": "205a95569b85682fc47f67a899e297ac42fbdb4cfce8718d184778745086fa12",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_strategy_manager.py",
+      "size": 10299,
+      "sha256": "1699a10e2aa04d995d8d79bf10e20c46f91f8b40621c1d144f322df525bc89e9",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_task.py",
+      "size": 35144,
+      "sha256": "8dfa63b2756bc995967049e43952cc6401c43cb0a4cebcf611317996dfb51dbb",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_task_manager.py",
+      "size": 86338,
+      "sha256": "25d0826ff99724e1d1e648a54d41ea640651c59b7b7073107c89cbc3d512b1dd",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_task_result.py",
+      "size": 8968,
+      "sha256": "f77bf1f55af3b5c2049599e82702b1acabc019713d8ab88ecf2e4f6c1b66a59e",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/financial/revenue_task_result_history.py",
+      "size": 31132,
+      "sha256": "8a8827360a3ad897d5eced0db9dcb6a0fb08629b44be0ef5499cac16d27d9011",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/input_system/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/input_system/input_system.py",
+      "size": 604,
+      "sha256": "5de81cdc3b3974f5f306b2d740a32ef7ef1baec289a76978390d29670b4d369d",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/interface/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/interface/server.py",
+      "size": 8992,
+      "sha256": "5b255afa66c7dbf0b515c3f87fd84710ea2190adbe0c372259bdc90fefe50674",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/interface/static/app.js",
+      "size": 4245,
+      "sha256": "ef1c9b84e0136bf9b297ad3d3f6195302f053425912cea18713897b6d3597906",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/interface/static/index.html",
+      "size": 3310,
+      "sha256": "932e3977cb052fd22ba50d7cbb4cb145cc1fc40fa03c8b26558be783ed83a5e2",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/interface/static/style.css",
+      "size": 6959,
+      "sha256": "ee173bbf0efa88f6c156767c2e018eae63ef59cce636cb8e4c6f78f10f844781",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/knowledge/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/knowledge/knowledge_system.py",
+      "size": 9433,
+      "sha256": "c23f287b2e2b7e297c427885bb09a164806a90080dc56765027f1fd4b8bc5bb5",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/__init__.py",
+      "size": 48322,
+      "sha256": "f1aa0c484b83d3f8c3af9284cc02be96c7bc6fe7abaeef49690a04b9f76c6bfc",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/backend.py",
+      "size": 4865,
+      "sha256": "e1e848d5e21c8d6a5704971d05b66ba9c7a57a522b74b50ea6fa65944b21b78c",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/backend_selection.py",
+      "size": 3584,
+      "sha256": "095c507df1117c137843ea25f16e7cc4ceb901bab6bf3d4c76844297dfd1f522",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/conversation_response.py",
+      "size": 9531,
+      "sha256": "8e03dc1432b391ef09546aacddfc00b6fd67d92674e3d53eaf2d5e33b02a5d7f",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/corrected_response_target.py",
+      "size": 7809,
+      "sha256": "a89cde17ddddf8ccf1a5a441e49238759bcf0d0a412343c20cc855f7e0202376",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/corrected_response_target_context.py",
+      "size": 9665,
+      "sha256": "cd522d888ba31587579548c50107984a913349cd856cf59b26246e6f0c1237f6",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/corrected_response_target_selection.py",
+      "size": 6733,
+      "sha256": "85664e399dd1c80f056a8732a3ccf46f89a24b2d7c9ca233436f485b9df40a21",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application.py",
+      "size": 8236,
+      "sha256": "f296a8c3fdc90b3c37c0ebf3268a0ed558e4c06a9ed32968a6b1a565ec966481",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_candidate.py",
+      "size": 11743,
+      "sha256": "80c9edca75c1e3031dc475e6b99a6f0ee210c504730d5232673224f9333a8af8",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_candidate_readiness.py",
+      "size": 5307,
+      "sha256": "70ad6c8b11a215436a0951fd54a7ac6f4c30dee9a73eec8ab2480496bd0bbd24",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_guarded.py",
+      "size": 8917,
+      "sha256": "fdd24e38a65b8f9d6451c13450bd1e8cae7dbd69d1c28497db9e029afe55422a",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_request.py",
+      "size": 11489,
+      "sha256": "7959d0044bda7dceb2efd20dfeb08f3102df04a5fb4c17e6fa7ba68fcee1eefc",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_result.py",
+      "size": 11878,
+      "sha256": "10bd05ae3c8fbb51162c507ae6875bcc7fefe8f589ad7fc48c6f5309c7681c95",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_result_usability.py",
+      "size": 7298,
+      "sha256": "f9779b49b78ea343af61a7f5f24fba537673b338978e8a99630ea836c38fbbfa",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_result_validation.py",
+      "size": 9996,
+      "sha256": "56bde3632875b08358d2ac23b082cd8ca8edae6ab69804e4005834e0631ccb7f",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_target_validation.py",
+      "size": 8664,
+      "sha256": "df5fc6b9ff90afcf92572fa434d1bcff9433ad6a4ce95bca4894267d227009ee",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_verification.py",
+      "size": 3536,
+      "sha256": "e5058528af05263bffb28764170c3396fb239d23d74f6956646f7cc23278f571",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_application_verification_result.py",
+      "size": 6372,
+      "sha256": "cbd13f38bc619d158dc4985e165e03c3e7f7c56b3aa15065d8a9fd21ee7d5d77",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_feedback_learning_input_adapter.py",
+      "size": 10498,
+      "sha256": "c31d8887c921560a86cf6df172e7f673e0102322acacf592222eb63a346ec3d0",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_feedback_record.py",
+      "size": 15323,
+      "sha256": "a4a9cb372acd13863a92e307d6c440e194e40f87674c8d3387b0a2e12ccf37c9",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_feedback_record_validation.py",
+      "size": 8612,
+      "sha256": "80caf56f002ad42f084122011d4c599811132bad913393d655bde5ce5e194942",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_exact_lookup_result.py",
+      "size": 9843,
+      "sha256": "e666b5fd266ac9b479e1b9184b783fffb0532b4ce45f34f4390500e1c9004562",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_handoff_result.py",
+      "size": 8674,
+      "sha256": "61a950872002049a6a8b6910e753f2cb62966bdca82dc997824c1205822d520b",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_handoff_result_validation.py",
+      "size": 9101,
+      "sha256": "60c77631710809e6665f22af54e63d9ff5c714090a12ee8ae8f93736c7573d76",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_handoff_to_learning_input_adapter.py",
+      "size": 6243,
+      "sha256": "81fa661692ab461c0522049bd634f2dd8e2edc71d3316bc6bc292b199e95333b",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_input_eligibility.py",
+      "size": 6232,
+      "sha256": "b220c2e603b46693bc832a633474edc24c5b345b07bbd654e28f17e6a1d5d158",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_input_handoff.py",
+      "size": 5490,
+      "sha256": "d0f01f966be6feee95021e2b4fd314797ca6a6bb85108920cd8352db0e7ab482",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_input_retrieval.py",
+      "size": 9315,
+      "sha256": "ae3b4b55aeca4477e0ec410c1aaf5f3d15ef725857506c89b054065da18909ab",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_learning_input_storage.py",
+      "size": 6603,
+      "sha256": "8ec3de0abffff7cb452ef5da2f88a249dbf605c856451b8bce2b5277d4b6d3a4",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_lookup_context.py",
+      "size": 11489,
+      "sha256": "268c6948d5d7b73c7e66349f370341b8601b9f5d16690ab31e5233e68c47c7b5",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_lookup_selection.py",
+      "size": 8334,
+      "sha256": "56dce9bcd27c678d415afb064f130dc8377f68498eee8b666414ff764ff9ec32",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_lookup_usability.py",
+      "size": 6419,
+      "sha256": "262bc532cd7b5ee9ad9f7960b905dbdd6b53175c08dabb4d0d101ae2c77415f3",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_understanding.py",
+      "size": 9763,
+      "sha256": "137b43a6efb38df191bf2065c4998c1815f54d547cfd4c0d65bf1980883509e5",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_understanding_result.py",
+      "size": 15491,
+      "sha256": "4ca8c3e5d7e303615836f53b75c7b57300928a2199ee96407900a22fefb3a0c5",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_understanding_result_completeness.py",
+      "size": 8519,
+      "sha256": "862bb7541b0f04a78e51cd783770690d81d7e3e71b55880c00cf8610a6c3ae54",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/correction_understanding_result_validation.py",
+      "size": 9037,
+      "sha256": "81756b80272ce84256cacdf6f17e3e12d53dc24304d03be93ebbd42db1cd7472",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/deterministic_fallback_backend.py",
+      "size": 34435,
+      "sha256": "724d9651972c1c1330fed3c5c2f07fe328b6992d20fa64e17186219c404e2143",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/inference.py",
+      "size": 24081,
+      "sha256": "961e6cd73aa297aad185f72efddc901baff405ac1a0787ee8b93ab69adf5d4b0",
+      "part": 2
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/language_context.py",
+      "size": 17059,
+      "sha256": "fb7bb82609b6411d8c8caec82980db199459facbf7d33e391936d60dbf1b1552",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/language_guidance.py",
+      "size": 16000,
+      "sha256": "cca07fc9b7e61d73a11880873901c82810872576af94f99370007e5ca4dc9d9c",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/language_intelligence_core.py",
+      "size": 27160,
+      "sha256": "a09320821833dc018bfc0e2529eb703c858a480bc20f3d27f12cb5772df2409f",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/language_learning_store.py",
+      "size": 20939,
+      "sha256": "ff80be59b561d0a06bf15707207a44aa0b0a7b192f569043d2b735fde396c002",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/language_relationships.py",
+      "size": 22184,
+      "sha256": "85cb830d37342301bf662eb7d58025d65e61ded72088ed21f9acc2adec25e345",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/language_understanding_result.py",
+      "size": 31597,
+      "sha256": "3e455aff844a2cba76aa4f1381bcafd2a03e42d3cdad67b0db0db3184274ba5c",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_expression_variation_matcher.py",
+      "size": 25977,
+      "sha256": "ee6b86d3ff16a6b1e658cd87b4e5ac515b2242556620a418d517028dd772e0ce",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_knowledge_context.py",
+      "size": 10065,
+      "sha256": "518c468f96341419da796c06cbe47d3be698d5c9d48ecfeef3738937fe4aaa40",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_meaning_disambiguation.py",
+      "size": 20155,
+      "sha256": "f1adc7a97c3544e913e33a1eb54dff9d376d4952eb66ddd05f44a5a04356b09e",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_pattern_matching.py",
+      "size": 27278,
+      "sha256": "a68997e0e257a26cf95360f23e60abd202af9aed2dc91662aad9a73e9729c363",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_pattern_meaning.py",
+      "size": 33627,
+      "sha256": "2c7ce33cbe15e07d9ca9f28604922b85347b93b8dd80b5d9b4c630171819907a",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_pattern_teaching.py",
+      "size": 26897,
+      "sha256": "b06550e7c62e27432ab470e230d8e34032e9af1e0908a5c92da22ae7be39607d",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_response_decision.py",
+      "size": 6917,
+      "sha256": "de9005fc3eca4455d2bcbde98d88862e7ead4ba9ff98380ce899f2bb5800419e",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_response_pattern_binding.py",
+      "size": 22017,
+      "sha256": "93df11c1b024f20238eb86028d9d3ab29f18ee565f1ebad2ab1c56c7c30bcd98",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_response_pattern_rendering.py",
+      "size": 14774,
+      "sha256": "e00efa44a7e0f62a4b22dd1a9fec988e0d6ff2aff1da4b304e31e01d001aa04c",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_response_pattern_selection.py",
+      "size": 25758,
+      "sha256": "a605971447b405bed3a7e2d96d87b94bdc48f0418908153d2c11e768894c354f",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/learned_sentence_structure.py",
+      "size": 20237,
+      "sha256": "d3845e128e5c44f783f12095093bd164a2ad09345b9c93a391d5cf7e14479faa",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/local_model_backend.py",
+      "size": 24406,
+      "sha256": "3c4ec58a373582b2c2f7a3931dcab8ab095e9b99d94102501950aa274586c21a",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/local_model_config.py",
+      "size": 12204,
+      "sha256": "c578e42af5086112a46659c9cbf28074cdfdb03608058884993a4c1b1e223c6d",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/local_model_mapping.py",
+      "size": 24294,
+      "sha256": "9ed22142d0b19221e3e0fb2655645c3051776aac9a9dcd4f5a2afb6d0334b8be",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/local_model_provider.py",
+      "size": 14444,
+      "sha256": "15819dc5ef9b6bd581c9a8c5f243cdc26456d5b680fb1df9ab3d0a837e4fa69b",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/local_model_runtime.py",
+      "size": 34400,
+      "sha256": "eacd0c7add712aefeba8521fbe4d97691e7e87a9731c08734b7145dd2da15464",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/meaning_resolution.py",
+      "size": 22292,
+      "sha256": "c63a5dbe8c1d21590bb6b16d9adb6da98e6f8ed577748015e472f20b2a2460cd",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/response_generation.py",
+      "size": 16392,
+      "sha256": "b87d49842d29e3a1c40a379360d7158370eb83b307f595a7e7b2f71622a76978",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/response_generation_context.py",
+      "size": 40614,
+      "sha256": "7c07e9c243deeb334b1f17c986ed1431d82a2826c9f330845e508097853fedf6",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/response_generation_outcome.py",
+      "size": 16989,
+      "sha256": "f7c16d6435c2ca7c7f80d61b1997876294a6cde6769e7daeb80b8512a0a124c4",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/response_generation_request.py",
+      "size": 17836,
+      "sha256": "175da6a02a0145dcf0ec03059fffc2e1f36d9d0891b43408baf393d9c10eee90",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/response_generation_validation.py",
+      "size": 10109,
+      "sha256": "451596159b64b502eb5b2185231fdc936a393973b3a909aeef6c0c480cb60dd6",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/response_planning.py",
+      "size": 32121,
+      "sha256": "64a7c8fd11a27b4afe7c73f64c14a91edbac8307da89f5c2e1f2f6830ec84306",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/unavailable_runtime.py",
+      "size": 2165,
+      "sha256": "979f428aa39e05daddf119515285ad1169af629a5d61ce6089ac104eeb8d6bd6",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/verified_correction_response_input.py",
+      "size": 11647,
+      "sha256": "3eb1d10cce80a93a2b86ae70f8978a631983911e1f4f9dc539fba06b2b87713e",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/verified_correction_response_input_adapter.py",
+      "size": 9779,
+      "sha256": "d6bd053f8e68fde4bd7e56aa37027fb157ce004e31289b49c27af7951462df62",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/verified_correction_response_input_extraction.py",
+      "size": 7216,
+      "sha256": "35e872e6a602ad0b5a41f4c9410db5f2e17af3ab5f47c8872ec549ee4c821b3c",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/verified_correction_response_input_usability.py",
+      "size": 7577,
+      "sha256": "b17dfd15cb05784577d1334368163eb62064faca49066cce7b484faa18569453",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/verified_correction_response_instruction.py",
+      "size": 11386,
+      "sha256": "3fe920b09da2b6ea66f6d331c101e313ffbc47f23ae807e7cfaf810a5b0e992d",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/language_intelligence/verified_correction_response_instruction_adapter.py",
+      "size": 10140,
+      "sha256": "ffe1d4b789bcb1904058c5d7757918de1fa9107d7489b0a94acabd89045e23c1",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/execution_learning.py",
+      "size": 5679,
+      "sha256": "c4353b7a8118022bb36d9537108c808b06b988f36a471e4d155b035b7bd81051",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learned_knowledge_gate.py",
+      "size": 16141,
+      "sha256": "471c23c071a086aaef8ee5581abde1c6cfbf2a300ad7e8371f94099312116b17",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learned_knowledge_statistics.py",
+      "size": 564499,
+      "sha256": "f5fb3d75a56fbc3e6a664a13bd3699d409c7a5ab5e68b1bc9420cdbf18ee8950",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learning_analyzer.py",
+      "size": 43114,
+      "sha256": "e94144b181f6e1282cc09dba3a57ffc549a2345f844fe1e43db0ee58039ff581",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learning_decision.py",
+      "size": 4273,
+      "sha256": "87d9d2c8aefe39638ed0c89347fc8923853625893cbbbe032501fe5ce1fe7294",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learning_input.py",
+      "size": 5442,
+      "sha256": "bc0568eac4aee37d68be2ef935a5eec27bfe1f6fa296015b34f03f4684dc0a23",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learning_record.py",
+      "size": 5036,
+      "sha256": "3d232d6d4cc9414f21141e99431e1c9fc5e9c8d0e0d52636d52b672e194c70aa",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learning_record_store.py",
+      "size": 12770,
+      "sha256": "c0c0badd31a49c3ed0030dc541907175b5d4745832b2f6df8f690699885888e1",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learning_result.py",
+      "size": 1998,
+      "sha256": "405861dfc7acf1edf5b6f0db45b40b1649368e90a8a8437eab891297437da39c",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/learning/learning_system.py",
+      "size": 13198,
+      "sha256": "1925d12a5d6ea5e8e19fbdb9344cfb88ae33c33d3b72c3db674be330bf075654",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/memory/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/memory/memory_system.py",
+      "size": 25366,
+      "sha256": "8f4531094a80f033421e03994df22ca119b8b7cfe02d319597df64241c9aedc5",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/parser/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/parser/parser.py",
+      "size": 825,
+      "sha256": "163e8ad9fc833633d66d3dd129eccef9f9828d85c8315f8bad42c513a80e1b2a",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/planning/__init__.py",
+      "size": 439,
+      "sha256": "2df6df8c0d0dc66ebc741d28afd3c233290e5291a222c7ecc120f9aa3857ab43",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/planning/adaptive_plan_analyzer.py",
+      "size": 48115,
+      "sha256": "d4f010c40adaaacc2060427a15891b3f43b668c05348af1e60eab907442f64dc",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/planning/adaptive_plan_proposal.py",
+      "size": 30865,
+      "sha256": "985b346718d2d0d28165e6b785e665ecddbe1b0bd7c5e37451bfc292432d7afa",
+      "part": 3
+    },
+    {
+      "path": "app/src/main/python/planning/data_flow_manager.py",
+      "size": 9235,
+      "sha256": "066342d9edcad452cd45a02c14f56c6f13605d6dcf91f832de225b60c5561fb8",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/goal.py",
+      "size": 3672,
+      "sha256": "cecd237e521a736d890cd55b7a415470c5e36761ce3cee677301a2c7ebbc2b4c",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/goal_completion.py",
+      "size": 17444,
+      "sha256": "e53977ebdaf32dfd5d4c491c0dd6b339a3ae6478570eaff545260f6784022c71",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/goal_detection.py",
+      "size": 2846,
+      "sha256": "457cb299762b65a74f3a9c358cc3310fe64cd0eade59ec2f81beebe02f47c754",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/goal_learning_context.py",
+      "size": 7803,
+      "sha256": "c831461ad41dd0cc05b642867421a8304f84cf48af552370736f525bc9bd7b40",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/goal_manager.py",
+      "size": 5299,
+      "sha256": "515cc5632605dee222487e8817b4249c55359b0913c9bef66c10873ee88a5aac",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/learning_context.py",
+      "size": 4623,
+      "sha256": "db54cebba18d5cb450a8f3af32d92d7605fb4bcaa47e26e8d81a6dfbfef52b2e",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/plan.py",
+      "size": 12123,
+      "sha256": "55d261fe2118f19a2d9c6bd51d565c8fa2f1ddcacfde5bced2a516d6aa36a81a",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/plan_manager.py",
+      "size": 35072,
+      "sha256": "885b8835a48ce53e86a9a65d9d0d873d41821c8547d8c1606e6021521b686dc3",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/planner.py",
+      "size": 10833,
+      "sha256": "7b583ee1759b8bd7914c19806dea92eda3a8d12dbd8dfb11128c4083ab08a37a",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/proposal_applier.py",
+      "size": 28572,
+      "sha256": "36b7f280a7926121f94a9fcc4a3ca336696dde243599ff564385f385e20b7bec",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/proposal_history.py",
+      "size": 7039,
+      "sha256": "770eba190eed85df62b0e7d69ff086becc60a8ec4cdec1c68edb199dd216264b",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/planning/proposal_pattern_analyzer.py",
+      "size": 7336,
+      "sha256": "ba3928873a566ad54ddf2ea99b0ec9581c2df6c7bada8ce8e76acc6b21d65df3",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/platform_layer/__init__.py",
+      "size": 625,
+      "sha256": "3977ad0a45bb04aad9565d5e8610793bdf2eecf6de8350244e207bfb7b0411a7",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/platform_layer/adapter.py",
+      "size": 2952,
+      "sha256": "0ef8c72789faf68a1997ceca0aee00e77c94f44496e7166769e25d941079542a",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/platform_layer/desktop.py",
+      "size": 1979,
+      "sha256": "67a9e06788854d5682402d6ce78b28cd8b7b120b12b90c86f37d9a0387e561cd",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/platform_layer/registry.py",
+      "size": 1356,
+      "sha256": "56e701f254d7e8c75d49987517879843a6691ff50cf40d451a6744206fadfcf3",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/reasoning/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/reasoning/query_parsing.py",
+      "size": 5689,
+      "sha256": "49dad1fbac774f35b579ad253ce2d02335200a77da9769108a37c7eee56779d6",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/reasoning/reasoning_engine.py",
+      "size": 38217,
+      "sha256": "2076af9305d6a8977b7946e2f35331cf43162c5969f9549084e3832f711d17de",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/reasoning/reasoning_result.py",
+      "size": 6116,
+      "sha256": "948c27c9a865716e57dee2f592e05a1174a674b71669eddbbbee9f61a8389f5f",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/reasoning/relation_phrasing.py",
+      "size": 1888,
+      "sha256": "404149c1a0c065d2321043a7db71d205a30901400610d9caa6e1cee13a575ce0",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/reasoning/rule_registry.py",
+      "size": 12455,
+      "sha256": "4d1dd8457eb12f3196549ec7df98560a7543e3a4a34c5a125a0f59657d483f94",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/reasoning/rules.py",
+      "size": 15187,
+      "sha256": "3b759014e08d206047f28efb397cc920669fbe9a9830ace618ab654ba62ecbea",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_apply_request.py",
+      "size": 10912,
+      "sha256": "4b2804007c99a40a85ffd2dce4d8a64c4bf85518ec995edce6c7a061dab66d85",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_approval_gate.py",
+      "size": 13836,
+      "sha256": "67f5eaab76a7a97063009fe0d7b6e2f811745abc915a4cf7c6711457469de707",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_approval_manager.py",
+      "size": 10904,
+      "sha256": "d5d64369836256fb0bf4d408e1d5e27c436f4559f9ce4c40957b600124c1e40a",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_build_spec.py",
+      "size": 8867,
+      "sha256": "72c23a953e5e8e8522ac5ab18df7be13905f4a96f8bf8cfc6923138f6f8f1f9c",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_builder.py",
+      "size": 14506,
+      "sha256": "f63e66875dc766585bcb782d1f44af96efc64d6f3865ec5747f9982d9bac1bc4",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_correction_analysis.py",
+      "size": 12091,
+      "sha256": "989c72369ef33cefebd27f944e380965eb0211e18550a2580b2a0d11a05df1e1",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_correction_apply.py",
+      "size": 13389,
+      "sha256": "1cd8eef90b18626709b5d29be6b2d73e201fa9377365a26ed481e52d7d7243ce",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_correction_verification.py",
+      "size": 10029,
+      "sha256": "6a40d18bd42204560900c5b9b93a22d2eb315ab692a96fd492cee63644480ecd",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_creation_plan.py",
+      "size": 9631,
+      "sha256": "d703ae5117d42bdaeed270558ccf45cc00619fce8ac8e1242b1b0e9a4a4621c9",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_evaluation.py",
+      "size": 10025,
+      "sha256": "8fbca49733c7b72dbf36eb7b1a037e582a14ff1d4f82984f0bf6d74e6ede38f1",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_file_apply.py",
+      "size": 13779,
+      "sha256": "43ea07401068b8e6e791d400391b5087e0cadf317a7f85554976077e1dbafa82",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_first_pass_verification.py",
+      "size": 5613,
+      "sha256": "7eef6122978a9b1d48901663550bec2afcb49c0318427441d1ce4fafbcf7ae28",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_human_approval.py",
+      "size": 12815,
+      "sha256": "7e43184b81ab226dfbc41c40a18f96c34d809b7d46a3da0b434b67327506aab4",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_implementation_spec.py",
+      "size": 11394,
+      "sha256": "6f96cbf04b468df4f598b231d574da0003e775cde694818be69d48d3fc0f2645",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_lifecycle.py",
+      "size": 33782,
+      "sha256": "288bdde52b5d421b8ea366004fa483671f9fb5977176240f06176ea06db0cab4",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_lifecycle_decision.py",
+      "size": 12828,
+      "sha256": "643554e9a5f35adb386ba61c511281d6532389a468f371a552d582cab100a858",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_registration_approval.py",
+      "size": 10390,
+      "sha256": "5abd4117e6ed8603b4497744f967a5825d4b305757818fa24c68e2fe684d7e35",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_registration_decision.py",
+      "size": 12192,
+      "sha256": "176cfcd9fd5f9cc17a05ebe0fd7668258223a1544291cda22e33eac3c07a87a9",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_registration_executor.py",
+      "size": 17488,
+      "sha256": "9328dc45b2d57e0199f9c9d758b53d43a6c103a7b8d332fc115b4269ac5fb637",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_registration_plan.py",
+      "size": 13666,
+      "sha256": "eda905aa362693ddc7d241eadfa7bb6854755ff7c0132e10c198f8dc40600985",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_registration_preparation.py",
+      "size": 14320,
+      "sha256": "2519420eeccd853dfe8edea9c64aefcfe2cef44d491ece80dbfd12bb12766820",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_registration_verifier.py",
+      "size": 14417,
+      "sha256": "922dc53b6c904e16eb49df8abe593b3b729e0c34839e379febe021991394e10f",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/capability_test_execution.py",
+      "size": 17260,
+      "sha256": "e15622afd0299e71dc0b70ab7a15ae2edc9b3fcd0b9e44e6c694d05342d5de59",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/sandbox.py",
+      "size": 1907,
+      "sha256": "592790ba26a07a3cb9dbb133d6b506126f52d98b9614cbd357e1d526a18c6506",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/self_upgrade_execution_context.py",
+      "size": 24949,
+      "sha256": "1e85f30a03c615892636362a271af2e36147aa4213dfd37b29e88e14af2a11b6",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/self_upgrade_lifecycle_coordinator.py",
+      "size": 33450,
+      "sha256": "4945ddaf2be82caf9a6e2750b1b0680c5bfe436cf9f750e0fbdb28960c551838",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/self_upgrade_request.py",
+      "size": 5440,
+      "sha256": "35a7b09e92a7da4e401ab7d3c8359ab6450237678094f4a24f13c485bf15e05d",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/self_upgrade_resume_manager.py",
+      "size": 9365,
+      "sha256": "b10a6b75f66760dfaca5322a54221a3309bb29fa66112782ad718519ee405720",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/upgrade_system.py",
+      "size": 4764,
+      "sha256": "1d4aea2b2231876015a0a1e730506db81eb0a7bab0f2bc76062869e5e32a7c2f",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/self_upgrade/version_system.py",
+      "size": 1812,
+      "sha256": "a97ce6f7f541cf7379002f8df757204fb78df6edc3fe076fbf5d401042ef5d46",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/skills/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/skills/definitions/greet.json",
+      "size": 353,
+      "sha256": "9e54166d94513d7a68c8fe6046aa2fff3d1c7ff8e3c940212a03d4dab54b6e58",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/skills/skill_system.py",
+      "size": 5930,
+      "sha256": "46e17b9bf9d6ffe2b524b4264816336f10eede7c6d700d76d274009b37ca8eb0",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_active_topic.py",
+      "size": 14633,
+      "sha256": "2b2e4db7c175c2f5c43cced1d435b04c6cfbc8e68c6dd8915db1eff1555c3989",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_adaptive_plan_analyzer.py",
+      "size": 27928,
+      "sha256": "c748fd138b837fc1368489afaf50fb08bd4af6b296b5206881c7c63396c494f7",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_adaptive_plan_analyzer_self_upgrade.py",
+      "size": 9767,
+      "sha256": "c3a4c2d73360b8165085fcb0d4dc1e1d34aa03235d5c5e947d4f68479f769349",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_adaptive_plan_proposal.py",
+      "size": 28787,
+      "sha256": "937286c2f13fb59f1a381cf492d8ffdde71ccb4bd8fc68055c5b96d6ba8235fd",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_agent_loop.py",
+      "size": 141003,
+      "sha256": "bc99f8ecfd3572af0e78c5ab32df974722e9cf892b2406ed8d619686daf34f28",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_agent_loop_capability_lifecycle_decision.py",
+      "size": 10978,
+      "sha256": "694ebeb59bd7fb8240288e159727f3065e652000952dc337cea00360e7f7b006",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_agent_loop_execution_output_state.py",
+      "size": 18221,
+      "sha256": "aa9cd7665fa475bb8d4dec416d7f4ea3a114c005eba18b61cdf4cd738379e5f4",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability.py",
+      "size": 12797,
+      "sha256": "725e0bf497484c694ed5e6cd981a9c57313f00404f9c0e00849922dd78845760",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_apply_request.py",
+      "size": 14092,
+      "sha256": "db84d959088f157d902f2c3f7cc6216cf5966f2433291b6b4c70dede6b79a444",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_approval_gate.py",
+      "size": 11673,
+      "sha256": "4cb017068221104707229983d7d791c6675d2e9427216471feacccb47c71cafe",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_approval_manager.py",
+      "size": 11595,
+      "sha256": "cc88160c80b546968cb729192319cd8e5dafa10b203a6554daeef1e8329a5953",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_build_spec.py",
+      "size": 11224,
+      "sha256": "df4f5de7eeac22ee6774171e7db022ff9acdcdd90096cbf5c6727fbfa7edc883",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_builder.py",
+      "size": 14886,
+      "sha256": "25e533d375c3f806dbc7480b5bbeb66bdb88e9db0f8bcd8153e19a1a74a07e10",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_correction_analysis.py",
+      "size": 17836,
+      "sha256": "2d3210320e892c16bc0d4cab7984712fa7a592c359bc9fb8ff0bf647a1528e7b",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_correction_apply.py",
+      "size": 13184,
+      "sha256": "da90aad239cb97a2f66e254f9ac430ddf8f86cb50e6c25ed40cd88a71c5d4b60",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_correction_verification.py",
+      "size": 14633,
+      "sha256": "7db97f0b5b9fce5e29f41a45d96ced80fb227fc3660d7f4625389e778130f9cd",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_creation_plan.py",
+      "size": 9712,
+      "sha256": "ecb0787eaae6a98ba5da78cb6592db3ad2c02f2b24b56e324c618cdd53e6f475",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_evaluation.py",
+      "size": 12554,
+      "sha256": "2b074a2a678ef100baee8973df7944e004db1d65e534c48e6c8fa54fd70b5d60",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_file_apply.py",
+      "size": 15232,
+      "sha256": "c21eb573da2de8a89437667ef0a2f9332db645b223f3245c8da1a873a55790c4",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_handlers.py",
+      "size": 32038,
+      "sha256": "221eb49e88605bd9dd42ded67585f342b87e70de1920900497c8365f380f6260",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_human_approval.py",
+      "size": 12322,
+      "sha256": "cc384d9e8d6516b0977ca60e70cec366df723ffc84c08b2e7a6d3716d2f8dd34",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_implementation_spec.py",
+      "size": 11646,
+      "sha256": "b61cf718b86d4ae7338f179d5839a5277a9d208489262643895d0e62e45bdaf4",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_lifecycle.py",
+      "size": 37168,
+      "sha256": "4ea713e2d9c355f57ad31d9616fabf71a7e223edfc536a15664c16a0d610dbf5",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_lifecycle_decision.py",
+      "size": 15526,
+      "sha256": "f38537eae91b1036ad78763c57b5d8d9b95a09b3163d597375104c0c195082a0",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_output.py",
+      "size": 29706,
+      "sha256": "571c59d656903590a1f678c506fafbe9152fc72042cfcbcad1b4535ae6754be9",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_registration_approval.py",
+      "size": 21558,
+      "sha256": "c8c4d8d81c5905e325061688036e58ce0382c39ecaaf82016401e470374fddfb",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_registration_decision.py",
+      "size": 15655,
+      "sha256": "f4b397ee6571b92ea7b02e08089805052b9ea7eba6c0c13acab423f8fc2daeb2",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_registration_executor.py",
+      "size": 19665,
+      "sha256": "32a0c56ad7ea1f3263426f6703968f671bd559403bfeb857be294fd655ef9e77",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_registration_plan.py",
+      "size": 22318,
+      "sha256": "f2760bd36a4eaec565cd4440696383900091fe2ec390f94187722c1e85471aa1",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_registration_preparation.py",
+      "size": 23884,
+      "sha256": "faf3de97c0e81ef8defeb1fab273f0d0aee3d65044af5d0ae60dc7eeeb62a7a9",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_registration_verifier.py",
+      "size": 17536,
+      "sha256": "b17bdc2a8aca6cf4b1637286dba43e5a80d3661c2ab8b29534a33d3f3c8fba02",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_capability_test_execution.py",
+      "size": 16241,
+      "sha256": "d688d7c92d5e6b7efc8ea201391952acbd5c924aa1d5bd11d58f9c906aba8610",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_analysis_capability.py",
+      "size": 14739,
+      "sha256": "b0a0a19cc9fa2f3d7a11b093201ab0c963942b3e74519fcc930adc2d0a043727",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_apply_and_test_capability.py",
+      "size": 8302,
+      "sha256": "1b9b0f37e246e76bdfb4b7eca97350da1021fb7fbe6f9a4c5b0b909ab395641f",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_apply_capability.py",
+      "size": 21446,
+      "sha256": "5e2664bcf042c499b6791dcc34410558bac7e7e0b3182bc51ba0fda63e5a9c0f",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_correction_analysis.py",
+      "size": 17067,
+      "sha256": "201e621cb63c1715346b081a13bbc982dbfaf4da660ba8b16482d819fb0877bf",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_correction_decision.py",
+      "size": 6702,
+      "sha256": "a29b46861940539e37d94d2f86e35e5859659cf840346f372e8622296f538c81",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_correction_proposal.py",
+      "size": 16691,
+      "sha256": "33ed5f9a5b2f94d36fd23db0ccab4f335bbe9d71aea73bfcddb9be82dd596d09",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_evaluation.py",
+      "size": 9946,
+      "sha256": "32df951afd838d442027c3ddf75d2676c46b9fca534c79c14b557e4f022b64b8",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_plan_capability.py",
+      "size": 19163,
+      "sha256": "67b5816d3b52188a0684e6a3d806d7486dbc8dcdffeeb396e1d6b59ec117c82c",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_rollback.py",
+      "size": 12809,
+      "sha256": "8e952e755b6b66fb39e6cf0a3d130a35ff0ea779e782dae67eda6c737517f3ee",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_self_upgrade_adapter.py",
+      "size": 15605,
+      "sha256": "cb1d1dcedbc71ce32184532e5c3537cd65aa2097816b0e62f9cfe8fc486a62e1",
+      "part": 4
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_self_upgrade_audit.py",
+      "size": 12946,
+      "sha256": "52522ef2dfe85e4a0a9c07380471cd44913dbdb09af4d043eb206a3a2db08b39",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_self_upgrade_validation.py",
+      "size": 13967,
+      "sha256": "f7936fd3b36bea87272175a78e8b6b6cdae21af3dc7d5da4c419751335a140cc",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_upgrade_result.py",
+      "size": 18188,
+      "sha256": "46581ea20e95f336ab68fd016cdbd78b9e3cfd0a9f9a6a4b33b195077ab4c483",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_upgrade_state.py",
+      "size": 16947,
+      "sha256": "20c4bd080ad20164afbcde80a4d883078f24bd253ee3efe49c665893c9e65937",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_change_version_snapshot.py",
+      "size": 16620,
+      "sha256": "06c028f52abb09460aa13c49ef8fb079c05a64521beb016cdd80b51570f24c75",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_correction_application.py",
+      "size": 13751,
+      "sha256": "6b5641a6d0597d2d556f8d1076257b3b4308661c935d0bcbe003807737e57c7e",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_correction_learning.py",
+      "size": 12709,
+      "sha256": "5262b48626dbc8193038dcca22d789ecbe0c492a1d0bf55257a85d3bfbc7d7b5",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_correction_pattern_retrieval.py",
+      "size": 11141,
+      "sha256": "6eee914addd5af4c2c8d11d1420da47adbf2b569bbdf43c1707c0ccfe6f3a321",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_correction_proposal.py",
+      "size": 12375,
+      "sha256": "dd4be143a1dc84369cbf9c00ecd66e5c555514b268180be3bcafe687be59131c",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_correction_proposal_validation.py",
+      "size": 10092,
+      "sha256": "e0251609fab549ce45de0740542b9f365f018ed609d9baee1dcc4ae3ff8cb69c",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_correction_retest.py",
+      "size": 14732,
+      "sha256": "012b12ce2f102d78030c4073069114ded7561cfab3ffd3c0de380c5b87fe5eb6",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_error_analysis.py",
+      "size": 12578,
+      "sha256": "eb3a02af894d0c077202fbc3305be0a6e337701f87995f935984cdb1ed74479f",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_code_generation.py",
+      "size": 11997,
+      "sha256": "e4f17e78f718e63cdb2e7377755680aae5c74e128376039e6d772d0477a4524d",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_conversation_context.py",
+      "size": 10816,
+      "sha256": "8dc840a4b6a702f4db2fbd6236c25c2cf924c6f7e34bae262056bdff5392aa83",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_conversation_intelligence.py",
+      "size": 5465,
+      "sha256": "bc1da74c038c18bbcb5ae1be2c51bf28e607e42b4a0ee8d2c802b30568b57eb7",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_conversation_response.py",
+      "size": 16294,
+      "sha256": "886c25beec99fbb77c6a5b931e18debe7520cbef01c13d3046e167db3c2a6329",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_conversation_response_classification.py",
+      "size": 11033,
+      "sha256": "6756cfb26a0f4f61aeea5620cbd33281a340832fa30adcdaa815034a4776fe72",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_conversation_state.py",
+      "size": 23582,
+      "sha256": "863ea0929ec4cf2f5f5cf4ecec1dd747325069b7ac467c46f7a6c6bb793f2bd5",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_core.py",
+      "size": 33335,
+      "sha256": "f6be2bba24ef322dd69842584e1f0189d05e1466cf22c50e7469e7cc58e9d762",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_core_model_readiness.py",
+      "size": 9886,
+      "sha256": "ae114d34a783e595b6aadeabe78dc3ea70aaa9d605c9a95019022ff837e00f15",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_core_response_generation_outcome.py",
+      "size": 14770,
+      "sha256": "a479721ed8415992f7748152be3e0eaf075d007dd5548dee60bc585c75bdb6ac",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_corrected_response_target.py",
+      "size": 4824,
+      "sha256": "8c194343995272ce6f234285bebed935b905adb6a29cd7669efa6379e400c0bc",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_corrected_response_target_context.py",
+      "size": 6826,
+      "sha256": "74239c1d29cac049f68cfa62580aafb8331d87a193051b948baf9bf57e70ee75",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_corrected_response_target_in_response_generation.py",
+      "size": 28298,
+      "sha256": "a3402fe3cd660641e31fc9244cbc5ae61429e9af20a8e7133c3356685ca1c30e",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_corrected_response_target_selection.py",
+      "size": 3902,
+      "sha256": "beb8b2301858cc506ac7ad118180418d36ca749e1ada4d68ca1ea9fa55a816fc",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application.py",
+      "size": 8130,
+      "sha256": "60b1d90737e9dc11f4712765182f4f63cf2b6c4534ebda32d67941aa881a3341",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_candidate.py",
+      "size": 9339,
+      "sha256": "9cfb97fbe7b4b9ea7f21baa6471c2e52e2e48779bffec5c0beacfd24c308811d",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_candidate_exposure.py",
+      "size": 16371,
+      "sha256": "8f783ef781f15edac6ea6c04678975009ebe6a832932414e82a8419e7dd3d2c3",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_candidate_in_response_generation.py",
+      "size": 13197,
+      "sha256": "82e2d345aceeb405768c60d39b8f820e2964da271d44864057dffd8000fd8a77",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_candidate_readiness.py",
+      "size": 5556,
+      "sha256": "7e595e4edbdc21e7ebf2dd69c3d5a379203a7b071d18180313d1d41e2f801fb7",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_guarded.py",
+      "size": 16299,
+      "sha256": "775f336cf3bfb7bea3df3eb0dd193fed429fe75a4cc5b423433756db46123fa7",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_request.py",
+      "size": 6061,
+      "sha256": "13e0e6b39bb05854cf71571d53674500d6d5692851523743bcbf0d77c38b4c89",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_result.py",
+      "size": 15963,
+      "sha256": "59e4b92687cc8271ce107d88a48963e5a20baadc8c4711d22edecf8bf072f4da",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_result_in_response_generation.py",
+      "size": 15853,
+      "sha256": "67dabd9827245c5df836a71120e230bbe25482a43349986c18f60b7bdb40702d",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_result_usability.py",
+      "size": 10180,
+      "sha256": "edce43b7f4a02b4259ba3e17b1529f56223f269aaa380713b2bffdbcd1d489e8",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_result_validation.py",
+      "size": 10763,
+      "sha256": "4f756dd73f04d5b384d93762a011e1eb740c95a6822d15fe1fcebc01565455c3",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_target_validation.py",
+      "size": 6393,
+      "sha256": "56007e942aa06e8162103ee4f92a52c7cd1d12c9c9a308006c52700f1d84cb65",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_verification.py",
+      "size": 5940,
+      "sha256": "051f7e63c9400fc1d596520323a5bc1e3106bfb8ee8b2e7ee7d35b0808608574",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_application_verification_result.py",
+      "size": 7937,
+      "sha256": "fc781a6d1e6e90f2576cf6d42858cad695a5ac1414dc152ececda10207ff5327",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_feedback_learning_input_adapter.py",
+      "size": 10096,
+      "sha256": "d5b192da464e67128ede855a2a3ec100d2eebaa9ba0e67840d71a7f48dd587ab",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_feedback_record.py",
+      "size": 8562,
+      "sha256": "4d1a5b3d4045ee2ab076037917a3bd81108f3cf3281d41a742d015c30882ce3f",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_feedback_record_deserialization.py",
+      "size": 11193,
+      "sha256": "e818c10bc56b047665b6b1e63e2bfb27f59582d7e3ba59121fd49e018acb641a",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_feedback_record_serialization.py",
+      "size": 8171,
+      "sha256": "bb689ed9b8c2a0f442d3a83ca1ec4206122ab57a0328a25c939d56c92c4b5d0f",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_feedback_record_source.py",
+      "size": 10022,
+      "sha256": "12be70121c08cf0c95012d723c6c689219ec3bb82cf56b2db3e729e1872e223b",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_feedback_record_timestamp.py",
+      "size": 10388,
+      "sha256": "0a4bb2c7d708c59b31bd126c3e0ce19d1144e857467ba751ea84b256760ca506",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_feedback_record_validation.py",
+      "size": 9600,
+      "sha256": "0ea8adf6af0fc497c4b105ca7232d3ab1de6f595c365482b9ba89376498d0108",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_exact_lookup_by_original_expression.py",
+      "size": 12718,
+      "sha256": "6bcad6fd7724377c023def1b16bf1ff9b0814abba9f88654b2cbbc2cade478d4",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_exact_lookup_result.py",
+      "size": 14276,
+      "sha256": "46ccfb34b2eacb06129b0d37c37776dbd5681468c0a91a0a2325f24a02374a9f",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_handoff_result.py",
+      "size": 11924,
+      "sha256": "f8fccd6183751d0f36a939667fe7612e48f4fa274eb1309dcde8d4ef4006f596",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_handoff_result_validation.py",
+      "size": 9794,
+      "sha256": "8d1cc4e8b9dbf02e0c7aafa17e5b27db5cd6b682bf83ddd8351740d7e759ca8c",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_handoff_to_learning_input_adapter.py",
+      "size": 11576,
+      "sha256": "0ca5491fcb6383c7c6dcf09bc67bc4c488ce1d6677025dbb4dff9b4c817dd5fb",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_input_eligibility.py",
+      "size": 8585,
+      "sha256": "26aa2eab488fc74d76191ab5911f9e151fc8893f516d7b68e74dad6b517a2cff",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_input_handoff.py",
+      "size": 10611,
+      "sha256": "0eefee64fe6c93c1413f246b3b1c78e4eda1370316d7a9c2862a3d09a7dca6b1",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_input_retrieval.py",
+      "size": 8589,
+      "sha256": "0b9630b30013063f2c41920c76dd4ee0c4265a54efe966d07e2e008d462d3ed5",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_learning_input_storage.py",
+      "size": 12468,
+      "sha256": "221a4d1df0e7db7863b7364b38bf971be59b373de2ed77160e19d50ac416005e",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_lookup_context.py",
+      "size": 14364,
+      "sha256": "02b4709fc4d5661d38b32663cba437f4c45de311c45b4b849613f680eea9d257",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_lookup_context_exposure.py",
+      "size": 11896,
+      "sha256": "1e663dae7ba56d56178ce3de98c16bab41ee68ae01e2fc9d63e41debdabf187a",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_lookup_context_in_response_generation.py",
+      "size": 12210,
+      "sha256": "134cc448f361299264e63790e7d534e2133956292e8e4bab1d46c744063b781a",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_lookup_selection.py",
+      "size": 10531,
+      "sha256": "8248c68c37e2b82377c129514c5cd98314af9679188876e13f6300e422bb9346",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_lookup_usability.py",
+      "size": 9438,
+      "sha256": "3f63c6ff6dbb53d03cbc02b19a73cebd7559caedb6d4b9ee19b61ac89973f504",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding.py",
+      "size": 9366,
+      "sha256": "60e3ce25bc2ce7303c836469058e913159aec02678bce780a725c994461d731a",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_exposure.py",
+      "size": 8143,
+      "sha256": "dbb38270d1777dd9176a62d3f9966cdfde0e5d421ec4a0e124ceb9d8a29d020c",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result.py",
+      "size": 9149,
+      "sha256": "7c90b1c69590f21b82ecdca1695ada062689ae42a248be85a669031345e4a529",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result_completeness.py",
+      "size": 9774,
+      "sha256": "b8e9aa04f08b738e1f71235e1c9c2d95782eed29158ae55b4ded29d853dd2301",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result_equality.py",
+      "size": 5971,
+      "sha256": "6b31260eec0db7abe02cc57cc6da5aa49014a611d2c994189055dc1738cbd4d9",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result_mapping.py",
+      "size": 7357,
+      "sha256": "b032d20b011eb298b80fe21a0aeaa02f906b7d632a7bbda32c3ec8a13997c7ae",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result_safe_copy.py",
+      "size": 6241,
+      "sha256": "29d9c739cd5ad4233a0f070a582a3d8fdda76e0117e8bb00704191e9a7cf0847",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result_status_helpers.py",
+      "size": 4049,
+      "sha256": "2d93b40e1471567c1c1dfed8de7c6e369c4a1c8f12e4a8f77083d63b65cb5a38",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result_summary.py",
+      "size": 7455,
+      "sha256": "71e871cad82efb1022989eb283031e8029824e7cfbe3e882d2751525f7198b58",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_correction_understanding_result_validation.py",
+      "size": 11916,
+      "sha256": "c8feec90eeabdbc2960bd4bda9d24e95c1111cae3bda0d147772df297febe5fb",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_data_flow_manager.py",
+      "size": 9153,
+      "sha256": "6d1e333b588ad44e9eeae5b2678b135d294087f9f4790a7a66d31bfde3b785a9",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_e2e_local_language_pipeline.py",
+      "size": 14123,
+      "sha256": "a69256ae5579e8243d61218981ea3c78203c15207a5f4609b3347fa0ebc51202",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_executable_registry.py",
+      "size": 17751,
+      "sha256": "ad55017962586e814fa60e1c6c2d3da3adc77049a433bdddf14b9f60175c2884",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execute_registered_capability.py",
+      "size": 13460,
+      "sha256": "7bb786da92c7825922e93f7c99dbeed621faf2c7a081c8ff8ddacb6baaa1e255",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_context.py",
+      "size": 19918,
+      "sha256": "dfc3eb5d2585ecd1b75f802574db049898e2c723296fbf18f5d29f0915b67d2f",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_context_builder.py",
+      "size": 27639,
+      "sha256": "418258f98bd6c87fb43f8af8481a50000dedb2570eb66626ca019563ac78429d",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_engine.py",
+      "size": 37560,
+      "sha256": "9bdfdb4c8d59f1f082e8e5dcfae3a02285cbdee0719cf50a17be6482c39888d6",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_engine_events.py",
+      "size": 17560,
+      "sha256": "ce468a1c1beae60e383d40dca048dc29ed43c5b3b386e0f6cefded5ba0e817da",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_event.py",
+      "size": 12433,
+      "sha256": "510cc319e4a4ee8ec3233aa7042d7ec78adf2875b185db3212ae55d4aa02f258",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_event_log.py",
+      "size": 7886,
+      "sha256": "ecb003d4591af8758c50a250a80d7d526943ba9f66c3d1db08a5fbc6d1f12b4f",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_history.py",
+      "size": 8832,
+      "sha256": "b63249427b56fef72820f6bcf058d4cef6cc8c4cd5c322a8e5567ce4f70fe687",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_learning.py",
+      "size": 5972,
+      "sha256": "eccc3c2d406b5b0b91e6578d71844f09836f3c3cb2a8bf9a98fbce76463ba349",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_execution_result.py",
+      "size": 11518,
+      "sha256": "361a5e25949099e3ac5a853ab880fdfcb0e3e50992debfeef1f93482f42e9fea",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_financial_goal.py",
+      "size": 15890,
+      "sha256": "30f73f305d828f43dc9e184bf2956a4bc20b2906ffb18c9460e229d15c601847",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_focused_context_selection.py",
+      "size": 12052,
+      "sha256": "030849779b5c875279d851797815e84368819552de3b62ed52ac8d50c59d18c5",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_generated_code_applier.py",
+      "size": 10915,
+      "sha256": "1f8525d87799b32b1d672240e44455caef8945d71dc04bb1d62adbcfba55f6d2",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_generated_code_execution.py",
+      "size": 8701,
+      "sha256": "fcb6aa16f15c3e77149939566a2eeb45f7bba72e95e4d603a12d14dc00174c1e",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_generated_code_execution_evaluation.py",
+      "size": 9505,
+      "sha256": "34fd98c93b803a57d66bdf259c81d911c449a739b0ebbe91f55abc262523458c",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_generated_code_validator.py",
+      "size": 9581,
+      "sha256": "3c8b6474bc55c144d75088b4697791b3ef96ed23d55a315ade9aa8fbe6026714",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_goal_completion.py",
+      "size": 19927,
+      "sha256": "c09834c5633303a236b9adfaf46eda5808e4ac6ece0bf711122115be04874ac6",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_goal_learning_context.py",
+      "size": 6779,
+      "sha256": "87f50c46519707e3c737568fc46cbe3a7ca40ad4094b95bdd679458c1c5c2e23",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_goal_manager.py",
+      "size": 6504,
+      "sha256": "07b106e086d09ae17c723688c92f78759f1cae90f672462f9b8bcd5d8a9da9b6",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_inference_request_size_control.py",
+      "size": 14360,
+      "sha256": "b0af3355eede7fd631b6d23eeaea9e2a2d5d6c19ef99516aadc928db1385db9d",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_language_backend_selection.py",
+      "size": 16422,
+      "sha256": "546553fe40a07d817d1fbcfe9c165e573ed3a9216eee8d9d00e1a1d361a575a6",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_language_guidance.py",
+      "size": 24816,
+      "sha256": "f71dd70bf9f0d80a785adddd895347f5f22ec55b30c65add31fbb31b146a7715",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_language_intelligence.py",
+      "size": 21211,
+      "sha256": "bdba60c5482e5018fda5c0b6501c78641312aff303bc72e0a43666a8e9647051",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_language_intelligence_core_integration_prompt560.py",
+      "size": 9726,
+      "sha256": "6c05e496803aae66fc49341af1869eb04907965e045de741cd896d202417c62e",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_language_learning_store.py",
+      "size": 16057,
+      "sha256": "fa36c5a1ea08be2cec77c0818bc5f8da071b00535ee412def53b5d8b5e4e507e",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_language_relationships.py",
+      "size": 39034,
+      "sha256": "87d2ac3e64951cccbdf8f2f8f3e6063559ee98ecc9ff9d9eb8cd245f4c34f8b9",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_expression_variation_matcher.py",
+      "size": 30337,
+      "sha256": "a8c1a9362c3695ef709c6eab4b2d0a4f8ed47b914a5403b023bcbe0cf48539ed",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_analysis_summary.py",
+      "size": 17457,
+      "sha256": "985171a43c29b6fbb7abe6201f49beb6ff33b8b02f326eb1f0ea445ab85625d0",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_comparison_validation_consistency.py",
+      "size": 16050,
+      "sha256": "7ac804c71de07189b049817d1a9a02e38c3a58f4e869a793d69f395fd928a180",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_report.py",
+      "size": 24301,
+      "sha256": "acbdda68f9d934eb6d9726db4e9ba0b850bc4da2b533e72a597ec271ab18dabe",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_report_validation.py",
+      "size": 65648,
+      "sha256": "2a41eed9aefe6edafe224b3d52dd144d36156d12348d6dc57287b5bb19e3612a",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_snapshot_comparison.py",
+      "size": 37213,
+      "sha256": "ad7eb0180af1351223ae0c4c04547c458455a9bcbb008cf41559e9b2e8b7691e",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_snapshot_comparison_trend.py",
+      "size": 26329,
+      "sha256": "97ce1cb88ec1fb8519c705a232c8f6917b5de9bb893294bdbc4570de0a2d7e08",
+      "part": 5
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_snapshot_comparison_trend_validation.py",
+      "size": 22756,
+      "sha256": "fd4087ebe1a67fea2492674de63156c78afeb6fd8c0e16a9ffa1fbe2c5e1f85f",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_snapshot_comparison_validation.py",
+      "size": 55845,
+      "sha256": "d7c1cf89e163edb8bfe927a7de330f397333b3bf7f3d9e538d71ed5ddd1e5adf",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_snapshot_history.py",
+      "size": 34912,
+      "sha256": "8feafed91a0561703c88ec0d82ffb4395f40834257a485467d6e0a8d638d9e0f",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_summary.py",
+      "size": 30157,
+      "sha256": "724dc5655f2ae57ae362c3c1a1c898d8cb42575437652ffdc3e116adcc1ba66c",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_summary_consistency.py",
+      "size": 17312,
+      "sha256": "ef25aed5f4357142b65f136c86eace983d41c715f5fadc5a18cc893a62566fb4",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_diagnostic_summary_filtering.py",
+      "size": 47135,
+      "sha256": "87ddd201639477be3251e462f54dad0d6f6eec6d4f499eddaaf99ada0da17471",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_extended_unified_report_validation.py",
+      "size": 28114,
+      "sha256": "3edbbb24c72c6c154ea8e09041138a33f595c1e6c86857a46258bee0728806a1",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_comparison_source_validation.py",
+      "size": 28067,
+      "sha256": "a11fd9390f853d77d7761a484ed6c9dca03a74e028cce577d3d97eb20bc9395c",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_comparison_trend_consistency.py",
+      "size": 10726,
+      "sha256": "7513a833b319be884fde4b6e1bc15d227ef6e72fca2301c8ca2038bfcaef76f9",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_snapshot_summary_consistency.py",
+      "size": 22878,
+      "sha256": "74149ca4101df128df2594b512d7903aeb4269910ae6edf74c35042e6078ac82",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_summary_snapshot_comparison.py",
+      "size": 22374,
+      "sha256": "7ebb06b50406b54f237cb4daa4d6813ec1abb94b12f2f5c37c1e31a9286fe719",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_summary_snapshot_comparison_trend.py",
+      "size": 27675,
+      "sha256": "95709327227506d1cc54ab1c718fc788e0942da4ec74a3284de127024a9d87ca",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_summary_snapshot_comparison_trend_validation.py",
+      "size": 19090,
+      "sha256": "b56b9a2f4fa50a371a51f82bd0bddd252bbe912d1eb333c74c96b9f1dce50091",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_summary_snapshot_comparison_validation.py",
+      "size": 41681,
+      "sha256": "00949a9dc572e7fa63e14a036f3cb57ed972c1137d561386c27df5733f5e1948",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_summary_snapshots.py",
+      "size": 47692,
+      "sha256": "4503deb68c97a3c225ab328897f91a21089a3492b20f39aea82a3a863fa4ea3c",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_summary_source_consistency.py",
+      "size": 17825,
+      "sha256": "dbb1dd7e83eeb0db0509fbe01d07e9cfa7d0dbb9a2793fdb1c8036e0a2b48fca",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_chronology.py",
+      "size": 11904,
+      "sha256": "8279b6e8f3fe0489c9e15984bd89754e80c227eaf725c968da44859cb638087d",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_consistency.py",
+      "size": 15876,
+      "sha256": "84b08620242cedb93bb8883d383b1295b2480e65cdd285221f847f86688ec507",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage.py",
+      "size": 15262,
+      "sha256": "afeeaea41e73979084b10568ecc4043a18671403a90d4f993fb7274f4d752c24",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_chain.py",
+      "size": 24783,
+      "sha256": "bedfe0b244e2d318a9803d1c2c7979024d1dfe7fc2ed065a9cc8e44a421f4a31",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_chain_stage_order.py",
+      "size": 13390,
+      "sha256": "dc2c91ee47153cf879ff8285ab75cbde5de98cdc1ac0696b1229dd7f178d26b2",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_chain_stage_order_consistency.py",
+      "size": 13615,
+      "sha256": "1783cf5e81a9cd4f434b78f9363062f7c1315b2d050c76a22b332d01cf00bae4",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_chain_stage_order_consistency_result.py",
+      "size": 14540,
+      "sha256": "578a298ba5ead9dfdbb500b392ecf3c349bee8ec4e25a2fc3d48ef3789c0b90b",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_chain_stage_order_result.py",
+      "size": 16696,
+      "sha256": "32392bc5e702fc4c6729fdbdf14fe473492e2f2469df80c29d3a72ac1d35f0ed",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_consistency.py",
+      "size": 30305,
+      "sha256": "440f737caf59014abf6fb5b01c0c920eea446eb5c9dae5a11f49f1a63f20bc8a",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_consistency_result.py",
+      "size": 20129,
+      "sha256": "d182886a39188e92178e69ee41be263a451cf465e83b2978b9325154c0e6ae18",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_consistency_validation.py",
+      "size": 17798,
+      "sha256": "a9b5ac3f2560ed4a90ec25169be897025a7c2deb01826277a03cb4bbfdc953ab",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_consistency_validation_result.py",
+      "size": 20199,
+      "sha256": "d8ee8c5f6230797a0ba56fd4dda5cdb673bb9b58d8e21953a48473fbe2026e98",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_validation_consistency.py",
+      "size": 18656,
+      "sha256": "cbf99de368462814bc2231fd0a6fa1f66803fcbdbaa60fef6ec8d920c7baf85c",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_validation_consistency_result.py",
+      "size": 21069,
+      "sha256": "b372d1117268d41b492e7ec8cba9401f9556da5ae92c4dc5fdde21a5e49fb781",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_validation_consistency_result_consistency.py",
+      "size": 20145,
+      "sha256": "52a9caf08643634ae28245b531c86f329b4102927fb85541b5402bba3a6c3091",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_complete_chain_validation_consistency_result_consistency_result.py",
+      "size": 21736,
+      "sha256": "9531fb7e17c94acebbf5b96f4164e45baa36d8f6c6e6b702dfcae0de7313e12c",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_result.py",
+      "size": 18347,
+      "sha256": "f648849b31090972cbe91f64341e5020f30ad21d48c654a16ced5a998abc79ec",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_coverage_result_consistency.py",
+      "size": 12879,
+      "sha256": "448cc390a15765aa314a9132a776e01db88bb86f8a9625c3f3973782bfadb98c",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_integrity.py",
+      "size": 12261,
+      "sha256": "6fb92bc12cd5d1012335f672b58caa165a053882ab6f5f59d38130e36fe3c2b9",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_source_references.py",
+      "size": 15415,
+      "sha256": "49f5338601fd84cba05993d627ba6f4c0ed3b60a0905becfe68e2d5f32c7798d",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_filtered_trend_unified_report.py",
+      "size": 57540,
+      "sha256": "c18a545a1e50adacddcfc7e876b8a151a8b4a8effc421c86e117e6389858d523",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_gate.py",
+      "size": 20273,
+      "sha256": "f150459ee183c1d4f897b97e79401b4d74667fd3c2a4765a3851df14cf02e9ab",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_gate_trace.py",
+      "size": 17291,
+      "sha256": "3e4d2445bdae1e653bb92b7b083e168ca6f989c5476904a549a5fb57fafa5333",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_in_response_generation.py",
+      "size": 25092,
+      "sha256": "878688cf23670d67593454ac4299abaa198ff0d874048ddc351981f2c3b446ff",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_report_chronology.py",
+      "size": 25694,
+      "sha256": "0b58b1d5c3c0fd4d917bf6b939e9e8c2a22e94842ceaab2cdb6e09f4f88eaec5",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_report_section_availability.py",
+      "size": 17303,
+      "sha256": "56d50c533e2ddd8f654fc0ca50fb1d4464fa4e283c7fc65dc64bdf91a348ad17",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_report_status_consistency.py",
+      "size": 19285,
+      "sha256": "8f6f420f68c884f71a2eac2f1c9d3575887eafccc3e3a36381a8ee36939dbb8a",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_report_trend_comparison_consistency.py",
+      "size": 41641,
+      "sha256": "a37f83bd6e6e435e374415859711f1860ab9435f6ec7fa5852ae07b385e76a97",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_selected_sections_validation.py",
+      "size": 26095,
+      "sha256": "d6b809eb38676a75b27c7224821efc34e15fd21715fc2680df7a5a6ed63c1043",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_snapshot_validation_consistency.py",
+      "size": 17255,
+      "sha256": "6978ed5a1d47562fa8c3a23b779aa3e547abc98fefd0617f2985758b57845570",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_statistics.py",
+      "size": 15610,
+      "sha256": "e8ca3d969fdd23c561b62fe4a386519eef4503b7ee6bf24deff12291e11a676c",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_statistics_analysis.py",
+      "size": 16053,
+      "sha256": "bea8a2bc44591200bff76e8e4c980e2e6842afee8f6e6ebe3cdd199ce6b98d5f",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_statistics_analysis_validation.py",
+      "size": 19899,
+      "sha256": "b33337162c78a23aa25d922ba1087ff164f400978cc18694fa7d337a669c9a05",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_knowledge_trend_validation_consistency.py",
+      "size": 14737,
+      "sha256": "e3ad5a9e9a0a715b8f53cda96081b1794e2dc2cf65ff50c2bde05d693599cc02",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_meaning_disambiguation.py",
+      "size": 20860,
+      "sha256": "d483cfc0ec97f11db8b5e272d6b89f984de77567a910048ebb59bc772bd1d64b",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_meaning_in_understanding.py",
+      "size": 16588,
+      "sha256": "5200f4d68a776355815cdae22846093df129a4b4e269107ba72e49a83d344ae8",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_pattern_matching.py",
+      "size": 15544,
+      "sha256": "a4c51cc8a7373e183cb8b1adc599b7b47b1c54330b06614812458d8d231df8d8",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_pattern_matching_in_understanding.py",
+      "size": 11438,
+      "sha256": "9ff2eeda1a31dbf310f9f71efef5c94606f1a691bf111592d4a4362e52fed8ff",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_pattern_meaning.py",
+      "size": 40980,
+      "sha256": "a506a1ac8774efe57b0ffc37edc6d008813031c8f39192361d4746a75871ae34",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_pattern_teaching.py",
+      "size": 49742,
+      "sha256": "ab4d8e8ea189eb199290414f6e9cf40f708af0751ea9615527bbf1e9d67bd67a",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_patterns_improve_correction_proposal.py",
+      "size": 14704,
+      "sha256": "69d6671583dedc91b28e2c70c630ac1249c0833ea764033f285f670cac3114a8",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_patterns_in_correction_proposal.py",
+      "size": 13354,
+      "sha256": "a0c5476753eceb496a94913bd273a79cd174816f5d1300d0fa4a4669b8b14cf9",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_response_integration.py",
+      "size": 21052,
+      "sha256": "56ef94441cd35d9ae8e702f33a80528ac994646492be320e4c4ac7cde4fabd39",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_response_pattern_binding.py",
+      "size": 72752,
+      "sha256": "6b7b967b563ec048a2d0038ad8b65463dfe0d19c40490de468459ff9c72e02a6",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_response_pattern_rendering.py",
+      "size": 42763,
+      "sha256": "51b215ac435596c07c8799a3ce4227c9673fa480371b4c4cec4374f94feff4e3",
+      "part": 6
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_response_pattern_selection.py",
+      "size": 75496,
+      "sha256": "403bba8ebfa72cb252e8490da1c653cba104bf8f6d7c10cfe95343024ebf877a",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_sentence_structure.py",
+      "size": 28539,
+      "sha256": "23dd07321b704bf093ddcef92ef9237e6ce8e70a930fa7c140a40d94942fc4fc",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learned_sentence_structure_in_understanding.py",
+      "size": 20808,
+      "sha256": "9d3d80455240122f85d4a4fb94f391402390ae51c924d0c7342c48ae6a730b39",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learning_analyzer.py",
+      "size": 103504,
+      "sha256": "d22e5abcbc7835da5503108e3a3f77800b9e389f99aca836fab0821f8c00fae4",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learning_context_provider.py",
+      "size": 6631,
+      "sha256": "f3f9602aabd03208b73cd46a4e0520d23f5907e5e743c1b76e0a06c7cb4c6b61",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learning_pipeline.py",
+      "size": 8492,
+      "sha256": "e7eb21705c280272ca550550730bfafedbb9238e7799c34befacb05097ac9ad6",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learning_record.py",
+      "size": 4654,
+      "sha256": "837b2ff3a7f4c4f5609f40bd7f915ae47a63419fbca9e38079407661140de5f8",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learning_record_store.py",
+      "size": 21661,
+      "sha256": "8a985b8ad41fa13876fb7182e4536347851c33d464107d94a3918a9586aad142",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_learning_system_analysis.py",
+      "size": 3643,
+      "sha256": "5529ec11135fd116a01bac8378d0c2eca8ac11d752af184be2b527ab5c0f16ef",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_inference_resource_guard.py",
+      "size": 13180,
+      "sha256": "d4576ccc9e159d89b5345b045e320e772df0f4366bcebf2a2c61756bdf0cbaba",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_inference_response_generation.py",
+      "size": 15608,
+      "sha256": "705c7a3cb5217bcfd78982df51ce919d8545aab798fd2fc1f8198608d700e5ea",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_inference_timeout_cancellation.py",
+      "size": 13366,
+      "sha256": "43cdd84b30c8f880d6d8643b7025d7211f4a436fd5be4a019aafbebf41f9bd91",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_model_backend_integration.py",
+      "size": 38315,
+      "sha256": "6f5adb0e23e923b29e53211504589930863249be266adeb96fedfe238ac5de41",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_model_failure_fallback.py",
+      "size": 27536,
+      "sha256": "73725e0f28f4edcdbf10d43d0363be84f22f6b2ecedefa8914487e28f2cb3ae4",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_model_provider.py",
+      "size": 27367,
+      "sha256": "46b82e04f4230d3c1e389742f9e35e57d07ea1b0cc52e17be6745916ad401f0e",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_model_readiness.py",
+      "size": 13579,
+      "sha256": "0926bbe03e334fa87477a6df1dc54d097749c80f0d2d79b9a5f52deade155e2a",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_local_model_runtime.py",
+      "size": 48580,
+      "sha256": "e378b9e0b967152b8e753a83e6e027c048df459fd40898de08cbd4a29078d71d",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_meaning_resolution.py",
+      "size": 52712,
+      "sha256": "7c203ddebcab06ba24b055fda5105a859479cc46cdf1c98f25647cdfd4cd2203",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_message_reference_resolution.py",
+      "size": 13496,
+      "sha256": "fd67af9d3e51a227a2a226dbe311025afb8547612164544687772e27b4590eea",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_multi_turn_followup.py",
+      "size": 17085,
+      "sha256": "53361941ab2d3dde9cefc4a334141587edb6357d5d0702ab774d555170e5b101",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_multilingual_language_context.py",
+      "size": 50486,
+      "sha256": "15ac2e76ef0a9b613a5a0841fcf8daf84718cb4342cb6747a03ce3499153770a",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_plan_execution_controller.py",
+      "size": 29418,
+      "sha256": "2efaa5edae840fc07e9e66d9850050b00ac18e94dd688fa52d37e6752f6c3ee0",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_plan_execution_coordinator.py",
+      "size": 15817,
+      "sha256": "8eeba1fdae67e2e1a39d4d66681973e3ed2a344340162ae8aebe9d867c6ac891",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_plan_manager.py",
+      "size": 51574,
+      "sha256": "4f9dff1f414ab73799bd961e2423df44adfaf6bef3c749fc321e61789b12d1c5",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_planner.py",
+      "size": 16987,
+      "sha256": "df314deff6ddaeb0708d709c2b71261c05c182807e3e112a78243373e31f4ef2",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_platform_layer.py",
+      "size": 9790,
+      "sha256": "cc1dd231a2336301e7f050c603c37b24ea3d7df8a8508e7c3541c4d1231ba687",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_pre_inference_readiness_guard.py",
+      "size": 15783,
+      "sha256": "68054bc30001b207cbd84e4b89e96c5f3a4ccf3da73d70d7e39453887abf1fa8",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_preflight.py",
+      "size": 22098,
+      "sha256": "a455cd41df01555c328d67f59290e754ce80d25ed4f2e39f81465213927c69b4",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_project_structure_inspect_capability.py",
+      "size": 13536,
+      "sha256": "b8203b40ef76e4cda67bae63ba6ae3319847f17f0ea27c0dc0b9daf276a7b771",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_proposal_applier.py",
+      "size": 25225,
+      "sha256": "afe3e8607f06f25fc68445361ebb8383af3545047838e02af2e6a2d5027732c7",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_proposal_history.py",
+      "size": 11931,
+      "sha256": "e27a163260c345640c9b69a73786d9344a691da93d79a57911799daf023b3ab4",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_proposal_pattern_analyzer.py",
+      "size": 16260,
+      "sha256": "4f4c64c00f6dc949a336eb721d39cd8003582d3e58402585658f7a57a48c75cb",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_python_test_runner_capability.py",
+      "size": 14819,
+      "sha256": "2d8f611c1388ea4d5fa2b63020b04b44952965507d812a1ff920855b32f75753",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_reasoning_engine.py",
+      "size": 14323,
+      "sha256": "550846eca274fc6b4eed033700d2c58fed023d8c853c2feb7c5c71937cd69f9b",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_relevant_context.py",
+      "size": 18463,
+      "sha256": "db6edd3a9849dcac272004741d998224516f0b9bef27de5ea1583be500f46665",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_construction_context.py",
+      "size": 8515,
+      "sha256": "f45802d1e6ddb28e52d86f1ee2f78dc7b8455518804bf189c1c9764f2e3602fe",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_generation_context.py",
+      "size": 33148,
+      "sha256": "836bf73d903c6fd1abde3719f1e4c57fa7312c487a68a4415e2632f2de6fc0b1",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_generation_outcome.py",
+      "size": 23688,
+      "sha256": "96621d4db94f325827c5991ef2d6418f0a41ab1c82dcba22d29d4b0649fab476",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_generation_outcome_verified_correction_usage.py",
+      "size": 15171,
+      "sha256": "b691d1527dd03f7510069cdd9032cc1a066a1299f2abd41fe05fc572d6a68a81",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_generation_request.py",
+      "size": 34966,
+      "sha256": "489c5cea71976cf29e2612674fa53923f2dcdf08aaef57b3ffd5583b614fdb18",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_generation_request_verified_correction_instruction.py",
+      "size": 6892,
+      "sha256": "d4223733e685657de664e0ec5f0b0d70e9214b0398281b8fcc8d6e7f22d877d9",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_generation_validation.py",
+      "size": 18347,
+      "sha256": "2e630ed52460e2b2e6e719be3495d07c8efb0bbdcb5873faa5cd2f2052e1b671",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_planning.py",
+      "size": 43034,
+      "sha256": "a7ba0c541558dbed485ff492475faa435c98cfdd5c1fed1426d6fae02d082df6",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_response_planning_integration.py",
+      "size": 25614,
+      "sha256": "8256485f0cfdd1e4a965899374adcfeb2fea7fe0d45fb94ff1389b528c37fee5",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_learning.py",
+      "size": 11983,
+      "sha256": "b22a3a7bbf8349364f3c45d691891346a7ba750fc4fa1d89d2af18264c2ea22b",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_learning_analyzer.py",
+      "size": 13703,
+      "sha256": "9fe9f93cfca604237830aa27a955d4b93e987001693453138bb41204da02f59c",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_learning_pattern.py",
+      "size": 13511,
+      "sha256": "fd00a1639efb5f67ab4a670ebd51e97d96da14a4f3a08acbb1a409a7d2d94e6d",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_learning_pattern_store.py",
+      "size": 354175,
+      "sha256": "bfd5d413dbf8c04ce53744f2111e8c2186626272481f2ad626c35494c75ad2d3",
+      "part": 7
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_learning_store.py",
+      "size": 17068,
+      "sha256": "ef6f90109bd53c642145a4889a11abe87b52aa50168bfba9de12a9bc385909f1",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_opportunity.py",
+      "size": 144096,
+      "sha256": "0d0e5be69462ebe49bb64b7ea33e30bf515a278dfa2fa752ab9467461a7da60e",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_selector.py",
+      "size": 15501,
+      "sha256": "660d6aa80cb108541f7ebc9d35834649746bdf47c792dc42ee3c6a6ab4b62aba",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_strategy.py",
+      "size": 22443,
+      "sha256": "78c6ffdfbd45f9b777fe2fc3cdf3ce8f87c980bb051793d79e69fc5eb2b717c6",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_task.py",
+      "size": 82824,
+      "sha256": "f8e6da3d288fb07e24d95bc14f94f020fd01a6765bb80c5f74025cec4d700dad",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_task_manager.py",
+      "size": 104606,
+      "sha256": "5da746b808705049577b483d569d0ea842b3114c1c8ebcd60251f28485ddf2ec",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_task_manager_get_result.py",
+      "size": 12351,
+      "sha256": "6ff7d822b6d06ace93f773965a9d9c453a46bda8e4f00c7b467485e28e342bea",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_task_manager_record_result.py",
+      "size": 16762,
+      "sha256": "3ff5a52109ee3548f4cdeee6677f6b2f0e72933ca71685cfa5dd0cdc6ab3a63b",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_task_result.py",
+      "size": 13780,
+      "sha256": "bfe4b243f825af067ad94fc3224d30568bdadc2d737c1715adf2fe2f38b22034",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_task_result_attachment.py",
+      "size": 14173,
+      "sha256": "5e9dd5bd91ac0aea8c789906c49783c2d663695f0c8cf39326fdd8578c5f74d4",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_revenue_task_result_history.py",
+      "size": 66209,
+      "sha256": "63652d67b04511a16366e60d0e6876e7579e6c39c23474315c5b388e41692100",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_rule_registry.py",
+      "size": 18700,
+      "sha256": "be6daefd9cd7fb9ecf5e0900a3d24de44793a7786db7bb090bccec15e69f0d72",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_section1_architecture_capability_audit.py",
+      "size": 5854,
+      "sha256": "e85e88cbfa3130aab1a6d92de8986d476546bce880f4173005ad1ff3d72d43ec",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_section2_correction_learning_core_integration_prompt562.py",
+      "size": 15868,
+      "sha256": "78bde9389e3c536a5d1933780860989bfd6fa667c6c27de7b19ebfdaa6c7f880",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_section2_correction_learning_storage_audit_prompt561.py",
+      "size": 6098,
+      "sha256": "5ac29f171181b0931d4980931414ba32a03f7fc87c4dec18a5c0aa6c474bf28a",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_section2_correction_retrieval_application_audit_prompt563.py",
+      "size": 11732,
+      "sha256": "a58033ae4736cf968658183605378c306a083ee2d5f4c91a93d5fe35f69c1961",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_section2_language_intelligence_audit.py",
+      "size": 4897,
+      "sha256": "371fa2769ec6baa7f9b050b2ea2b473ce332d740f84ecc28dd2907f594522930",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_end_to_end_dry_run.py",
+      "size": 66654,
+      "sha256": "e8b2eb68eeb2b5813244ee938b46d4e42135aecf8fe897349b52585d0459ffc2",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_execution_context.py",
+      "size": 23029,
+      "sha256": "b30b99b39f55a99ee94c2156bcb323e8c89f6da821880ba24e3fa62982fc9a1f",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_final_acceptance.py",
+      "size": 60645,
+      "sha256": "cc57a89ebe043888e6fd992ae3871ec508ca18532381c2fc7959c890e5e8ff9e",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_health_check.py",
+      "size": 27431,
+      "sha256": "f860ff501cbcf30263ce1d84937292161c94a9c2bf39c88ecdc54e96d5ef4ee4",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_lifecycle_coordinator.py",
+      "size": 20081,
+      "sha256": "cfb6098e6654191354b70fd3e046059c73e1f93666da0fbf76e1d4508470b15d",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_lifecycle_mock_patch_fix.py",
+      "size": 4509,
+      "sha256": "f8d6e01a485f21fd9dfbc04a6058a64e4f898c65637e5bf3ba36b159edc6064c",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_request.py",
+      "size": 6724,
+      "sha256": "aa49ed986abcafdbb7ea982b92da55e4b376ec62b8f58ff09c713a4b1aba67ea",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_self_upgrade_resume_manager.py",
+      "size": 19100,
+      "sha256": "8e3aaad882d3b266e1b1a11ec48ac283535e80e6ce78fe0b67f418db6b81a83f",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_short_term_context.py",
+      "size": 14712,
+      "sha256": "06c9403ee95da7031afd0fc5001fb787b81a024eccd0bdac1b26b1bf89c66169",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_standardized_inference_result.py",
+      "size": 20127,
+      "sha256": "3475544c5170c0f88c7fdd580b2ac51fe1eb62135b535eb3ba97dfd1b34ff0a7",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_step_execution_controller.py",
+      "size": 35469,
+      "sha256": "f5ce1fab74f316f951a39e492d74e20b98791b78b262b408f213ceb843006d37",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_step_execution_preparation.py",
+      "size": 12181,
+      "sha256": "db6a652807db90a1a985089feeb6f3f23a7163e520f0689b4e2423a1a5ea60e2",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_step_io.py",
+      "size": 11146,
+      "sha256": "a5708f6a85f672eecb55a099f30edc2d35212c622ddbeddb1a774fb4c183ef02",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_step_propagation.py",
+      "size": 8984,
+      "sha256": "cae20a58b1d603329688fa1b798b5c71de12f32b28a26f6c9eaf4ff49acd2517",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_test_result_evaluation.py",
+      "size": 24523,
+      "sha256": "8ea335e983ca73b8a938ac8e89f0a1ca4232bb29052086702de5a2dd7034c0fa",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_text_file_edit_capability.py",
+      "size": 13590,
+      "sha256": "f34be131f8ba375e90da4bed1791b9c746eee6be8c4763aa68e9eef16f263129",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_text_file_read_capability.py",
+      "size": 11366,
+      "sha256": "fdea611c0af150df52fd6a95ca128d812151b3544d8676e81212333cddb76997",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_text_file_write_capability.py",
+      "size": 12006,
+      "sha256": "b81f85806b72654bca5ef203483476a7799a3934502e6cac6b683e2f5c097516",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_tool_definition.py",
+      "size": 26933,
+      "sha256": "3120d845e7155fe69948182e329a04faae0f6da58d758f78d87e5bd80385deae",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_tool_registry.py",
+      "size": 8977,
+      "sha256": "03eef55979a6f9f70869b48a131be50553b16c039d78b8b4974206b9d9dc3117",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_topic_aware_responses.py",
+      "size": 15094,
+      "sha256": "d1f592e16a0d98aeaab85a970938a6e754eb209802d05fc9753f7efbb0542ac5",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_understanding_engine.py",
+      "size": 11176,
+      "sha256": "a70ed681d466250ea996d87c700682d2859759c15a6090cf6e3e9a5a71c45704",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_applied_to_response_target.py",
+      "size": 16288,
+      "sha256": "becde21dcea1672a7ec312bcf05b0d05c5efa01dc8e2d7e7ec6d7e6fbe8c89ee",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_response_input.py",
+      "size": 9939,
+      "sha256": "d288bd3cbee30aad4e44fc885b3d68463d471cdd219105b3fe47a8f290d0096d",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_response_input_adapter.py",
+      "size": 9951,
+      "sha256": "b5783855de2f905ac6a84f4e8bfee579f7261f80c87ed63606919cf60bfadd84",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_response_input_extraction.py",
+      "size": 12159,
+      "sha256": "4ada0e4c1705b5d4e982bd31a895386bb8c09d85bea680ed1af69261e02e886c",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_response_input_in_response_generation.py",
+      "size": 14585,
+      "sha256": "1a6e0b05b9bcb29124046f105d9d3d02d49fd96701b3605de843e160e0bc0641",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_response_input_usability.py",
+      "size": 10344,
+      "sha256": "e499cd581eebeefbba31a1c1b87e02b08c274a5cb93ad373f08b0aaa914fa00d",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_response_instruction.py",
+      "size": 8097,
+      "sha256": "091c57cd08a49a4ae3d6106cc301e68e9c75a09209b71815c7d8c09924fd1452",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tests/test_verified_correction_response_instruction_adapter.py",
+      "size": 5763,
+      "sha256": "8876f5b8baea9d95095d2731fdc76c228eac7429027cad46f1c5d9c98b4d8bcb",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tools/__init__.py",
+      "size": 1466,
+      "sha256": "954cfa2f4b567be722998bcd461bce8115e433ab730320371b4a0f10c3c6b442",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tools/tool_definition.py",
+      "size": 22228,
+      "sha256": "3712c0eaeeb1c5563bde83d7101b6b66856bb0f74dc1ccef93545653cd7e188f",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/tools/tool_registry.py",
+      "size": 8607,
+      "sha256": "8aa5cdae85fb620e181ec017eb1a4c51d17d8950b4cb8018e7d100c8e3791f06",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/__init__.py",
+      "size": 991,
+      "sha256": "b1ba7db7161fc57da9c73a0da3fcb6ef9bfe406b5752b13e3ede9e2445b6408a",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/correction_detection.py",
+      "size": 3188,
+      "sha256": "6651c270d4578681689d96f2f6cbb83d06b566716796fa2aebdde5b55b483cb9",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/engine.py",
+      "size": 7717,
+      "sha256": "abe38dc110d32d0466cb932bf4f52e70a8784a29949b72693438df7afec8274e",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/entity_extraction.py",
+      "size": 2433,
+      "sha256": "8c30f327f795b9bbafd986391a735313c6b53de479d855d6913ed0bc9058da52",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/language_detection.py",
+      "size": 4945,
+      "sha256": "e7265d30767a2f4dd1e6e4a012abc66109790245a9444288f0997f58957e9351",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/nl_tokenizer.py",
+      "size": 2536,
+      "sha256": "5ad367f45083ba74dd2c3d71708bd2af1d58e6c35fda1e0cf93ae1d483b7e539",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/normalization.py",
+      "size": 2212,
+      "sha256": "659465581c0347f8e3827d7c49bb5805f528dbc6498639ce9e4ed2f2c98e8db2",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/relation_extraction.py",
+      "size": 4765,
+      "sha256": "0e80a3991a90c334ace42d188004ffd26ae4148c74f43a6634dce52937ab555f",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/result.py",
+      "size": 4121,
+      "sha256": "2db21c5a77b46b5cb1e84be290af5e1c26b2a8e302fd68d3269f6e42ff447cb1",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/sentence_analysis.py",
+      "size": 2668,
+      "sha256": "c4797cf97454871144e6eee4625f057a6990345b1cd0c466f10b258497cf4828",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/python/understanding/term_extraction.py",
+      "size": 2255,
+      "sha256": "29548e235b63e21cec477099252d7f52445563de3c1ed250028d01b9e6a8f265",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_launcher.xml",
+      "size": 397,
+      "sha256": "815452588b954f5dde77dda0af823201c5e4576504ba36c63c9d2d661b418cb8",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "size": 349,
+      "sha256": "1e6d9740f3f33ec781c799b5b1d0623d0cda942f1c8ed7f9f0c57a64c84903d8",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "size": 76,
+      "sha256": "004f423458db5ded803ec28ed7f36c71bf0057a3663e7c2059ab7b0cf51d3c5f",
+      "part": 8
+    },
+    {
+      "path": "app/src/main/res/values/styles.xml",
+      "size": 111,
+      "sha256": "3b2d13b48e3b8e087ba9c826865332cd3c369082d218c7ff8eb47373dcd0ec77",
+      "part": 8
+    },
+    {
+      "path": "build.gradle",
+      "size": 324,
+      "sha256": "adde5b2293d64e441475808c80144ec25b7a3774061229ca3c3699b49f36fbde",
+      "part": 8
+    },
+    {
+      "path": "docs/local_model_runtime.md",
+      "size": 27310,
+      "sha256": "efe20ad9c5e70078e6b62b5c29a321ea6808cf80c1eb6331503655bc075fd36e",
+      "part": 8
+    },
+    {
+      "path": "docs/multilingual_language_context.md",
+      "size": 5786,
+      "sha256": "48ba1747e2bf185adba4853b108e9347577ec35cc43f71faae546fbbe6ac0663",
+      "part": 8
+    },
+    {
+      "path": "docs/response_planning.md",
+      "size": 11794,
+      "sha256": "f78d5554c92b683ad204ccbf650a9cf1a3274d9cd4212f53e540c4ded34b8b39",
+      "part": 8
+    },
+    {
+      "path": "docs/section1_architecture_capability_audit.md",
+      "size": 8113,
+      "sha256": "758415e7aee808e0708ff09065e5e79c6acfb171d57928d289393791eef21702",
+      "part": 8
+    },
+    {
+      "path": "docs/section1_lifecycle_test_fix_prompt558.md",
+      "size": 4976,
+      "sha256": "77c039b966d20dfef43a62d7ac30551eddd2308a2989bac2a673d4d27474be7a",
+      "part": 8
+    },
+    {
+      "path": "docs/section2_correction_application_candidate_data_path_prompt564.md",
+      "size": 10918,
+      "sha256": "0a888d55ace478d243a39786f1d5cb33c6cae2bc7c26593ba23a9ff967564907",
+      "part": 8
+    },
+    {
+      "path": "docs/section2_correction_learning_core_integration_prompt562.md",
+      "size": 10840,
+      "sha256": "3f0f416a8006d7a0062a18bc8c7009090785be1e0a418cbf8981d3b8a663d725",
+      "part": 8
+    },
+    {
+      "path": "docs/section2_correction_learning_storage_audit_prompt561.md",
+      "size": 9687,
+      "sha256": "945d39368e2a5325f89f1da7c4d604f54208648254b03d814d24ed3b2d7b1419",
+      "part": 8
+    },
+    {
+      "path": "docs/section2_correction_retrieval_application_audit_prompt563.md",
+      "size": 9863,
+      "sha256": "de5bd770aef3130c35ec666b9f04410068daa0bd06f637c1b3f879243471417b",
+      "part": 8
+    },
+    {
+      "path": "docs/section2_language_intelligence_audit_prompt559.md",
+      "size": 13067,
+      "sha256": "d3e95a0fb84e2f0f9f20aeadade37c7ec614e2d94244820fe2bcc07e49ff720b",
+      "part": 8
+    },
+    {
+      "path": "docs/section2_language_intelligence_prompt560_integration.md",
+      "size": 8465,
+      "sha256": "601bf7f29bc5ce129961c6e478bf1502cdda701c279989a916ebfcab608cce40",
+      "part": 8
+    },
+    {
+      "path": "gradle.properties",
+      "size": 87,
+      "sha256": "d712f4f30e5e73d2d9e1beb89a2f585eb6661c239f02d3f70fbe02bc9988095b",
+      "part": 8
+    },
+    {
+      "path": "settings.gradle",
+      "size": 429,
+      "sha256": "b858ccdce312a3673c49af276f45fdb441e2b82919d07e23d1cfa688251b34f1",
+      "part": 8
+    }
+  ],
+  "parts": 8,
+  "total_files": 604,
+  "total_size": 11657105
+}

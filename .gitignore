@@ -1,0 +1,17 @@
+# Python bytecode (never committed; Chaquopy compiles at build time)
+__pycache__/
+*.pyc
+*.pyo
+
+# Gradle / Android build output
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+.idea/
+*.iml
+.DS_Store

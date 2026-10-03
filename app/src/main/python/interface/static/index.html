@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Adaptive AI — Foundation</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <div class="brand-title">ADAPTIVE&nbsp;AI</div>
+        <div class="brand-subtitle">Self-Evolving Foundation</div>
+      </div>
+    </div>
+
+    <div class="status-block">
+      <div class="status-row">
+        <span class="dot dot-live"></span>
+        <span>System Online</span>
+      </div>
+      <div class="status-row muted" id="version-label">Version: —</div>
+    </div>
+
+    <button class="panel-toggle" id="dev-panel-toggle">
+      <span>Developer Panel</span>
+      <span class="chevron">▾</span>
+    </button>
+
+    <div class="dev-panel" id="dev-panel">
+      <div class="metric"><span>AI Version</span><b id="m-version">—</b></div>
+      <div class="metric"><span>Knowledge Entries</span><b id="m-knowledge">—</b></div>
+      <div class="metric"><span>Concepts</span><b id="m-concepts">—</b></div>
+      <div class="metric"><span>Skills</span><b id="m-skills">—</b></div>
+      <div class="metric"><span>Capabilities</span><b id="m-capabilities">—</b></div>
+      <div class="metric"><span>Installed Upgrades</span><b id="m-installed">—</b></div>
+      <div class="metric"><span>Failed Upgrades</span><b id="m-failed">—</b></div>
+      <div class="metric"><span>Learning Events</span><b id="m-learning-events">—</b></div>
+      <div class="metric"><span>Errors Logged</span><b id="m-errors">—</b></div>
+      <div class="metric"><span>System Status</span><b id="m-status">—</b></div>
+
+      <div class="history-label">System Health</div>
+      <div class="history-list" id="health-components">
+        <div class="muted small">Checking…</div>
+      </div>
+
+      <div class="history-label">Upgrade History</div>
+      <div class="history-list" id="upgrade-history">
+        <div class="muted small">No upgrades yet.</div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer muted small">
+      Local-only · no external AI API at runtime
+    </div>
+  </aside>
+
+  <main class="chat-area">
+    <header class="chat-header">
+      <div>
+        <div class="chat-title">Conversation</div>
+        <div class="chat-subtitle">Teach me with AEL — e.g. <code>TEACH sky IS the atmosphere above the earth</code> or <code>ASK sky</code></div>
+      </div>
+    </header>
+
+    <div class="messages" id="messages">
+      <div class="message assistant">
+        <div class="bubble">
+          Hello. I'm the first working foundation of this application — I don't know much yet,
+          but my architecture is built to grow. Try greeting me, or teach me something with AEL.
+        </div>
+      </div>
+    </div>
+
+    <form class="input-area" id="input-form">
+      <input
+        type="text"
+        id="input-box"
+        placeholder="Type a message, or an AEL instruction (TEACH / RELATE / SKILL)…"
+        autocomplete="off"
+      />
+      <button type="submit" class="send-btn">Send</button>
+    </form>
+  </main>
+
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+# Prompt 822: manual-only signed release build published via GitHub Releases.
+# Requires four repository secrets (Settings > Secrets and variables > Actions):
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+#   ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+# The keystore is decoded to a temporary runner file and deleted afterwards;
+# nothing secret is ever committed to the repository.
+name: Android signed release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Git tag for the new GitHub Release (must not already exist), e.g. v0.2.0"
+        required: true
+        default: "v0.2.0"
+
+permissions:
+  contents: write
+
+jobs:
+  python-regression:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run Python regression suite
+        working-directory: app/src/main/python
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m unittest discover -s tests -t . -q
+
+  build-signed-release:
+    needs: python-regression
+    runs-on: ubuntu-24.04
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required signing secrets are present
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          missing=0
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Required GitHub secret $name is missing or empty. Add it under Settings > Secrets and variables > Actions. See docs/android_signed_release_prompt822.md."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+
+      - name: Verify release tag is usable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "::error::release_tag input is empty."; exit 1
+          fi
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "::error::A GitHub Release for tag $RELEASE_TAG already exists. Choose a new tag."; exit 1
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      # Chaquopy's buildPython must match the app's Python (3.12).
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: android-actions/setup-android@v3
+      # No Gradle wrapper is committed; AGP 8.5.2 needs Gradle >= 8.7.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Decode keystore and validate it
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          ks="$RUNNER_TEMP/release.keystore"
+          if ! printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$ks" 2>/dev/null || [ ! -s "$ks" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not valid base64 of a keystore file."; exit 1
+          fi
+          if ! keytool -list -keystore "$ks" -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error::Keystore could not be opened with ANDROID_KEYSTORE_PASSWORD, or alias ANDROID_KEY_ALIAS was not found."; exit 1
+          fi
+          echo "ANDROID_KEYSTORE_PATH=$ks" >> "$GITHUB_ENV"
+
+      - name: Assemble signed release APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: gradle --no-daemon :app:assembleRelease
+
+      - name: Verify signature and name the release asset
+        run: |
+          apk="app/build/outputs/apk/release/app-release.apk"
+          if [ ! -f "$apk" ]; then
+            echo "::error::Expected signed APK $apk was not produced (an app-release-unsigned.apk means signing was not applied)."; exit 1
+          fi
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          "$apksigner" verify --print-certs "$apk"
+          version="$(grep -E 'versionName' app/build.gradle | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')"
+          asset="StandaloneAI-${version}-release.apk"
+          cp "$apk" "$RUNNER_TEMP/$asset"
+          echo "ASSET_PATH=$RUNNER_TEMP/$asset" >> "$GITHUB_ENV"
+          echo "ASSET_NAME=$asset" >> "$GITHUB_ENV"
+          echo "ASSET_SHA256=$(sha256sum "$RUNNER_TEMP/$asset" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release with signed APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" "$ASSET_PATH" \
+            --target "${{ github.sha }}" \
+            --title "Standalone AI $RELEASE_TAG" \
+            --notes "Signed release APK: $ASSET_NAME (SHA-256: $ASSET_SHA256). Not yet verified on a device."
+
+      - name: Remove decoded keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.keystore"

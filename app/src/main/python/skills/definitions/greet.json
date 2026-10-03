@@ -1,0 +1,14 @@
+{
+  "name": "greet",
+  "description": "Recognize a greeting and respond politely.",
+  "trigger": {
+    "type": "keyword",
+    "keywords": [
+      "hi",
+      "hello",
+      "hey",
+      "greetings"
+    ]
+  },
+  "response": "Hello! I'm a very early version of myself right now - I don't know much yet. Teach me things using AEL and I'll remember them."
+}

@@ -38,7 +38,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # The action's default `packages` is "tools platform-tools"; the legacy
+      # "tools" package no longer exists in the SDK repository and made
+      # sdkmanager exit 1 (Prompt 823). Request only platform-tools.
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       # No Gradle wrapper is committed; AGP 8.5.2 needs Gradle >= 8.7.
       - uses: gradle/actions/setup-gradle@v4
         with:

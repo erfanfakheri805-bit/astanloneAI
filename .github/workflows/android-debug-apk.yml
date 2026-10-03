@@ -28,6 +28,9 @@ jobs:
   build-debug-apk:
     needs: python-regression
     runs-on: ubuntu-24.04
+    # Needed only to publish the APK to GitHub Releases (step at the end).
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -55,3 +58,15 @@ jobs:
           name: standalone-ai-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+      # Publish the APK as a downloadable GitHub Release (Releases page).
+      - name: Publish debug APK to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="debug-build-${{ github.run_number }}"
+          gh release create "$TAG" app/build/outputs/apk/debug/*.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Debug APK build ${{ github.run_number }}" \
+            --notes "Debug APK built from commit $GITHUB_SHA. Download the .apk file below and install it on your Android phone." \
+            --prerelease

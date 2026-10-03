@@ -1,1 +1,72 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.chaquo.python'
 
+android {
+    namespace 'com.erfan.standaloneai'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.erfan.standaloneai"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "0.2.0"
+
+        python {
+            // Foundation stage uses only the Python standard library,
+            // so no pip { install [...] } block is needed.
+            //
+            // Prompt 815: pin the on-device Python to the same minor
+            // version the regression suite is verified on (3.12). The
+            // build machine must provide python3.12 (buildPython).
+            version "3.12"
+        }
+
+        ndk {
+            // Chaquopy supports 32-bit ABIs only for Python 3.11 and
+            // older, so a Python 3.12 build is 64-bit only. arm64-v8a
+            // covers current real devices and keeps the APK small.
+            abiFilters "arm64-v8a"
+        }
+    }
+
+    // Prompt 822: release signing is read from environment variables that
+    // the "Android signed release" GitHub Actions workflow sets from
+    // repository secrets. No keystore or credential is stored in the
+    // repository. When the variables are absent (local/debug builds) the
+    // release build type is simply left unsigned.
+    signingConfigs {
+        release {
+            def ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (ksPath) {
+                storeFile file(ksPath)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Personal-use debug build: Gradle auto-generates and signs
+            // with the standard debug keystore, no secrets required.
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            if (System.getenv("ANDROID_KEYSTORE_PATH")) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+}

@@ -27,6 +27,7 @@ import os
 import threading
 
 from core.core import Core
+from runtime_integration.runtime_core import RuntimeCore
 from core.config import UIConfig
 from interface.server import make_handler
 from platform_layer import PlatformAdapter, set_platform
@@ -79,7 +80,7 @@ def start(files_dir):
 
         set_platform(AndroidFilesDirAdapter(files_dir))
 
-        core = Core()
+        core = RuntimeCore()
         handler_cls = make_handler(core)
         _server = ThreadingHTTPServer((HOST, PORT), handler_cls)
 

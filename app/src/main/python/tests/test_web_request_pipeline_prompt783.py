@@ -198,23 +198,29 @@ class TestInvalidInput(unittest.TestCase):
 
 class TestNoRetention(unittest.TestCase):
     def test_19_plan_is_not_retained(self):
+        # Baseline: other tests in the same process may still hold plans,
+        # so measure only what this pipeline call adds or keeps.
+        baseline = len(live(WebRequestPlan))
         plan = make_plan()
         self.assertTrue(any(o is plan for o in live(WebRequestPlan)))   # sanity: the scan sees plans
         out = run_web_request_pipeline(plan)
         self.assertFalse(any(r is plan for r in gc.get_referents(out)))
         self.assertFalse(any(r is plan for r in gc.get_referents(vars(wp))))
         del plan
-        self.assertEqual(live(WebRequestPlan), [])
+        self.assertEqual(len(live(WebRequestPlan)), baseline)
         self.assertEqual(out.metadata, DEFAULT)
 
     def test_20_execution_result_is_not_retained(self):
+        # Baselines: measure only what this test's own calls add or keep.
+        base_results = len(live(WebRequestExecutionResult))
+        base_plans = len(live(WebRequestPlan))
         held = execute_web_request_plan(make_plan())
-        self.assertEqual(len(live(WebRequestExecutionResult)), 1)       # sanity: the scan sees results
+        self.assertEqual(len(live(WebRequestExecutionResult)), base_results + 1)   # sanity: the scan sees results
         del held
-        self.assertEqual(live(WebRequestExecutionResult), [])
+        self.assertEqual(len(live(WebRequestExecutionResult)), base_results)
         out = run_web_request_pipeline(make_plan())
-        self.assertEqual(live(WebRequestExecutionResult), [])
-        self.assertEqual(live(WebRequestPlan), [])
+        self.assertEqual(len(live(WebRequestExecutionResult)), base_results)
+        self.assertEqual(len(live(WebRequestPlan)), base_plans)
         self.assertEqual(out.code, NOT_IMPL)
 
     def test_21_dispatcher_result_is_not_retained_by_the_pipeline(self):

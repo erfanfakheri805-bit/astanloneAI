@@ -1,3 +1,9 @@
 <resources>
-    <style name="Theme.StandaloneAI" parent="Theme.AppCompat.DayNight.NoActionBar" />
+    <style name="Theme.StandaloneAI" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Dark chrome that matches the chat page, so there is no white
+             flash before the WebView paints and the bars blend in. -->
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:statusBarColor">@color/app_bar</item>
+        <item name="android:navigationBarColor">@color/app_bar</item>
+    </style>
 </resources>

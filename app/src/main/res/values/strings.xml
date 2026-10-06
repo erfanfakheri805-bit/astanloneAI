@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Standalone AI</string>
+    <string name="app_name">دستیار هوشمند</string>
+    <string name="startup_error">خطا در راه‌اندازی برنامه: %1$s</string>
 </resources>

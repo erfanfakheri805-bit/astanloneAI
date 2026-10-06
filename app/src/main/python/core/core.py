@@ -71,6 +71,13 @@ from parser.parser import Parser
 from diagnostics.health_system import HealthSystem
 from understanding.term_extraction import extract_candidate_terms
 from understanding.engine import UnderstandingEngine
+from understanding.persian_nlu import (
+    PersianNLU, FACT_INTENTS as _NLU_FACT_INTENTS, INTENT_ASK_USER_NAME as _NLU_ASK_NAME,
+    INTENT_QUESTION as _NLU_QUESTION, INTENT_REQUEST as _NLU_REQUEST,
+    INTENT_INTRODUCE_NAME as _NLU_NAME, INTENT_LIKE as _NLU_LIKE,
+    INTENT_DISLIKE as _NLU_DISLIKE,
+)
+from understanding.nlu_pipeline import NLUConversationContext
 from understanding.sentence_analysis import SENTENCE_QUESTION, SENTENCE_STATEMENT, SENTENCE_COMMAND
 from context.conversation_context import ConversationContext, DEFAULT_CONTEXT_SIZE
 from context.relevance import select_relevant_turns
@@ -93,6 +100,7 @@ from execution.step_execution_controller import StepExecutionController
 from learning.execution_learning import ExecutionLearning
 from learning.learning_record_store import LearningRecordStore
 from platform_layer import get_platform
+from runtime_integration import bridge as _runtime_integration
 from language_intelligence.language_intelligence_core import LanguageIntelligenceCore
 from language_intelligence.deterministic_fallback_backend import DeterministicFallbackBackend
 from language_intelligence.local_model_backend import LocalLanguageModelBackend
@@ -160,6 +168,21 @@ class Core:
     # generation. None whenever `last_learned_knowledge_gate` is None.
     last_learned_knowledge_gate_trace = None
 
+    # Prompt 824: the PersianNLUResult of the most recent conversational
+    # input (None until one is analyzed). Inspection only.
+    last_persian_nlu = None
+    # Prompt 825: the full NLUAnalysis (primary result + structured
+    # question/request/negation/correction/context blocks) for that same
+    # input. Inspection only - it never changes routing or replies.
+    last_nlu_analysis = None
+
+    # Prompt 910: per-turn scratch for the runtime-integration bridge
+    # (runtime_integration/). Stays None for a plain Core; the bridge's
+    # RuntimeCore subclass sets it at the start of each process_input() call.
+    # While None, _mark_source() and the context stash below do nothing, so a
+    # plain Core behaves exactly as before.
+    _turn_state = None
+
     def __init__(self, memory_db_path=None, skill_definitions_dir=None, context_max_turns=None):
         self.memory = MemorySystem(memory_db_path) if memory_db_path else MemorySystem()
         self.knowledge = KnowledgeSystem(self.memory)
@@ -198,6 +221,13 @@ class Core:
             rule_registry=self.rule_registry,
         )
         self.input_system = InputSystem()
+        # Prompt 824: deterministic, local Persian NLU v1 (see
+        # understanding/persian_nlu.py). Consulted by _handle_conversation.
+        self.persian_nlu = PersianNLU()
+        # Prompt 825: bounded, RAM-only record of recently analyzed turns,
+        # read by the NLU pipeline's context/correction annotators. Never
+        # persisted; cleared by reset_context().
+        self.nlu_context = NLUConversationContext()
         self.parser = Parser()
         self.understanding = UnderstandingEngine()
         # Short-term conversational context (see context/). Deliberately
@@ -800,6 +830,16 @@ class Core:
         except ValueError:
             return None  # invalid correction: correct() wrote nothing
 
+    def _mark_source(self, source, effects=None):
+        """Prompt 910: label where this turn's reply came from (and, optionally,
+        what Core's own path already did for it). Called at each existing
+        return point of _handle_conversation; it only writes per-turn scratch
+        and does nothing unless a RuntimeCore turn is in progress."""
+        if self._turn_state is not None:
+            self._turn_state["source"] = source
+            if effects is not None:
+                self._turn_state["effects"] = tuple(effects)
+
     def _handle_conversation(self, text):
         """The real conversation pipeline (Prompt 388):
 
@@ -821,6 +861,7 @@ class Core:
         # unchanged priority from before this stage.
         skill = self.skills.find_matching_skill(text)
         if skill:
+            self._mark_source(_runtime_integration.SOURCE_SKILL)
             return skill["response"]
 
         # 1b. Active Conversation Topic (Prompt 393). Read-only
@@ -834,6 +875,13 @@ class Core:
         active_topic = self.topic_tracker.update(text, relevant_context, resolved_reference)
         self.conversation_state.update(
             text, active_topic, self.topic_tracker.thread, resolved_reference)
+        # Prompt 910: keep the already-computed pieces for the runtime bridge
+        # (references only - nothing is selected or computed a second time).
+        if self._turn_state is not None:
+            self._turn_state.update(
+                relevant_context=relevant_context,
+                resolved_reference=resolved_reference,
+                active_topic=active_topic)
 
         # 1c. Language Intelligence Core (Prompt 397). Reuses the exact
         # relevant_context/resolved_reference/active_topic already
@@ -924,6 +972,7 @@ class Core:
         # error_code kept on last_language_response) - falls through to the
         # existing deterministic pipeline below; no text is invented.
         if self.last_language_response.is_generated:
+            self._mark_source(_runtime_integration.SOURCE_LOCAL_MODEL)
             return self.last_language_response.response_text
 
         # 1e. Explicit Correction Acknowledgement (Prompt 560). Reuses
@@ -963,7 +1012,26 @@ class Core:
         if correction_understanding is not None and correction_understanding["status"] == CORRECTION_STATUS_RESOLVED:
             self._store_resolved_correction_learning(correction_understanding)
             self._apply_resolved_correction_to_knowledge(correction_understanding)
+            self._mark_source(_runtime_integration.SOURCE_CORRECTION)
             return self._format_correction_acknowledged_reply(correction_understanding)
+
+        # 1f. Persian NLU v1 (Prompt 824), personal-fact stage. Analyzed
+        # once per message. Only a recognized fact ("من عرفان هستم",
+        # "اسم من عرفانه", "من X رو دوست دارم/ندارم") or a question about
+        # the stored name is handled here; everything else - including
+        # every English message - is untouched and continues below.
+        # Prompt 825: analysis now goes through the NLU pipeline; `nlu`
+        # is its primary result, identical to the v1 result, so the
+        # routing below is unchanged. The extra structure is only stored.
+        analysis = self.persian_nlu.analyze_in_context(text, self.nlu_context)
+        nlu = analysis.result
+        self.last_persian_nlu = nlu
+        self.last_nlu_analysis = analysis
+        if nlu.intent in _NLU_FACT_INTENTS or nlu.intent == _NLU_ASK_NAME:
+            self._mark_source(
+                _runtime_integration.SOURCE_PERSIAN_FACT,
+                effects=("personal_fact_stored",) if nlu.intent in _NLU_FACT_INTENTS else ())
+            return self._respond_persian_nlu(nlu, text)
 
         # 2. Input Understanding + (conditional) Learning. Reuses the
         # existing learn_from_text() entry point end to end: raw text
@@ -985,6 +1053,7 @@ class Core:
             # falling through to a lookup of the very thing we just
             # stored (Stage: "store useful conversational information
             # when appropriate").
+            self._mark_source(_runtime_integration.SOURCE_LEARNED)
             return self._format_learned_reply(learning_result)
 
         # 3. Context Retrieval + Reasoning. The Reasoning Engine's own
@@ -997,6 +1066,7 @@ class Core:
         # resolve "it" against the previous turn.
         reasoning_result = self.reasoning.reason(text, context=self.context)
         if reasoning_result.status == STATUS_ANSWERED and reasoning_result.answer:
+            self._mark_source(_runtime_integration.SOURCE_REASONING)
             return reasoning_result.answer
 
         # 4. Relevance Selection fallback - the original direct/
@@ -1010,6 +1080,7 @@ class Core:
         best = self._find_best_known_concept(text)
         if best:
             if best.get("description"):
+                self._mark_source(_runtime_integration.SOURCE_KNOWLEDGE)
                 return f"Here's what I know about '{best['name']}': {best['description']}"
 
             # No description yet, but the Reasoning Engine may still know
@@ -1018,10 +1089,21 @@ class Core:
             # of falling all the way through to the generic fallback.
             rel_summary = self.reasoning.summarize_relationships(best["name"])
             if rel_summary:
+                self._mark_source(_runtime_integration.SOURCE_KNOWLEDGE)
                 return (
                     f"I don't have a description for '{best['name']}' yet, but here's "
                     f"what I've learned through relationships: {rel_summary}"
                 )
+
+        # 4b. Persian NLU v1 (Prompt 824), question/request stage. Runs
+        # only after every existing lookup above had its chance, and
+        # only ahead of the generic fallback: a recognized Persian
+        # question/request gets an honest "understood, cannot answer
+        # yet" reply instead of the English fallback. Unknown input
+        # (nlu.intent == unknown) still reaches step 5 unchanged.
+        if nlu.intent in (_NLU_QUESTION, _NLU_REQUEST):
+            self._mark_source(_runtime_integration.SOURCE_PERSIAN_RESPONSE)
+            return self._respond_persian_nlu(nlu, text)
 
         # 5. Response Construction (Prompt 391): the fallback is where
         # Response Construction actually receives the output of
@@ -1036,9 +1118,72 @@ class Core:
         # user themselves said something earlier in this conversation
         # that covers the question, it is quoted back, verbatim and
         # labelled as theirs - never as an answer.
+        self._mark_source(_runtime_integration.SOURCE_FALLBACK)
         return self._construct_fallback_reply(
             text, relevant_context, resolved_reference, active_topic, thread=self.topic_tracker.thread
         )
+
+    # Prompt 824: knowledge-record names used for user facts. Stored
+    # through the existing LearningSystem.teach() (a concept record with
+    # provenance + one learning event) - no new table or store.
+    _NLU_SOURCE = "persian_nlu_v1"
+
+    # Fact record names are Persian on purpose: the existing keyword
+    # search (step 4) matches Latin query words by substring, so Latin
+    # names such as "user.dislikes.x" would surface in unrelated English
+    # answers. (predicate -> Persian name part)
+    _NLU_FACT_NAME_PARTS = {
+        "name": "کاربر.نام",
+        "likes": "کاربر.دوست_دارد",
+        "dislikes": "کاربر.دوست_ندارد",
+    }
+
+    @classmethod
+    def _nlu_fact_name(cls, predicate, value=None):
+        base = cls._NLU_FACT_NAME_PARTS[predicate]
+        return base if value is None else f"{base}.{value}"
+
+    def _store_nlu_facts(self, nlu, text):
+        """Routes each extracted fact through LearningSystem.teach().
+        A like/dislike for the same item retires the opposite record
+        (set_status 'inactive') so the latest statement wins."""
+        for fact in nlu.facts:
+            predicate, value = fact["predicate"], fact["value"]
+            if predicate == "name":
+                name = self._nlu_fact_name("name")
+            else:
+                name = self._nlu_fact_name(predicate, value)
+            self.learning.teach(
+                name, value, source=self._NLU_SOURCE, confidence=nlu.confidence,
+                source_text=text, learning_method=self._NLU_SOURCE)
+            existing = self.knowledge.get(name)
+            if existing is not None and existing["status"] != "active":
+                self.learning.set_status(name, "active", source=self._NLU_SOURCE)
+            if predicate in ("likes", "dislikes"):
+                opposite = "dislikes" if predicate == "likes" else "likes"
+                other = self._nlu_fact_name(opposite, value)
+                if self.knowledge.get(other) is not None:
+                    self.learning.set_status(other, "inactive", source=self._NLU_SOURCE)
+
+    def _respond_persian_nlu(self, nlu, text):
+        """The one place that turns a recognized PersianNLUResult into
+        a reply (and, for facts, a stored memory)."""
+        if nlu.intent in _NLU_FACT_INTENTS:
+            self._store_nlu_facts(nlu, text)
+            if nlu.intent == _NLU_NAME:
+                return f"خوشحالم از آشنایی، {nlu.entities['name']}! اسمت رو یاد گرفتم."
+            item = nlu.entities["item"]
+            if nlu.intent == _NLU_LIKE:
+                return f"باشه، یاد گرفتم که {item} رو دوست داری."
+            return f"باشه، یاد گرفتم که {item} رو دوست نداری."
+        if nlu.intent == _NLU_ASK_NAME:
+            record = self.knowledge.get(self._nlu_fact_name("name"))
+            if record is not None and record["status"] == "active" and record["description"]:
+                return f"اسمت {record['description']} است."
+            return "هنوز اسمت رو نمی‌دونم. می‌تونی بگی «من ... هستم»."
+        if nlu.intent == _NLU_QUESTION:
+            return "سؤالت رو به‌عنوان یک پرسش شناختم، ولی هنوز نمی‌تونم بهش جواب بدم."
+        return "درخواستت رو به‌عنوان یک درخواست شناختم، ولی هنوز نمی‌تونم انجامش بدم."
 
     def _construct_fallback_reply(self, current_input, relevant_context, resolved_reference=None,
                                   active_topic=None, thread=None):
@@ -2103,6 +2248,8 @@ class Core:
         self.context.reset()
         self.topic_tracker.reset()
         self.conversation_state.reset()
+        self.nlu_context.reset()  # Prompt 825
+        self.last_nlu_analysis = None  # Prompt 825
         self.last_response_correction_usable = False
         self.last_response_normalized_input = None
 

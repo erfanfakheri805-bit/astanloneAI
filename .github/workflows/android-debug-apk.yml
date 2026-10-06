@@ -1,7 +1,8 @@
-# Prompt 957 fix: keep the known historical frozen-baseline checks from
-# blocking the Android build. All other Python regression tests remain blocking.
-# The frozen tests below intentionally assert byte-for-byte snapshots from old
-# sections and are stale against the current production tree.
+# Prompt 815: manual-only Android debug build path.
+# Nothing here runs automatically; start it from the Actions tab
+# ("Run workflow"). No secrets, no signing keys, no network services
+# beyond fetching build tooling. Produces an unsigned-by-you debug APK
+# (Gradle's standard debug keystore).
 name: Android debug APK
 
 on:
@@ -22,64 +23,23 @@ jobs:
         working-directory: app/src/main/python
         env:
           PYTHONDONTWRITEBYTECODE: "1"
-        run: |
-          python - <<'PY'
-          import sys
-          import unittest
-
-          # Historical frozen-baseline modules that intentionally compare the
-          # current tree against obsolete Section 6/9 snapshots.
-          EXCLUDED_MODULES = {
-              "tests.test_section6_agent_loop_route_pin_prompt719d",
-              "tests.test_section6_agent_loop_routed_step_prompt719c",
-              "tests.test_section6_agent_loop_routing_decision_prompt715",
-              "tests.test_section6_agent_loop_wiring_decision_prompt718",
-              "tests.test_section6_tool_step_dispatch_prompt717",
-              "tests.test_section6_tool_step_route_prompt716",
-              "tests.test_section9_final_acceptance_prompt786",
-          }
-
-          loader = unittest.TestLoader()
-          discovered = loader.discover("tests", top_level_dir=".")
-
-          def filter_suite(suite):
-              result = unittest.TestSuite()
-              for item in suite:
-                  if isinstance(item, unittest.TestSuite):
-                      child = filter_suite(item)
-                      if child.countTestCases():
-                          result.addTest(child)
-                  elif item.__class__.__module__ not in EXCLUDED_MODULES:
-                      result.addTest(item)
-              return result
-
-          filtered = filter_suite(discovered)
-          print(
-              "Excluded known historical frozen-baseline modules:",
-              ", ".join(sorted(EXCLUDED_MODULES)),
-          )
-          print("Running all remaining regression tests as blocking checks...")
-          result = unittest.TextTestRunner(verbosity=1).run(filtered)
-          sys.exit(0 if result.wasSuccessful() else 1)
-          PY
+        run: python -m unittest discover -s tests -t . -q
 
   build-debug-apk:
     needs: python-regression
     runs-on: ubuntu-24.04
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
+      # Chaquopy's buildPython must match the app's Python (3.12).
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: android-actions/setup-android@v3
-        with:
-          packages: platform-tools
+      # No Gradle wrapper is committed; AGP 8.5.2 needs Gradle >= 8.7.
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
@@ -90,9 +50,3 @@ jobs:
           name: standalone-ai-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-      - name: Publish debug APK to GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="debug-build-${{ github.run_number }}"
-          gh release create "$TAG" app/build/outputs/apk/debug/*.apk             --repo "$GITHUB_REPOSITORY"             --target "$GITHUB_SHA"             --title "Debug APK build ${{ github.run_number }}"             --notes "Debug APK built from commit $GITHUB_SHA. Download the .apk file below and install it on your Android phone."             --prerelease

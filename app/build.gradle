@@ -67,6 +67,20 @@ android {
     }
 }
 
+// Prompt 826: kotlin-stdlib 1.8+ already contains the jdk7/jdk8 classes.
+// Drop the old standalone jdk7/jdk8 artifacts (1.6.21) that a transitive
+// dependency still pulls in, which caused :app:checkDebugDuplicateClasses
+// to fail with duplicate kotlin.* classes.
+configurations.configureEach {
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}
+
 dependencies {
+    // Prompt 825: align every Kotlin stdlib module to one version.
+    // Without this, kotlin-stdlib 1.8.22 (via appcompat) clashes with
+    // kotlin-stdlib-jdk7/jdk8 1.6.21 pulled in transitively, and
+    // :app:checkDebugDuplicateClasses fails.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
     implementation 'androidx.appcompat:appcompat:1.7.0'
 }

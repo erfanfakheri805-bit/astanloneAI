@@ -1,93 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Adaptive AI — Foundation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0a0b0f" />
+<title>دستیار هوشمند</title>
 <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 <div class="app-shell">
 
-  <aside class="sidebar">
+  <header class="app-header">
     <div class="brand">
-      <div class="brand-mark"></div>
+      <div class="brand-mark" aria-hidden="true"></div>
       <div class="brand-text">
-        <div class="brand-title">ADAPTIVE&nbsp;AI</div>
-        <div class="brand-subtitle">Self-Evolving Foundation</div>
-      </div>
-    </div>
-
-    <div class="status-block">
-      <div class="status-row">
-        <span class="dot dot-live"></span>
-        <span>System Online</span>
-      </div>
-      <div class="status-row muted" id="version-label">Version: —</div>
-    </div>
-
-    <button class="panel-toggle" id="dev-panel-toggle">
-      <span>Developer Panel</span>
-      <span class="chevron">▾</span>
-    </button>
-
-    <div class="dev-panel" id="dev-panel">
-      <div class="metric"><span>AI Version</span><b id="m-version">—</b></div>
-      <div class="metric"><span>Knowledge Entries</span><b id="m-knowledge">—</b></div>
-      <div class="metric"><span>Concepts</span><b id="m-concepts">—</b></div>
-      <div class="metric"><span>Skills</span><b id="m-skills">—</b></div>
-      <div class="metric"><span>Capabilities</span><b id="m-capabilities">—</b></div>
-      <div class="metric"><span>Installed Upgrades</span><b id="m-installed">—</b></div>
-      <div class="metric"><span>Failed Upgrades</span><b id="m-failed">—</b></div>
-      <div class="metric"><span>Learning Events</span><b id="m-learning-events">—</b></div>
-      <div class="metric"><span>Errors Logged</span><b id="m-errors">—</b></div>
-      <div class="metric"><span>System Status</span><b id="m-status">—</b></div>
-
-      <div class="history-label">System Health</div>
-      <div class="history-list" id="health-components">
-        <div class="muted small">Checking…</div>
-      </div>
-
-      <div class="history-label">Upgrade History</div>
-      <div class="history-list" id="upgrade-history">
-        <div class="muted small">No upgrades yet.</div>
-      </div>
-    </div>
-
-    <div class="sidebar-footer muted small">
-      Local-only · no external AI API at runtime
-    </div>
-  </aside>
-
-  <main class="chat-area">
-    <header class="chat-header">
-      <div>
-        <div class="chat-title">Conversation</div>
-        <div class="chat-subtitle">Teach me with AEL — e.g. <code>TEACH sky IS the atmosphere above the earth</code> or <code>ASK sky</code></div>
-      </div>
-    </header>
-
-    <div class="messages" id="messages">
-      <div class="message assistant">
-        <div class="bubble">
-          Hello. I'm the first working foundation of this application — I don't know much yet,
-          but my architecture is built to grow. Try greeting me, or teach me something with AEL.
+        <h1 class="brand-title">دستیار هوشمند</h1>
+        <div class="brand-status" role="status" aria-live="polite">
+          <span class="dot" id="status-dot"></span>
+          <span id="status-text">در حال اتصال…</span>
         </div>
       </div>
     </div>
+    <button type="button" class="icon-btn" id="info-open" aria-haspopup="dialog" aria-controls="info-sheet">
+      اطلاعات سیستم
+    </button>
+  </header>
 
-    <form class="input-area" id="input-form">
-      <input
-        type="text"
-        id="input-box"
-        placeholder="Type a message, or an AEL instruction (TEACH / RELATE / SKILL)…"
-        autocomplete="off"
-      />
-      <button type="submit" class="send-btn">Send</button>
-    </form>
+  <main class="messages" id="messages" role="log" aria-live="polite" aria-label="گفتگو">
+    <div class="message assistant" id="greeting">
+      <div class="bubble" dir="auto">سلام! من دستیار شخصی شما هستم و روی همین دستگاه اجرا می‌شوم.
+فعلاً می‌توانم گفتگوی ساده داشته باشم، چیزهایی را که به من یاد می‌دهید به خاطر بسپارم و دستورهای AEL را اجرا کنم. توانایی‌های من به‌تدریج گسترش پیدا می‌کنند.
+برای شروع یک پیام بنویسید.</div>
+    </div>
+    <div class="hints" id="hints">
+      <div class="hints-label">نمونه‌هایی برای شروع</div>
+      <button type="button" class="chip" data-insert="TEACH sky IS the atmosphere above the earth">یاد دادن یک مطلب</button>
+      <button type="button" class="chip" data-insert="ASK sky">پرسیدن از مطلب</button>
+    </div>
   </main>
 
+  <form class="composer" id="input-form" autocomplete="off">
+    <textarea
+      id="input-box"
+      rows="1"
+      dir="rtl"
+      enterkeyhint="send"
+      autocomplete="off"
+      autocapitalize="sentences"
+      aria-label="پیام"
+      placeholder="پیام خود را بنویسید…"></textarea>
+    <button type="submit" class="send-btn" id="send-btn">ارسال</button>
+  </form>
+
 </div>
+
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<section class="sheet" id="info-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <div class="sheet-head">
+    <h2 id="sheet-title">اطلاعات سیستم</h2>
+    <button type="button" class="icon-btn" id="info-close">بستن</button>
+  </div>
+  <div class="sheet-body">
+    <div class="metric"><span>نسخهٔ برنامه</span><b id="version-label" dir="ltr">—</b></div>
+    <div class="metric"><span>نسخهٔ دستیار</span><b id="m-version" dir="ltr">—</b></div>
+    <div class="metric"><span>مطالب آموخته‌شده</span><b id="m-knowledge">—</b></div>
+    <div class="metric"><span>مفاهیم</span><b id="m-concepts">—</b></div>
+    <div class="metric"><span>مهارت‌ها</span><b id="m-skills">—</b></div>
+    <div class="metric"><span>قابلیت‌ها</span><b id="m-capabilities">—</b></div>
+    <div class="metric"><span>ارتقاهای نصب‌شده</span><b id="m-installed">—</b></div>
+    <div class="metric"><span>ارتقاهای ناموفق</span><b id="m-failed">—</b></div>
+    <div class="metric"><span>رویدادهای یادگیری</span><b id="m-learning-events">—</b></div>
+    <div class="metric"><span>خطاهای ثبت‌شده</span><b id="m-errors">—</b></div>
+    <div class="metric"><span>وضعیت سیستم</span><b id="m-status">—</b></div>
+
+    <div class="history-label">سلامت سیستم</div>
+    <div class="history-list" id="health-components">
+      <div class="muted small">در حال بررسی…</div>
+    </div>
+
+    <div class="history-label">تاریخچهٔ ارتقاها</div>
+    <div class="history-list" id="upgrade-history">
+      <div class="muted small">هنوز ارتقایی انجام نشده است.</div>
+    </div>
+
+    <div class="sheet-footer muted small">فقط محلی · بدون وابستگی به سرویس هوش مصنوعی خارجی</div>
+  </div>
+</section>
+
+<script src="/static/i18n.js"></script>
 <script src="/static/app.js"></script>
 </body>
 </html>

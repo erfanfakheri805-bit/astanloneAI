@@ -15,7 +15,12 @@ Endpoints:
     GET  /api/health          -> full component-by-component health check
     GET  /api/learning-history -> recent learning_events rows
     GET  /api/errors          -> recent error_log rows
+    GET  /api/runtime-result  -> runtime-integration result of the last message
     POST /api/inspect-code    -> {code} -> AST-based structural analysis
+    POST /api/runtime-growth  -> {kind, goal, target, ...} -> controlled runtime-growth
+                                 result (Prompt 954: delegates to the existing
+                                 RuntimeCore.run_controlled_runtime_growth(); in-memory,
+                                 not persistent, not permission/authorization)
 
 Security notes (see the master project's Section 19):
     - `/static/*` resolves the requested path with os.path.realpath and
@@ -40,6 +45,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.core import Core
 from core.config import UIConfig
+from runtime_integration.runtime_core import RuntimeCore
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 _STATIC_ROOT = os.path.realpath(STATIC_DIR)
@@ -133,6 +139,12 @@ def make_handler(core: Core):
             if path == "/api/errors":
                 return self._send_json({"errors": core.recent_errors(50)})
 
+            if path == "/api/runtime-result":
+                # Prompt 910: read-only view of the runtime-integration result
+                # for the most recent message (None before the first one).
+                getter = getattr(core, "get_last_runtime_result", None)  # RuntimeCore only
+                return self._send_json({"runtime_result": getter() if getter else None})
+
             return self._send_json({"error": "not found"}, 404)
 
         def do_POST(self):
@@ -194,6 +206,18 @@ def make_handler(core: Core):
                     return self._send_json({"error": "'code' must be a string"}, 400)
                 return self._send_json(core.inspect_code(code))
 
+            if path == "/api/runtime-growth":
+                # Prompt 954: controlled growth entry. Only hands the parsed body to the
+                # existing RuntimeCore (the one this handler already serves); the result
+                # is returned unchanged. A plain Core has no such method -> not found.
+                grow = getattr(core, "run_controlled_runtime_growth", None)
+                if grow is None:
+                    return self._send_json({"error": "not found"}, 404)
+                data, errored = self._read_json_body()
+                if errored:
+                    return
+                return self._send_json(grow(data))
+
             return self._send_json({"error": "not found"}, 404)
 
     return Handler
@@ -203,7 +227,7 @@ def run(host=None, port=None):
     ui_config = UIConfig()
     host = host or ui_config.host
     port = port or ui_config.port
-    core = Core()
+    core = RuntimeCore()
     handler_cls = make_handler(core)
     server = ThreadingHTTPServer((host, port), handler_cls)
     print(f"Standalone AI application running at http://{host}:{port}")

@@ -9,12 +9,18 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.StandaloneAI">
+        <!-- Prompt 956: a mobile assistant, portrait by default.
+             adjustResize shrinks the WebView when the soft keyboard opens so
+             the composer stays visible above it. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

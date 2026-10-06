@@ -68,10 +68,5 @@ android {
 }
 
 dependencies {
-    // Prompt 825: align every Kotlin stdlib module to one version.
-    // Without this, kotlin-stdlib 1.8.22 (via appcompat) clashes with
-    // kotlin-stdlib-jdk7/jdk8 1.6.21 pulled in transitively, and
-    // :app:checkDebugDuplicateClasses fails.
-    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
     implementation 'androidx.appcompat:appcompat:1.7.0'
 }

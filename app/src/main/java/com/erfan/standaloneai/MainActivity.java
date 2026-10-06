@@ -1,5 +1,6 @@
 package com.erfan.standaloneai;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -24,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.setWebViewClient(new WebViewClient());
+        // Match the dark page so nothing flashes white while it loads.
+        webView.setBackgroundColor(Color.parseColor("#0A0B0F"));
 
         if (!Python.isStarted()) {
             Python.start(new AndroidPlatform(this));
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             String url = urlObj.toString();
             webView.loadUrl(url);
         } catch (Exception e) {
-            Toast.makeText(this, "Startup error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.startup_error, e.getMessage()), Toast.LENGTH_LONG).show();
         }
     }
 

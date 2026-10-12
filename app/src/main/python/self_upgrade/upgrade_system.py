@@ -13,6 +13,14 @@ into - every stage of the pipeline exists, is tracked in persistent
 storage, and produces an auditable status, even though "ANALYZE",
 "UNDERSTAND", "PLAN" and "CREATE" are currently simple deterministic
 placeholders rather than AI-driven reasoning.
+
+One real path exists next to the placeholder lifecycle: when the description
+of an upgrade is a complete request for a capability of a kind the
+Self-Builder has a reviewed template for (a unit conversion, a formula or a
+text tool - see self_builder/), `propose_upgrade` hands it to the
+Self-Builder, which really generates, validates, tests, repairs, applies,
+persists, registers and versions it (and can roll it back). Every other
+description goes through the placeholder lifecycle below exactly as before.
 """
 
 from datetime import datetime, timezone
@@ -54,9 +62,56 @@ class UpgradeSystem:
             (stage, status, _now(), upgrade_id),
         )
 
+    def _propose_self_built(self, name, description, payload):
+        """The Self-Builder path (see the module docstring), or None when the
+        description is not a READY request for a supported capability - or
+        when anything about it is unavailable - so that the placeholder
+        lifecycle answers as it always did."""
+        if payload is not None or not isinstance(description, str):
+            return None
+        try:
+            from persian_brain import activation
+            if activation.scope_for(self.memory) == activation.SCOPE_OFF:
+                return None
+            from self_builder import mirror, request_parser
+            from self_builder import service as sb_service
+            request = request_parser.analyze_for_upgrade(description)
+            service = sb_service.get_service(self.memory) if request is not None else None
+            if service is None:
+                return None
+            result = service.build(description, request, upgrade_name=name)
+            log = mirror.stage_log(result)
+        except Exception:
+            return None
+        record = None
+        upgrade_id = (result.get("mirror") or {}).get("upgrade_id")
+        if upgrade_id:
+            record = self.memory.query_one("SELECT * FROM upgrades WHERE id = ?", (upgrade_id,))
+        if record is None:  # the mirror could not write its row: keep the legacy history complete
+            record = self._create_record(name, description, {"self_builder": {
+                "capability_id": result.get("capability_id"), "status": result.get("status")}})
+            upgrade_id = record["id"]
+            applied = result.get("status") in ("applied", "noop_identical")
+            self._advance(upgrade_id, "version" if applied else "sandbox_test",
+                          status="installed" if applied else "failed")
+            record = self.memory.query_one("SELECT * FROM upgrades WHERE id = ?", (upgrade_id,))
+        if result.get("status") == "needs_confirmation":
+            log.append({"stage": "plan", "detail": {"needs_confirmation": result.get("confirmation"),
+                                                    "note": "not installed - the Persian conversation can confirm it"}})
+        elif result.get("status") == "failed":
+            log.append({"stage": "rollback", "detail": "Not installed - the Self-Builder's checks failed; "
+                                                       "nothing was activated."})
+        return {"upgrade": record, "log": log,
+                "self_builder": {"status": result.get("status"), "action": result.get("action"),
+                                 "capability_id": result.get("capability_id"), "version": result.get("version"),
+                                 "error": result.get("error")}}
+
     def propose_upgrade(self, name, description, payload=None):
         """Run a proposed upgrade through the full controlled lifecycle.
         Returns the final upgrade record plus a step-by-step log."""
+        built = self._propose_self_built(name, description, payload)
+        if built is not None:
+            return built
         payload = payload or {"name": name, "description": description}
         record = self._create_record(name, description, payload)
         upgrade_id = record["id"]

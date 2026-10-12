@@ -1,0 +1,3098 @@
+{
+  "schema": "FINAL_EXIT_CHANGE_MANIFEST/1",
+  "task": "FINAL-EXIT-001 (Claude Exit)",
+  "delta_kind": "delta only: nothing outside this manifest is part of the change",
+  "baseline": {
+    "commit": null,
+    "commit_note": "the git commit of the baseline is not known to the environment that produced this delta (no git history was provided); the baseline is identified by project_hash",
+    "project_hash": "fc883fccd361e7277fb4dd55b821dd65206f66d59cf7d13119304c4e1f096cc8",
+    "description": "the Prompt 956 project (18 ZIP parts, verified against PROJECT_MANIFEST_Prompt956.json) plus the FIX_CI_DELTA files",
+    "files": 1629
+  },
+  "final": {
+    "commit": null,
+    "commit_note": "no commit was created by the environment that produced this delta; the commit hash exists only once you commit the installed delta; the resulting tree is identified by project_hash",
+    "project_hash": "c2bfee0b33f867e78df72243c63a350df6f6ab13c5d37bb3caa53785f9bc99b9",
+    "files": 1667
+  },
+  "project_hash_definition": "sha256 over the lines '<file sha256>  <path relative to the repository root>\\n' sorted by path (no __pycache__ / .pyc)",
+  "counts": {
+    "added": 38,
+    "modified": 3,
+    "deleted": 0,
+    "renamed_or_moved": 0,
+    "total_files_in_delta": 41
+  },
+  "files": [
+    {
+      "id": 1,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/__init__.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/__init__.py",
+      "github_path": "app/src/main/python/self_builder/__init__.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Package entry of the controlled Self-Builder; states in one place what it is (a template-based, validated, tested, versioned, reversible internal builder) and what it is not (no code-generating model, no external AI).",
+      "dependencies": [],
+      "dependencies_stdlib": [],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 2,
+          "of_executable_lines": 3,
+          "percent": 66.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 2,
+          "of_executable_lines": 3,
+          "percent": 66.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 2,
+          "of_executable_lines": 3,
+          "percent": 66.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 2,
+          "of_executable_lines": 3,
+          "percent": 66.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 2,
+          "of_executable_lines": 3,
+          "percent": 66.7
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "f4f4cc99be40ca39c2ab55cf02e72d8d2bcc9c1bb2c59f3c49aeeb57fac0c1e4",
+      "size_bytes": 1116,
+      "lines": 22,
+      "commit_group": 1,
+      "union_line_coverage_percent": 66.7
+    },
+    {
+      "id": 2,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/builder.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/builder.py",
+      "github_path": "app/src/main/python/self_builder/builder.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "The build / rollback / disable pipeline: request -> analyze -> check capabilities -> identify gap -> plan -> generate -> validate -> test -> [analyze failure -> safe repair -> retest] -> checkpoint -> apply -> persist -> register -> version -> audit, with a checkpoint before anything is promoted and nothing activated on failure.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/loader.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/repair.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/spec.py",
+        "app/src/main/python/self_builder/store.py",
+        "app/src/main/python/self_builder/templates.py",
+        "app/src/main/python/self_builder/validator.py"
+      ],
+      "dependencies_stdlib": [
+        "json",
+        "threading",
+        "time"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 631,
+          "of_executable_lines": 667,
+          "percent": 94.6
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 517,
+          "of_executable_lines": 667,
+          "percent": 77.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 440,
+          "of_executable_lines": 667,
+          "percent": 66.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 405,
+          "of_executable_lines": 667,
+          "percent": 60.7
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "b03edc2994ef71e0ed2fb9f37fce85e86e89ed704807b1fd7092dcb5421a5fe8",
+      "size_bytes": 49080,
+      "lines": 818,
+      "commit_group": 1,
+      "union_line_coverage_percent": 94.6
+    },
+    {
+      "id": 3,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/errors.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/errors.py",
+      "github_path": "app/src/main/python/self_builder/errors.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Stable machine-readable error codes used by the failure analyzer, the audit log and the tests.",
+      "dependencies": [],
+      "dependencies_stdlib": [],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 36,
+          "of_executable_lines": 37,
+          "percent": 97.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 32,
+          "of_executable_lines": 37,
+          "percent": 86.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 32,
+          "of_executable_lines": 37,
+          "percent": 86.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 32,
+          "of_executable_lines": 37,
+          "percent": 86.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 27,
+          "of_executable_lines": 37,
+          "percent": 73.0
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "92dd816e8b30b1254504ade9b8eef671f82928c969c7f4af66744a0c32e8098c",
+      "size_bytes": 1891,
+      "lines": 70,
+      "commit_group": 1,
+      "union_line_coverage_percent": 97.3
+    },
+    {
+      "id": 4,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/expr.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/expr.py",
+      "github_path": "app/src/main/python/self_builder/expr.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Own tokenizer and recursive-descent parser/evaluator for the closed arithmetic expression language of the 'formula' archetype (user text is never given to eval/exec/compile; names must start with a letter).",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "math",
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 323,
+          "of_executable_lines": 333,
+          "percent": 97.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 230,
+          "of_executable_lines": 333,
+          "percent": 69.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 195,
+          "of_executable_lines": 333,
+          "percent": 58.6
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 54,
+          "of_executable_lines": 333,
+          "percent": 16.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 54,
+          "of_executable_lines": 333,
+          "percent": 16.2
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "38f556818d689c19d7f5ea877f46f60b0f990b4e457bcd0eab603da587ec993b",
+      "size_bytes": 13806,
+      "lines": 442,
+      "commit_group": 1,
+      "union_line_coverage_percent": 97.0
+    },
+    {
+      "id": 5,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/fa_text.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/fa_text.py",
+      "github_path": "app/src/main/python/self_builder/fa_text.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Deterministic Persian text helpers (letters, digits, ZWNJ, punctuation, tokenization) shared by the request parser, the matcher and the Persian brain.",
+      "dependencies": [
+        "app/src/main/python/understanding/persian_nlu.py"
+      ],
+      "dependencies_stdlib": [
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 150,
+          "of_executable_lines": 154,
+          "percent": 97.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 118,
+          "of_executable_lines": 154,
+          "percent": 76.6
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 120,
+          "of_executable_lines": 154,
+          "percent": 77.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 120,
+          "of_executable_lines": 154,
+          "percent": 77.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 117,
+          "of_executable_lines": 154,
+          "percent": 76.0
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "c27d2a2f44e258b6970af05252c330f6794d578e5483edc000e0a5150ab21352",
+      "size_bytes": 8640,
+      "lines": 231,
+      "commit_group": 1,
+      "union_line_coverage_percent": 98.1
+    },
+    {
+      "id": 6,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/helpers.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/helpers.py",
+      "github_path": "app/src/main/python/self_builder/helpers.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "The only names a generated module is allowed to call (pure helpers bound into the sandbox namespace).",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/textops.py"
+      ],
+      "dependencies_stdlib": [],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 24,
+          "of_executable_lines": 25,
+          "percent": 96.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 24,
+          "of_executable_lines": 25,
+          "percent": 96.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 24,
+          "of_executable_lines": 25,
+          "percent": 96.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 24,
+          "of_executable_lines": 25,
+          "percent": 96.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 24,
+          "of_executable_lines": 25,
+          "percent": 96.0
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "4d077ce54b883910007ed3a411c1d8959266cea720d0107d1c01193724a13fd4",
+      "size_bytes": 1362,
+      "lines": 39,
+      "commit_group": 1,
+      "union_line_coverage_percent": 96.0
+    },
+    {
+      "id": 7,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/loader.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/loader.py",
+      "github_path": "app/src/main/python/self_builder/loader.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Integrity verification, manifest and start-up reconciliation after a restart or crash: verify active versions, quarantine (never delete) damaged files, fall back to the newest healthy older version.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/spec.py",
+        "app/src/main/python/self_builder/store.py"
+      ],
+      "dependencies_stdlib": [
+        "json"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 176,
+          "of_executable_lines": 191,
+          "percent": 92.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 109,
+          "of_executable_lines": 191,
+          "percent": 57.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 109,
+          "of_executable_lines": 191,
+          "percent": 57.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 142,
+          "of_executable_lines": 191,
+          "percent": 74.3
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "99b5baf1ea27cd83d0c07b71adb401f1ef76305c09c690e2216d8c80fdab7e98",
+      "size_bytes": 14309,
+      "lines": 269,
+      "commit_group": 1,
+      "union_line_coverage_percent": 92.1
+    },
+    {
+      "id": 8,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/lock.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/lock.py",
+      "github_path": "app/src/main/python/self_builder/lock.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Crash-proof workspace lock (SQLite BEGIN EXCLUSIVE) that works between threads, services and processes and is released by the OS when the holder dies.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "contextlib",
+        "sqlite3",
+        "threading",
+        "time"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 61,
+          "of_executable_lines": 71,
+          "percent": 85.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 51,
+          "of_executable_lines": 71,
+          "percent": 71.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 51,
+          "of_executable_lines": 71,
+          "percent": 71.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 47,
+          "of_executable_lines": 71,
+          "percent": 66.2
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "56531340ef9d7ec475b7cce8c5e84309e1a259f4939305fa33e575aadf6f574f",
+      "size_bytes": 4105,
+      "lines": 112,
+      "commit_group": 1,
+      "union_line_coverage_percent": 85.9
+    },
+    {
+      "id": 9,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/matcher.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/matcher.py",
+      "github_path": "app/src/main/python/self_builder/matcher.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Invocation matching: turns an ordinary Persian sentence into a call of a registered capability (derived from the capability records) and recognises questions about the registry.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py"
+      ],
+      "dependencies_stdlib": [
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 249,
+          "of_executable_lines": 284,
+          "percent": 87.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 259,
+          "of_executable_lines": 284,
+          "percent": 91.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 69,
+          "of_executable_lines": 284,
+          "percent": 24.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 150,
+          "of_executable_lines": 284,
+          "percent": 52.8
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "7b38e1258243969d9f2b9ddc5480a350ffd9ff16e2e476c08c762de3bc696a93",
+      "size_bytes": 18665,
+      "lines": 396,
+      "commit_group": 1,
+      "union_line_coverage_percent": 95.8
+    },
+    {
+      "id": 10,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/mathcore.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/mathcore.py",
+      "github_path": "app/src/main/python/self_builder/mathcore.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Total math primitives shared by generated modules and the independent reference evaluator used by the differential tests.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "math"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 88,
+          "of_executable_lines": 89,
+          "percent": 98.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 51,
+          "of_executable_lines": 89,
+          "percent": 57.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 44,
+          "of_executable_lines": 89,
+          "percent": 49.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 40,
+          "of_executable_lines": 89,
+          "percent": 44.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 40,
+          "of_executable_lines": 89,
+          "percent": 44.9
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "c09829c304141bbc36cfa25ba8dd3851c3fdeb6da61f910cba2944bf4f9f1984",
+      "size_bytes": 3808,
+      "lines": 145,
+      "commit_group": 1,
+      "union_line_coverage_percent": 98.9
+    },
+    {
+      "id": 11,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/mirror.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/mirror.py",
+      "github_path": "app/src/main/python/self_builder/mirror.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Mirrors every applied build / rollback into the older capabilities / upgrades / versions tables of memory.db so the existing registries and the AEL UPGRADE / ROLLBACK statements keep telling the truth.",
+      "dependencies": [
+        "app/src/main/python/capabilities/capability_system.py",
+        "app/src/main/python/self_upgrade/version_system.py"
+      ],
+      "dependencies_stdlib": [
+        "datetime",
+        "json"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 56,
+          "of_executable_lines": 75,
+          "percent": 74.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 57,
+          "of_executable_lines": 75,
+          "percent": 76.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 64,
+          "of_executable_lines": 75,
+          "percent": 85.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 59,
+          "of_executable_lines": 75,
+          "percent": 78.7
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "21e5f7ab948275dac50747755a1ee628b0062f5aa0ef40ddaadac911b694ddf5",
+      "size_bytes": 6335,
+      "lines": 124,
+      "commit_group": 1,
+      "union_line_coverage_percent": 86.7
+    },
+    {
+      "id": 12,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/policy.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/policy.py",
+      "github_path": "app/src/main/python/self_builder/policy.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "The single place for allowlists (archetypes, permissions, operations, directories, file patterns) and every resource limit.",
+      "dependencies": [
+        "app/src/main/python/self_builder/errors.py"
+      ],
+      "dependencies_stdlib": [
+        "os",
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 145,
+          "of_executable_lines": 148,
+          "percent": 98.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 140,
+          "of_executable_lines": 148,
+          "percent": 94.6
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 134,
+          "of_executable_lines": 148,
+          "percent": 90.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 115,
+          "of_executable_lines": 148,
+          "percent": 77.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 115,
+          "of_executable_lines": 148,
+          "percent": 77.7
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "4d385efeb35655d704d740b89d3aa8bf0fb1a5d47a6d1560ecb24b8a8229e3a7",
+      "size_bytes": 9384,
+      "lines": 208,
+      "commit_group": 1,
+      "union_line_coverage_percent": 98.0
+    },
+    {
+      "id": 13,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/registry.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/registry.py",
+      "github_path": "app/src/main/python/self_builder/registry.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Persistent capability registry (capabilities, versions, usage, feedback), answered from SQLite only.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/store.py"
+      ],
+      "dependencies_stdlib": [],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 138,
+          "of_executable_lines": 160,
+          "percent": 86.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 138,
+          "of_executable_lines": 160,
+          "percent": 86.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 126,
+          "of_executable_lines": 160,
+          "percent": 78.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 130,
+          "of_executable_lines": 160,
+          "percent": 81.2
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "df6aa46afa9d41b4a58758e7cb38522fa8e5258fefce3ec207fad813d5edb023",
+      "size_bytes": 10275,
+      "lines": 218,
+      "commit_group": 1,
+      "union_line_coverage_percent": 86.2
+    },
+    {
+      "id": 14,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/repair.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/repair.py",
+      "github_path": "app/src/main/python/self_builder/repair.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Failure classification by stable code and a bounded list of safe repairs; repairs that change meaning ('guess') always need confirmation.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "itertools",
+        "re",
+        "unicodedata"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 190,
+          "of_executable_lines": 191,
+          "percent": 99.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 116,
+          "of_executable_lines": 191,
+          "percent": 60.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 63,
+          "of_executable_lines": 191,
+          "percent": 33.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 63,
+          "of_executable_lines": 191,
+          "percent": 33.0
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "2b7867893a7d9294aace99c85be5b9bef8469ca43bc82faea499db1281b605ca",
+      "size_bytes": 11870,
+      "lines": 303,
+      "commit_group": 1,
+      "union_line_coverage_percent": 99.5
+    },
+    {
+      "id": 15,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/request_parser.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/request_parser.py",
+      "github_path": "app/src/main/python/self_builder/request_parser.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Deterministic Persian build-request analysis (fixed grammar over closed word lists): ready / clarify / unsupported / not a request.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/repair.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py"
+      ],
+      "dependencies_stdlib": [
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 542,
+          "of_executable_lines": 587,
+          "percent": 92.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 414,
+          "of_executable_lines": 587,
+          "percent": 70.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 282,
+          "of_executable_lines": 587,
+          "percent": 48.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 292,
+          "of_executable_lines": 587,
+          "percent": 49.7
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "2699116e24d2ae186adc65baf3a2b6cf14612df94e67d8e3c933e77a32c049c7",
+      "size_bytes": 37706,
+      "lines": 784,
+      "commit_group": 1,
+      "union_line_coverage_percent": 94.0
+    },
+    {
+      "id": 16,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/sandbox.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/sandbox.py",
+      "github_path": "app/src/main/python/self_builder/sandbox.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Loads ONE validated generated module from verified bytes (empty __builtins__, never in sys.modules, no bytecode caches, soft per-call time budget, finite checked results) and runs test suites and capability calls against it.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/helpers.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/templates.py",
+        "app/src/main/python/self_builder/validator.py"
+      ],
+      "dependencies_stdlib": [
+        "hashlib",
+        "importlib",
+        "math",
+        "time"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 107,
+          "of_executable_lines": 119,
+          "percent": 89.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 93,
+          "of_executable_lines": 119,
+          "percent": 78.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 87,
+          "of_executable_lines": 119,
+          "percent": 73.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 87,
+          "of_executable_lines": 119,
+          "percent": 73.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 87,
+          "of_executable_lines": 119,
+          "percent": 73.1
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "1afe9b4d1b0a6f1ced0e7dabf977c5197014eeabbbf0961009b7b87efd1897f3",
+      "size_bytes": 8020,
+      "lines": 175,
+      "commit_group": 1,
+      "union_line_coverage_percent": 89.9
+    },
+    {
+      "id": 17,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/service.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/service.py",
+      "github_path": "app/src/main/python/self_builder/service.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Lazy facade the application talks to: owns files_dir/data/self_builder, opens and reconciles once per process, exposes build / rollback / disable / invoke / history / self_check; nothing is created on disk before build().",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/builder.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/loader.py",
+        "app/src/main/python/self_builder/matcher.py",
+        "app/src/main/python/self_builder/mirror.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/store.py",
+        "app/src/main/python/self_builder/workspace.py"
+      ],
+      "dependencies_stdlib": [
+        "os",
+        "sqlite3",
+        "threading",
+        "weakref"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 273,
+          "of_executable_lines": 296,
+          "percent": 92.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 238,
+          "of_executable_lines": 296,
+          "percent": 80.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 196,
+          "of_executable_lines": 296,
+          "percent": 66.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 176,
+          "of_executable_lines": 296,
+          "percent": 59.5
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "a74f14234f5436de7cf3c215a9804287bc2268d3dfa1d5255de0cc014f5f687a",
+      "size_bytes": 18533,
+      "lines": 395,
+      "commit_group": 1,
+      "union_line_coverage_percent": 93.9
+    },
+    {
+      "id": 18,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/spec.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/spec.py",
+      "github_path": "app/src/main/python/self_builder/spec.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Capability spec (JSON, never executed): validation, fingerprinting and the difference between two versions.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py"
+      ],
+      "dependencies_stdlib": [
+        "hashlib",
+        "json",
+        "math"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 231,
+          "of_executable_lines": 243,
+          "percent": 95.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 203,
+          "of_executable_lines": 243,
+          "percent": 83.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 183,
+          "of_executable_lines": 243,
+          "percent": 75.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 132,
+          "of_executable_lines": 243,
+          "percent": 54.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 132,
+          "of_executable_lines": 243,
+          "percent": 54.3
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "33dcf33e4def3e8e5ad8a7ea8c846254015da5edb0f9b77746c015555f2da0f2",
+      "size_bytes": 15069,
+      "lines": 328,
+      "commit_group": 1,
+      "union_line_coverage_percent": 95.9
+    },
+    {
+      "id": 19,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/store.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/store.py",
+      "github_path": "app/src/main/python/self_builder/store.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "SQLite store (WAL) with numbered migrations, transactions and a hash-chained audit log.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "contextlib",
+        "datetime",
+        "hashlib",
+        "json",
+        "sqlite3",
+        "threading"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 137,
+          "of_executable_lines": 144,
+          "percent": 95.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 121,
+          "of_executable_lines": 144,
+          "percent": 84.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 112,
+          "of_executable_lines": 144,
+          "percent": 77.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 109,
+          "of_executable_lines": 144,
+          "percent": 75.7
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "26bb9f79191917fbd2ff344d9428f52b260dc4afb0ceaf65bf9725e2d4955444",
+      "size_bytes": 12145,
+      "lines": 311,
+      "commit_group": 1,
+      "union_line_coverage_percent": 95.1
+    },
+    {
+      "id": 20,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/templates.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/templates.py",
+      "github_path": "app/src/main/python/self_builder/templates.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Instantiates a validated spec into one generated module plus a JSON differential test suite whose expected values come from an independent reference path.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/spec.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py"
+      ],
+      "dependencies_stdlib": [
+        "fractions",
+        "math"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 154,
+          "of_executable_lines": 156,
+          "percent": 98.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 152,
+          "of_executable_lines": 156,
+          "percent": 97.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 141,
+          "of_executable_lines": 156,
+          "percent": 90.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 106,
+          "of_executable_lines": 156,
+          "percent": 67.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 108,
+          "of_executable_lines": 156,
+          "percent": 69.2
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "b7d653f479bd60e53332e8cee449c28bf65baa275204119677090fbb2a877070",
+      "size_bytes": 9298,
+      "lines": 210,
+      "commit_group": 1,
+      "union_line_coverage_percent": 98.7
+    },
+    {
+      "id": 21,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/textops.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/textops.py",
+      "github_path": "app/src/main/python/self_builder/textops.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "The closed set of reviewed text operations the 'text_tool' archetype can compose.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 69,
+          "of_executable_lines": 70,
+          "percent": 98.6
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 58,
+          "of_executable_lines": 70,
+          "percent": 82.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 57,
+          "of_executable_lines": 70,
+          "percent": 81.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 57,
+          "of_executable_lines": 70,
+          "percent": 81.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 57,
+          "of_executable_lines": 70,
+          "percent": 81.4
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "fb0334777b4d34eaf0d3e15226c15e476a6383214bb3c85393b7ac82c6b3b69d",
+      "size_bytes": 4833,
+      "lines": 124,
+      "commit_group": 1,
+      "union_line_coverage_percent": 98.6
+    },
+    {
+      "id": 22,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/units.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/units.py",
+      "github_path": "app/src/main/python/self_builder/units.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Closed unit table with exact rational factors and the Persian / Latin names people actually type.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/fa_text.py"
+      ],
+      "dependencies_stdlib": [
+        "fractions"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 111,
+          "of_executable_lines": 113,
+          "percent": 98.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 108,
+          "of_executable_lines": 113,
+          "percent": 95.6
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 104,
+          "of_executable_lines": 113,
+          "percent": 92.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 104,
+          "of_executable_lines": 113,
+          "percent": 92.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 104,
+          "of_executable_lines": 113,
+          "percent": 92.0
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "2be966f8558408939932fcb7ebfb169b0d7f910d53dad0cf116080cc4e67eb0a",
+      "size_bytes": 8913,
+      "lines": 182,
+      "commit_group": 1,
+      "union_line_coverage_percent": 98.2
+    },
+    {
+      "id": 23,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/validator.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/validator.py",
+      "github_path": "app/src/main/python/self_builder/validator.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "AST allowlist every generated module must pass before it is loaded (and each time it is loaded again).",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/helpers.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "ast",
+        "math"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "suite": "foundations",
+          "lines_executed": 218,
+          "of_executable_lines": 228,
+          "percent": 95.6
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 156,
+          "of_executable_lines": 228,
+          "percent": 68.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 146,
+          "of_executable_lines": 228,
+          "percent": 64.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 149,
+          "of_executable_lines": 228,
+          "percent": 65.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 146,
+          "of_executable_lines": 228,
+          "percent": 64.0
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "73edb74bd6f08cf2195caaab31404ebf6d48cbad826382c0ff1b4a7f156249d9",
+      "size_bytes": 14063,
+      "lines": 295,
+      "commit_group": 1,
+      "union_line_coverage_percent": 95.6
+    },
+    {
+      "id": 24,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/self_builder/workspace.py",
+      "source_in_delta": "added/app/src/main/python/self_builder/workspace.py",
+      "github_path": "app/src/main/python/self_builder/workspace.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/self_builder",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "The only place files are touched: atomic writes, Policy.resolve on every path, quarantine instead of delete.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/lock.py",
+        "app/src/main/python/self_builder/policy.py"
+      ],
+      "dependencies_stdlib": [
+        "json",
+        "os",
+        "time"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "lines_executed": 155,
+          "of_executable_lines": 176,
+          "percent": 88.1
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 107,
+          "of_executable_lines": 176,
+          "percent": 60.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 107,
+          "of_executable_lines": 176,
+          "percent": 60.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 119,
+          "of_executable_lines": 176,
+          "percent": 67.6
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "d0e94e65b5f293273f0522338231fdd5e02e21cf5f36cff554e79b49aed12013",
+      "size_bytes": 8496,
+      "lines": 218,
+      "commit_group": 1,
+      "union_line_coverage_percent": 88.1
+    },
+    {
+      "id": 25,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/__init__.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/__init__.py",
+      "github_path": "app/src/main/python/persian_brain/__init__.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Package entry; exposes dynamic_skill(memory, text), the single seam through which SkillSystem reaches the brain.",
+      "dependencies": [
+        "app/src/main/python/persian_brain/brain.py"
+      ],
+      "dependencies_stdlib": [],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 7,
+          "of_executable_lines": 12,
+          "percent": 58.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 7,
+          "of_executable_lines": 12,
+          "percent": 58.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 7,
+          "of_executable_lines": 12,
+          "percent": 58.3
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "ea9f36d28161627ae18b494b99116df089a6ee4abd07d17196ee625d0ccea60e",
+      "size_bytes": 1572,
+      "lines": 39,
+      "commit_group": 2,
+      "union_line_coverage_percent": 58.3
+    },
+    {
+      "id": 26,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/activation.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/activation.py",
+      "github_path": "app/src/main/python/persian_brain/activation.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Scope selection (full / capabilities / off): application runtime, STANDALONE_AI_PERSIAN_BRAIN, explicit enable / disable.",
+      "dependencies": [
+        "app/src/main/python/platform_layer/__init__.py"
+      ],
+      "dependencies_stdlib": [
+        "os",
+        "threading",
+        "weakref"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 38,
+          "of_executable_lines": 39,
+          "percent": 97.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 31,
+          "of_executable_lines": 39,
+          "percent": 79.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 26,
+          "of_executable_lines": 39,
+          "percent": 66.7
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "3ff898b27176c8e52812f0b7b7e4e262049917ad901e9742602857853c1b716d",
+      "size_bytes": 3441,
+      "lines": 87,
+      "commit_group": 2,
+      "union_line_coverage_percent": 97.4
+    },
+    {
+      "id": 27,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/brain.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/brain.py",
+      "github_path": "app/src/main/python/persian_brain/brain.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "PersianBrain coordinator: normalization -> intent -> handler -> fixed templates; capability flows (build, clarify, confirm, use, improve, roll back, disable) against the real registry and memory.",
+      "dependencies": [
+        "app/src/main/python/concepts/concept_system.py",
+        "app/src/main/python/knowledge/knowledge_system.py",
+        "app/src/main/python/learning/learning_system.py",
+        "app/src/main/python/persian_brain/__init__.py",
+        "app/src/main/python/persian_brain/activation.py",
+        "app/src/main/python/persian_brain/dialogue.py",
+        "app/src/main/python/persian_brain/intents.py",
+        "app/src/main/python/persian_brain/messages.py",
+        "app/src/main/python/persian_brain/normalization.py",
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/builder.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/matcher.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/service.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py",
+        "app/src/main/python/understanding/__init__.py",
+        "app/src/main/python/understanding/persian_nlu.py"
+      ],
+      "dependencies_stdlib": [
+        "threading",
+        "weakref"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 623,
+          "of_executable_lines": 714,
+          "percent": 87.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 200,
+          "of_executable_lines": 714,
+          "percent": 28.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 338,
+          "of_executable_lines": 714,
+          "percent": 47.3
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "620574a28f070a572a8effebae083b81babfaceada15e971c15612d948737e30",
+      "size_bytes": 42231,
+      "lines": 854,
+      "commit_group": 2,
+      "union_line_coverage_percent": 87.3
+    },
+    {
+      "id": 28,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/dialogue.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/dialogue.py",
+      "github_path": "app/src/main/python/persian_brain/dialogue.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Dialogue state persisted in memory.db (persian_brain.dialogue.v1) with a TTL and validation of damaged state.",
+      "dependencies": [],
+      "dependencies_stdlib": [
+        "json",
+        "time"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 160,
+          "of_executable_lines": 163,
+          "percent": 98.2
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 82,
+          "of_executable_lines": 163,
+          "percent": 50.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 132,
+          "of_executable_lines": 163,
+          "percent": 81.0
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "f1b4d21d9f79f4e326ff524dc773ba19662c6dba7b0dc58ce868820eb739daec",
+      "size_bytes": 10493,
+      "lines": 246,
+      "commit_group": 2,
+      "union_line_coverage_percent": 98.2
+    },
+    {
+      "id": 29,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/intents.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/intents.py",
+      "github_path": "app/src/main/python/persian_brain/intents.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Intent classification (greeting, question, request, command, statement, teaching, continuation, reference, feedback, unknown) over closed word lists.",
+      "dependencies": [
+        "app/src/main/python/persian_brain/__init__.py",
+        "app/src/main/python/persian_brain/lexicon.py",
+        "app/src/main/python/persian_brain/normalization.py",
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/units.py",
+        "app/src/main/python/understanding/__init__.py",
+        "app/src/main/python/understanding/persian_nlu.py"
+      ],
+      "dependencies_stdlib": [
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 286,
+          "of_executable_lines": 295,
+          "percent": 96.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 165,
+          "of_executable_lines": 295,
+          "percent": 55.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 212,
+          "of_executable_lines": 295,
+          "percent": 71.9
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "afe5d863d946981287ccbde4dca2f0a88948b41edaa27892249a8edfc8bf1ef8",
+      "size_bytes": 20806,
+      "lines": 435,
+      "commit_group": 2,
+      "union_line_coverage_percent": 96.9
+    },
+    {
+      "id": 30,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/lexicon.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/lexicon.py",
+      "github_path": "app/src/main/python/persian_brain/lexicon.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "The small closed word lists the classifier compares tokens against.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/fa_text.py"
+      ],
+      "dependencies_stdlib": [],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 87,
+          "of_executable_lines": 88,
+          "percent": 98.9
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 86,
+          "of_executable_lines": 88,
+          "percent": 97.7
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 87,
+          "of_executable_lines": 88,
+          "percent": 98.9
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "77c150665caae99dd5c56b5d7e970177e5e2fffe12ea720d104b342b293fc9ae",
+      "size_bytes": 13015,
+      "lines": 144,
+      "commit_group": 2,
+      "union_line_coverage_percent": 98.9
+    },
+    {
+      "id": 31,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/messages.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/messages.py",
+      "github_path": "app/src/main/python/persian_brain/messages.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "Persian message templates built from facts that are true at that moment (no sentence -> answer table).",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py"
+      ],
+      "dependencies_stdlib": [
+        "re",
+        "zlib"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 382,
+          "of_executable_lines": 475,
+          "percent": 80.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 175,
+          "of_executable_lines": 475,
+          "percent": 36.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 237,
+          "of_executable_lines": 475,
+          "percent": 49.9
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "a793651f9baec8f1f7a96bc7ce306450214103231682a307dd5b818916dc635e",
+      "size_bytes": 37023,
+      "lines": 716,
+      "commit_group": 2,
+      "union_line_coverage_percent": 81.3
+    },
+    {
+      "id": 32,
+      "status": "added",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/persian_brain/normalization.py",
+      "source_in_delta": "added/app/src/main/python/persian_brain/normalization.py",
+      "github_path": "app/src/main/python/persian_brain/normalization.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/persian_brain",
+      "destination_directory_exists_in_baseline": false,
+      "reason": "One canonical Persian normalization on top of the project's own Persian NLU.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/fa_text.py"
+      ],
+      "dependencies_stdlib": [
+        "re"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "lines_executed": 26,
+          "of_executable_lines": 27,
+          "percent": 96.3
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "lines_executed": 22,
+          "of_executable_lines": 27,
+          "percent": 81.5
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "lines_executed": 23,
+          "of_executable_lines": 27,
+          "percent": 85.2
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "d9497925308207f054f67ef2dcf33e682bad4d23af888db2e0eedd3d536b0d3a",
+      "size_bytes": 2166,
+      "lines": 62,
+      "commit_group": 2,
+      "union_line_coverage_percent": 96.3
+    },
+    {
+      "id": 33,
+      "status": "added",
+      "category": "test",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+      "source_in_delta": "added/app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+      "github_path": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/tests",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "The Claude Exit audit: the real android_entry in three SIGKILLed subprocesses (missing capability -> built -> persisted -> usable after restart -> improved -> rolled back -> tampering detected), no network / subprocess activity, pinned files byte-identical; plus the check that the documentation still matches the code.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/service.py"
+      ],
+      "dependencies_stdlib": [
+        "hashlib",
+        "json",
+        "os",
+        "re",
+        "shutil",
+        "signal",
+        "socket",
+        "sqlite3",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "threading",
+        "time",
+        "unittest",
+        "urllib"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "note": "this is a test module; it runs under `python .github/scripts/run_regression.py` (unittest discovery)"
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "e291bf51eba71f575c2e078e72f05a56919d6ab0b0c4e71781cdf02ac5b1e69d",
+      "size_bytes": 26951,
+      "lines": 531,
+      "commit_group": 4
+    },
+    {
+      "id": 34,
+      "status": "added",
+      "category": "test",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/tests/test_persian_brain_final_exit001.py",
+      "source_in_delta": "added/app/src/main/python/tests/test_persian_brain_final_exit001.py",
+      "github_path": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/tests",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "Persian brain: normalization, lexicon, 200+ row intent table, dialogue state, activation scopes, whole conversations, restart, robustness, the Core seam, no side effects, no reply table.",
+      "dependencies": [
+        "app/src/main/python/core/core.py",
+        "app/src/main/python/memory/memory_system.py",
+        "app/src/main/python/persian_brain/__init__.py",
+        "app/src/main/python/persian_brain/activation.py",
+        "app/src/main/python/persian_brain/brain.py",
+        "app/src/main/python/persian_brain/dialogue.py",
+        "app/src/main/python/persian_brain/intents.py",
+        "app/src/main/python/persian_brain/lexicon.py",
+        "app/src/main/python/persian_brain/messages.py",
+        "app/src/main/python/persian_brain/normalization.py",
+        "app/src/main/python/platform_layer/__init__.py",
+        "app/src/main/python/runtime_integration/bridge.py",
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/matcher.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/service.py"
+      ],
+      "dependencies_stdlib": [
+        "ast",
+        "gc",
+        "json",
+        "os",
+        "random",
+        "shutil",
+        "socket",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "threading",
+        "unittest",
+        "weakref"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "note": "this is a test module; it runs under `python .github/scripts/run_regression.py` (unittest discovery)"
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "3669b2ac06ac2f9b81284b24421dfd7a3b28f7cb0e53a30bad4eb41dc897f427",
+      "size_bytes": 123713,
+      "lines": 2080,
+      "commit_group": 4
+    },
+    {
+      "id": 35,
+      "status": "added",
+      "category": "test",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+      "source_in_delta": "added/app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+      "github_path": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/tests",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "Foundations: policy, errors, Persian text helpers, math, expression engine (hostile input), units, text operations, helpers, specs, templates (differential tests), AST validator (malicious samples), sandbox.",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/helpers.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/spec.py",
+        "app/src/main/python/self_builder/templates.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py",
+        "app/src/main/python/self_builder/validator.py"
+      ],
+      "dependencies_stdlib": [
+        "ast",
+        "fractions",
+        "math",
+        "os",
+        "random",
+        "shutil",
+        "sys",
+        "tempfile",
+        "unittest"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+          "note": "this is a test module; it runs under `python .github/scripts/run_regression.py` (unittest discovery)"
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "b421861c97d6f21098016e741e7175abfc933d60ad34e64b4e7dc9fa238639a1",
+      "size_bytes": 89005,
+      "lines": 1522,
+      "commit_group": 4
+    },
+    {
+      "id": 36,
+      "status": "added",
+      "category": "test",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+      "source_in_delta": "added/app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+      "github_path": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/tests",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "The three small hooks in older files driven in-process through the real Core: AEL UPGRADE, AEL ROLLBACK and the skill seam, with injected failures; every executable added line of the three modified files is executed.",
+      "dependencies": [
+        "app/src/main/python/core/core.py",
+        "app/src/main/python/persian_brain/__init__.py",
+        "app/src/main/python/persian_brain/activation.py",
+        "app/src/main/python/platform_layer/__init__.py",
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/mirror.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/service.py",
+        "app/src/main/python/self_builder/templates.py",
+        "app/src/main/python/self_upgrade/upgrade_system.py",
+        "app/src/main/python/self_upgrade/version_system.py"
+      ],
+      "dependencies_stdlib": [
+        "json",
+        "os",
+        "shutil",
+        "sys",
+        "tempfile",
+        "unittest"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "note": "this is a test module; it runs under `python .github/scripts/run_regression.py` (unittest discovery)"
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "3775454c910857be3090b360211ec0957673f43fa9b8d03f936d434674742a94",
+      "size_bytes": 26151,
+      "lines": 445,
+      "commit_group": 4
+    },
+    {
+      "id": 37,
+      "status": "added",
+      "category": "test",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+      "source_in_delta": "added/app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+      "github_path": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+      "replaces_existing_file": false,
+      "destination_directory": "app/src/main/python/tests",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "Pipeline: request parser table, repair, matcher, store / registry / workspace, reconciliation, injected failures at every stage, rollback, disable, limits, memory mirror, lazy service, locks, threads and abruptly killed processes.",
+      "dependencies": [
+        "app/src/main/python/memory/memory_system.py",
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/builder.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/loader.py",
+        "app/src/main/python/self_builder/matcher.py",
+        "app/src/main/python/self_builder/mirror.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/repair.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/service.py",
+        "app/src/main/python/self_builder/spec.py",
+        "app/src/main/python/self_builder/store.py",
+        "app/src/main/python/self_builder/templates.py",
+        "app/src/main/python/self_builder/units.py",
+        "app/src/main/python/self_builder/validator.py",
+        "app/src/main/python/self_builder/workspace.py"
+      ],
+      "dependencies_stdlib": [
+        "json",
+        "os",
+        "random",
+        "shutil",
+        "sqlite3",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "textwrap",
+        "threading",
+        "unittest"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "note": "this is a test module; it runs under `python .github/scripts/run_regression.py` (unittest discovery)"
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "dc519d233a08e1395be7c79c09383133a80f0e96b4490b2380c84ab60ce7a458",
+      "size_bytes": 148336,
+      "lines": 2517,
+      "commit_group": 4
+    },
+    {
+      "id": 38,
+      "status": "added",
+      "category": "documentation",
+      "local_delivery_path": "FINAL_EXIT_DELTA/added/docs/self_builder_final_exit.md",
+      "source_in_delta": "added/docs/self_builder_final_exit.md",
+      "github_path": "docs/self_builder_final_exit.md",
+      "replaces_existing_file": false,
+      "destination_directory": "docs",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "Documentation of the Self-Builder and the Persian brain: scope and honest limits, security boundaries, persistence, rollback, wiring, tests; its module names, limits and archetypes are checked against the code by a test.",
+      "dependencies": [
+        "app/src/main/python/ael/interpreter.py",
+        "app/src/main/python/android_entry.py",
+        "app/src/main/python/core/core.py",
+        "app/src/main/python/interface/server.py",
+        "app/src/main/python/persian_brain/activation.py",
+        "app/src/main/python/runtime_growth/runtime_growth_cycle.py",
+        "app/src/main/python/runtime_integration/bridge.py",
+        "app/src/main/python/runtime_integration/runtime_core.py",
+        "app/src/main/python/self_builder/builder.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/helpers.py",
+        "app/src/main/python/self_builder/loader.py",
+        "app/src/main/python/self_builder/lock.py",
+        "app/src/main/python/self_builder/matcher.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/mirror.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/repair.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/service.py",
+        "app/src/main/python/self_builder/spec.py",
+        "app/src/main/python/self_builder/store.py",
+        "app/src/main/python/self_builder/templates.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py",
+        "app/src/main/python/self_builder/validator.py",
+        "app/src/main/python/self_builder/workspace.py",
+        "app/src/main/python/self_upgrade/upgrade_system.py",
+        "app/src/main/python/self_upgrade/version_system.py",
+        "app/src/main/python/skills/skill_system.py",
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "dependencies_stdlib": [],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "note": "class TestDocumentationMatchesTheCode (module names, test files, limits, archetypes and pinned files quoted by the document)"
+        }
+      ],
+      "old_sha256": null,
+      "new_sha256": "291ad9d861a6cc7420c772c136653f00d14471148bbfb5342762907d52d8d6bb",
+      "size_bytes": 18425,
+      "lines": 229,
+      "commit_group": 4
+    },
+    {
+      "id": 39,
+      "status": "modified",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/modified/app/src/main/python/self_upgrade/upgrade_system.py",
+      "source_in_delta": "modified/app/src/main/python/self_upgrade/upgrade_system.py",
+      "github_path": "app/src/main/python/self_upgrade/upgrade_system.py",
+      "replaces_existing_file": true,
+      "destination_directory": "app/src/main/python/self_upgrade",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "AEL UPGRADE reaches the Self-Builder for a payload-less, complete, supported build request (mirrored into upgrades / versions / capabilities); every other input and every internal failure falls back to the unchanged placeholder lifecycle. Pure addition (no line removed).",
+      "dependencies": [
+        "app/src/main/python/persian_brain/__init__.py",
+        "app/src/main/python/persian_brain/activation.py",
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/mirror.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/service.py",
+        "app/src/main/python/self_upgrade/sandbox.py",
+        "app/src/main/python/self_upgrade/version_system.py"
+      ],
+      "dependencies_stdlib": [
+        "datetime",
+        "json"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "executable_added_lines_executed": 1,
+          "of_executable_added_lines": 41,
+          "percent": 2.4
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "executable_added_lines_executed": 41,
+          "of_executable_added_lines": 41,
+          "percent": 100.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "executable_added_lines_executed": 27,
+          "of_executable_added_lines": 41,
+          "percent": 65.9
+        }
+      ],
+      "old_sha256": "1d4aea2b2231876015a0a1e730506db81eb0a7bab0f2bc76062869e5e32a7c2f",
+      "new_sha256": "319d29ec37f1c31905ca212365f0aaacfeed7ac8ca01deac39d85aa09cd4c27e",
+      "size_bytes": 8182,
+      "lines": 172,
+      "commit_group": 3,
+      "diff_vs_baseline": {
+        "lines_added": 55,
+        "lines_removed": 0,
+        "executable_added_lines": 41
+      },
+      "pre_existing_tests_exercising_the_module": [
+        "app/src/main/python/tests/test_adaptive_plan_analyzer_self_upgrade.py",
+        "app/src/main/python/tests/test_capability_creation_plan.py",
+        "app/src/main/python/tests/test_code_change_self_upgrade_adapter.py",
+        "app/src/main/python/tests/test_code_change_version_snapshot.py",
+        "app/src/main/python/tests/test_final_runtime_assessment_prompt938.py",
+        "app/src/main/python/tests/test_final_runtime_integration_boundary_validation_prompt937.py",
+        "app/src/main/python/tests/test_runtime_growth_entry_integration_prompt954.py",
+        "app/src/main/python/tests/test_runtime_growth_runtimecore_integration_prompt953.py"
+      ],
+      "pre_existing_tests_note": "test files that name the module; the whole pre-existing suite also exercises it indirectly through Core, and it is unchanged and passes (see verification)"
+    },
+    {
+      "id": 40,
+      "status": "modified",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/modified/app/src/main/python/self_upgrade/version_system.py",
+      "source_in_delta": "modified/app/src/main/python/self_upgrade/version_system.py",
+      "github_path": "app/src/main/python/self_upgrade/version_system.py",
+      "replaces_existing_file": true,
+      "destination_directory": "app/src/main/python/self_upgrade",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "AEL ROLLBACK <id> really restores a Self-Builder capability version (verified again before activation) and never reports a rollback that was not performed; legacy rows keep their old meaning. Pure addition (no line removed).",
+      "dependencies": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/service.py"
+      ],
+      "dependencies_stdlib": [
+        "datetime",
+        "json"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+          "suite": "pipeline",
+          "executable_added_lines_executed": 3,
+          "of_executable_added_lines": 30,
+          "percent": 10.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "executable_added_lines_executed": 3,
+          "of_executable_added_lines": 30,
+          "percent": 10.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "executable_added_lines_executed": 30,
+          "of_executable_added_lines": 30,
+          "percent": 100.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "executable_added_lines_executed": 3,
+          "of_executable_added_lines": 30,
+          "percent": 10.0
+        }
+      ],
+      "old_sha256": "a97ce6f7f541cf7379002f8df757204fb78df6edc3fe076fbf5d401042ef5d46",
+      "new_sha256": "ebaed3547c2f3979ebfd3fc530500af8f9ca782b2c63a2344714b653e2787f45",
+      "size_bytes": 3959,
+      "lines": 92,
+      "commit_group": 3,
+      "diff_vs_baseline": {
+        "lines_added": 41,
+        "lines_removed": 0,
+        "executable_added_lines": 30
+      },
+      "pre_existing_tests_exercising_the_module": [
+        "app/src/main/python/tests/test_capability_approval_gate.py",
+        "app/src/main/python/tests/test_capability_approval_manager.py",
+        "app/src/main/python/tests/test_capability_creation_plan.py",
+        "app/src/main/python/tests/test_capability_human_approval.py",
+        "app/src/main/python/tests/test_capability_lifecycle.py",
+        "app/src/main/python/tests/test_capability_registration_approval.py",
+        "app/src/main/python/tests/test_capability_registration_decision.py",
+        "app/src/main/python/tests/test_capability_registration_executor.py",
+        "app/src/main/python/tests/test_capability_registration_plan.py",
+        "app/src/main/python/tests/test_capability_registration_preparation.py",
+        "app/src/main/python/tests/test_capability_registration_verifier.py",
+        "app/src/main/python/tests/test_code_change_rollback.py",
+        "app/src/main/python/tests/test_code_change_self_upgrade_audit.py",
+        "app/src/main/python/tests/test_code_change_self_upgrade_validation.py",
+        "app/src/main/python/tests/test_code_change_upgrade_result.py",
+        "app/src/main/python/tests/test_code_change_upgrade_state.py",
+        "app/src/main/python/tests/test_code_change_version_snapshot.py",
+        "app/src/main/python/tests/test_self_upgrade_end_to_end_dry_run.py",
+        "app/src/main/python/tests/test_self_upgrade_final_acceptance.py",
+        "app/src/main/python/tests/test_self_upgrade_health_check.py",
+        "app/src/main/python/tests/test_self_upgrade_resume_manager.py"
+      ],
+      "pre_existing_tests_note": "test files that name the module; the whole pre-existing suite also exercises it indirectly through Core, and it is unchanged and passes (see verification)"
+    },
+    {
+      "id": 41,
+      "status": "modified",
+      "category": "production",
+      "local_delivery_path": "FINAL_EXIT_DELTA/modified/app/src/main/python/skills/skill_system.py",
+      "source_in_delta": "modified/app/src/main/python/skills/skill_system.py",
+      "github_path": "app/src/main/python/skills/skill_system.py",
+      "replaces_existing_file": true,
+      "destination_directory": "app/src/main/python/skills",
+      "destination_directory_exists_in_baseline": true,
+      "reason": "Single defensive seam to the Persian brain: find_matching_skill() first asks persian_brain.dynamic_skill(); any exception returns None and the stored keyword skills answer exactly as before. Pure addition (no line removed).",
+      "dependencies": [
+        "app/src/main/python/persian_brain/__init__.py",
+        "app/src/main/python/platform_layer/__init__.py"
+      ],
+      "dependencies_stdlib": [
+        "datetime",
+        "json",
+        "os",
+        "re",
+        "sys"
+      ],
+      "tests": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py"
+      ],
+      "test_coverage_detail": [
+        {
+          "test_file": "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+          "suite": "brain",
+          "executable_added_lines_executed": 7,
+          "of_executable_added_lines": 9,
+          "percent": 77.8
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+          "suite": "bridges",
+          "executable_added_lines_executed": 9,
+          "of_executable_added_lines": 9,
+          "percent": 100.0
+        },
+        {
+          "test_file": "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+          "suite": "audit",
+          "executable_added_lines_executed": 7,
+          "of_executable_added_lines": 9,
+          "percent": 77.8
+        }
+      ],
+      "old_sha256": "46e17b9bf9d6ffe2b524b4264816336f10eede7c6d700d76d274009b37ca8eb0",
+      "new_sha256": "59f8db1f16a666ece0ee1422449c96d4873149b7f4eaf3c162480afd3574775f",
+      "size_bytes": 7002,
+      "lines": 165,
+      "commit_group": 3,
+      "diff_vs_baseline": {
+        "lines_added": 22,
+        "lines_removed": 0,
+        "executable_added_lines": 9
+      },
+      "pre_existing_tests_exercising_the_module": [
+        "app/src/main/python/tests/test_active_topic.py",
+        "app/src/main/python/tests/test_reasoning_engine.py"
+      ],
+      "pre_existing_tests_note": "test files that name the module; the whole pre-existing suite also exercises it indirectly through Core, and it is unchanged and passes (see verification)"
+    }
+  ],
+  "deleted": [],
+  "renamed_or_moved": [],
+  "destination_checks": {
+    "repository_root_layout_in_baseline": {
+      ".github": "directory, 3 files",
+      ".gitignore": "file",
+      "PROJECT_MANIFEST_Prompt956.json": "file",
+      "PROJECT_PARTS_MANIFEST_Prompt*.json": "181 files",
+      "app": "directory, 1192 files",
+      "build.gradle": "file",
+      "docs": "directory, 248 files",
+      "gradle.properties": "file",
+      "settings.gradle": "file"
+    },
+    "destination_directories": [
+      "app/src/main/python/persian_brain",
+      "app/src/main/python/self_builder",
+      "app/src/main/python/self_upgrade",
+      "app/src/main/python/skills",
+      "app/src/main/python/tests",
+      "docs"
+    ],
+    "new_directories": [
+      "app/src/main/python/persian_brain",
+      "app/src/main/python/self_builder"
+    ],
+    "existing_directories": [
+      "app/src/main/python/self_upgrade",
+      "app/src/main/python/skills",
+      "app/src/main/python/tests",
+      "docs"
+    ],
+    "added_paths_already_present_in_baseline_case_insensitive": [],
+    "new_top_level_python_packages": [
+      "persian_brain",
+      "self_builder"
+    ],
+    "new_package_names_free_in_baseline": true,
+    "basis": "the baseline tree (Prompt 956 project + FIX_CI_DELTA); the real GitHub repository was not accessible to the environment that produced this delta, so the repository root is assumed to equal the project root"
+  },
+  "untouched_by_design": {
+    "hash_pinned_production_files": {
+      "android_entry.py": {
+        "sha256": "ffa9d214a53e4aeb7e043f65ade9a398c4be2fd7d6e2dc69f4e7ce1c6bc40c07",
+        "unchanged_vs_baseline": true
+      },
+      "core/core.py": {
+        "sha256": "64dbaef03caba1b1bc43795a21516dfce04c68d01c68f22c1f97ae98b7f77d0b",
+        "unchanged_vs_baseline": true
+      },
+      "ael/interpreter.py": {
+        "sha256": "8c96be945ef91e5ba33c7290d6483801d7acd1beba7d14ab846dd9a7f8f3984b",
+        "unchanged_vs_baseline": true
+      },
+      "runtime_integration/bridge.py": {
+        "sha256": "4b2177f0153d05741bc07d196f6fbadf7917521da71f4804761588564383bfac",
+        "unchanged_vs_baseline": true
+      },
+      "interface/server.py": {
+        "sha256": "97f3f0659fb2881690db4b02340508156ba24039c0846551098fb3343aabb642",
+        "unchanged_vs_baseline": true
+      },
+      "runtime_integration/runtime_core.py": {
+        "sha256": "610e0c5c51f47fc95f574cd90958a6a94f61c803f114d388f435cbc85f658cdf",
+        "unchanged_vs_baseline": true
+      },
+      "runtime_growth/runtime_growth_cycle.py": {
+        "sha256": "d7015ed497e4fef18280c1b6592c13a5c415ff8226568b349aefa07205dd2bcd",
+        "unchanged_vs_baseline": true
+      }
+    },
+    "frozen_historical_tests_prompts_715_719_786": {
+      "test_section6_agent_loop_route_pin_prompt719d": {
+        "github_path": "app/src/main/python/tests/test_section6_agent_loop_route_pin_prompt719d.py",
+        "unchanged_vs_baseline": true
+      },
+      "test_section6_agent_loop_routed_step_prompt719c": {
+        "github_path": "app/src/main/python/tests/test_section6_agent_loop_routed_step_prompt719c.py",
+        "unchanged_vs_baseline": true
+      },
+      "test_section6_agent_loop_routing_decision_prompt715": {
+        "github_path": "app/src/main/python/tests/test_section6_agent_loop_routing_decision_prompt715.py",
+        "unchanged_vs_baseline": true
+      },
+      "test_section6_agent_loop_wiring_decision_prompt718": {
+        "github_path": "app/src/main/python/tests/test_section6_agent_loop_wiring_decision_prompt718.py",
+        "unchanged_vs_baseline": true
+      },
+      "test_section6_tool_step_dispatch_prompt717": {
+        "github_path": "app/src/main/python/tests/test_section6_tool_step_dispatch_prompt717.py",
+        "unchanged_vs_baseline": true
+      },
+      "test_section6_tool_step_route_prompt716": {
+        "github_path": "app/src/main/python/tests/test_section6_tool_step_route_prompt716.py",
+        "unchanged_vs_baseline": true
+      },
+      "test_section9_final_acceptance_prompt786": {
+        "github_path": "app/src/main/python/tests/test_section9_final_acceptance_prompt786.py",
+        "unchanged_vs_baseline": true
+      }
+    },
+    "ci_and_gradle_files_unchanged": {
+      "build.gradle": true,
+      "gradle.properties": true,
+      "settings.gradle": true,
+      ".github/workflows/android-signed-release.yml": true,
+      ".github/workflows/android-debug-apk.yml": true,
+      ".github/scripts/run_regression.py": true,
+      "app/build.gradle": true
+    }
+  },
+  "commit_order": [
+    {
+      "commit": 1,
+      "title": "Add the controlled Self-Builder package (self_builder/)",
+      "files": [
+        "app/src/main/python/self_builder/__init__.py",
+        "app/src/main/python/self_builder/builder.py",
+        "app/src/main/python/self_builder/errors.py",
+        "app/src/main/python/self_builder/expr.py",
+        "app/src/main/python/self_builder/fa_text.py",
+        "app/src/main/python/self_builder/helpers.py",
+        "app/src/main/python/self_builder/loader.py",
+        "app/src/main/python/self_builder/lock.py",
+        "app/src/main/python/self_builder/matcher.py",
+        "app/src/main/python/self_builder/mathcore.py",
+        "app/src/main/python/self_builder/mirror.py",
+        "app/src/main/python/self_builder/policy.py",
+        "app/src/main/python/self_builder/registry.py",
+        "app/src/main/python/self_builder/repair.py",
+        "app/src/main/python/self_builder/request_parser.py",
+        "app/src/main/python/self_builder/sandbox.py",
+        "app/src/main/python/self_builder/service.py",
+        "app/src/main/python/self_builder/spec.py",
+        "app/src/main/python/self_builder/store.py",
+        "app/src/main/python/self_builder/templates.py",
+        "app/src/main/python/self_builder/textops.py",
+        "app/src/main/python/self_builder/units.py",
+        "app/src/main/python/self_builder/validator.py",
+        "app/src/main/python/self_builder/workspace.py"
+      ]
+    },
+    {
+      "commit": 2,
+      "title": "Add the Persian conversation brain (persian_brain/)",
+      "files": [
+        "app/src/main/python/persian_brain/__init__.py",
+        "app/src/main/python/persian_brain/activation.py",
+        "app/src/main/python/persian_brain/brain.py",
+        "app/src/main/python/persian_brain/dialogue.py",
+        "app/src/main/python/persian_brain/intents.py",
+        "app/src/main/python/persian_brain/lexicon.py",
+        "app/src/main/python/persian_brain/messages.py",
+        "app/src/main/python/persian_brain/normalization.py"
+      ]
+    },
+    {
+      "commit": 3,
+      "title": "Wire the Self-Builder into SkillSystem, UpgradeSystem and VersionSystem (3 additive hooks)",
+      "files": [
+        "app/src/main/python/self_upgrade/upgrade_system.py",
+        "app/src/main/python/self_upgrade/version_system.py",
+        "app/src/main/python/skills/skill_system.py"
+      ]
+    },
+    {
+      "commit": 4,
+      "title": "Add FINAL-EXIT-001 tests and documentation",
+      "files": [
+        "app/src/main/python/tests/test_claude_exit_audit_final_exit001.py",
+        "app/src/main/python/tests/test_persian_brain_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_foundations_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_legacy_bridges_final_exit001.py",
+        "app/src/main/python/tests/test_self_builder_pipeline_final_exit001.py",
+        "docs/self_builder_final_exit.md"
+      ]
+    }
+  ],
+  "single_commit_is_possible": true,
+  "verification": {
+    "claude_exit_audit": "tests.test_claude_exit_audit_final_exit001: the real android_entry in three SIGKILLed subprocesses: missing capability -> built -> persisted -> usable after restart -> improved -> rolled back -> tampering detected; no network/subprocess activity",
+    "compile_check": {
+      "python_3_12_and_3_13_with_warnings_as_errors": "40 delivered .py files compile; no CRLF/BOM"
+    },
+    "environment": {
+      "android_sdk_present": false,
+      "consequence": "the Gradle / APK build could not be run here; nothing in Gradle or the workflows was changed by this delta",
+      "gradle_android_plugin_repositories_reachable": false,
+      "os": "Linux (cloud sandbox)",
+      "python_ci_interpreter": "3.12.3 (the version the CI workflows use)",
+      "python_extra_interpreter": "3.13.16"
+    },
+    "frozen_tests_and_pinned_files": {
+      "frozen_test_modules_byte_identical_to_baseline": {
+        "test_section6_agent_loop_route_pin_prompt719d": true,
+        "test_section6_agent_loop_routed_step_prompt719c": true,
+        "test_section6_agent_loop_routing_decision_prompt715": true,
+        "test_section6_agent_loop_wiring_decision_prompt718": true,
+        "test_section6_tool_step_dispatch_prompt717": true,
+        "test_section6_tool_step_route_prompt716": true,
+        "test_section9_final_acceptance_prompt786": true
+      },
+      "pinned_production_files_unchanged": {
+        "ael/interpreter.py": {
+          "equal_in_baseline": true,
+          "equal_in_final": true,
+          "sha256": "8c96be945ef91e5ba33c7290d6483801d7acd1beba7d14ab846dd9a7f8f3984b"
+        },
+        "android_entry.py": {
+          "equal_in_baseline": true,
+          "equal_in_final": true,
+          "sha256": "ffa9d214a53e4aeb7e043f65ade9a398c4be2fd7d6e2dc69f4e7ce1c6bc40c07"
+        },
+        "core/core.py": {
+          "equal_in_baseline": true,
+          "equal_in_final": true,
+          "sha256": "64dbaef03caba1b1bc43795a21516dfce04c68d01c68f22c1f97ae98b7f77d0b"
+        },
+        "interface/server.py": {
+          "equal_in_baseline": true,
+          "equal_in_final": true,
+          "sha256": "97f3f0659fb2881690db4b02340508156ba24039c0846551098fb3343aabb642"
+        },
+        "runtime_growth/runtime_growth_cycle.py": {
+          "equal_in_baseline": true,
+          "equal_in_final": true,
+          "sha256": "d7015ed497e4fef18280c1b6592c13a5c415ff8226568b349aefa07205dd2bcd"
+        },
+        "runtime_integration/bridge.py": {
+          "equal_in_baseline": true,
+          "equal_in_final": true,
+          "sha256": "4b2177f0153d05741bc07d196f6fbadf7917521da71f4804761588564383bfac"
+        },
+        "runtime_integration/runtime_core.py": {
+          "equal_in_baseline": true,
+          "equal_in_final": true,
+          "sha256": "610e0c5c51f47fc95f574cd90958a6a94f61c803f114d388f435cbc85f658cdf"
+        }
+      }
+    },
+    "full_regression": {
+      "known_stale_tests_vs_baseline": {
+        "reason_of_those_six": "core/core.py has sha256 64dbaef0... in the baseline AND in the final tree (this delta does not touch it); the frozen tests of Prompts 715-719 expect the core.py of that time (d5e8755b...)",
+        "same_8_tests_fail_on_baseline_and_final": true,
+        "six_of_them_fail_with_identical_message_in_both_trees": true,
+        "the_other_two": "production-tree size checks of Prompts 718 and 786: they already failed on the baseline (394 production files seen vs 294 frozen / 479 vs 379) and still fail (426 / 511) because this delta adds 32 production modules"
+      },
+      "python_3_12": {
+        "command": "python .github/scripts/run_regression.py   (the unmodified CI runner; PYTHONDONTWRITEBYTECODE=1; only a progress/failure logger was wrapped around it)",
+        "error_lines": [],
+        "failed": 8,
+        "interpreter": "3.12.3",
+        "known_stale": 8,
+        "known_stale_tests_that_failed": [
+          "tests.test_section6_agent_loop_route_pin_prompt719d.TestBoundaries.test_19_process_input_core_plan_and_plan_manager_are_untouched",
+          "tests.test_section6_agent_loop_routed_step_prompt719c.TestExistingAgentLoopBehaviourAndBoundaries.test_28_process_input_core_plan_and_plan_manager_are_untouched",
+          "tests.test_section6_agent_loop_routing_decision_prompt715.TestNothingWired.test_agent_loop_plan_manager_and_process_input_are_untouched",
+          "tests.test_section6_agent_loop_wiring_decision_prompt718.TestNothingIsImplementedOrModifiedByThisPrompt.test_agent_loop_and_process_input_are_byte_identical_to_the_frozen_baseline",
+          "tests.test_section6_agent_loop_wiring_decision_prompt718.TestNothingIsImplementedOrModifiedByThisPrompt.test_the_whole_production_tree_is_unchanged_and_no_new_production_module_exists",
+          "tests.test_section6_tool_step_dispatch_prompt717.TestNothingIsWiredAndProtectedFilesAreUntouched.test_agent_loop_process_input_and_execution_are_untouched_and_unaware",
+          "tests.test_section6_tool_step_route_prompt716.TestNothingIsWiredAndProtectedFilesAreUntouched.test_agent_loop_process_input_and_execution_are_untouched_and_unaware",
+          "tests.test_section9_final_acceptance_prompt786.TestFrozenProductionTreeAndPristineBaselines.test_92_sections_1_to_8_and_all_other_production_modules_are_byte_frozen"
+        ],
+        "per_module": {
+          "test_claude_exit_audit_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 31
+          },
+          "test_claude_exit_final_gate_prompt955": {
+            "failed_or_errored": 0,
+            "tests": 50
+          },
+          "test_persian_brain_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 171
+          },
+          "test_self_builder_foundations_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 133
+          },
+          "test_self_builder_legacy_bridges_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 31
+          },
+          "test_self_builder_pipeline_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 157
+          }
+        },
+        "seconds": 740.329,
+        "skipped": 10,
+        "tests_run": 23447,
+        "unexpected_failures": 0
+      },
+      "python_3_13": {
+        "command": "python .github/scripts/run_regression.py   (the unmodified CI runner; PYTHONDONTWRITEBYTECODE=1; only a progress/failure logger was wrapped around it)",
+        "error_lines": [],
+        "failed": 8,
+        "interpreter": "3.13.16",
+        "known_stale": 8,
+        "known_stale_tests_that_failed": [
+          "tests.test_section6_agent_loop_route_pin_prompt719d.TestBoundaries.test_19_process_input_core_plan_and_plan_manager_are_untouched",
+          "tests.test_section6_agent_loop_routed_step_prompt719c.TestExistingAgentLoopBehaviourAndBoundaries.test_28_process_input_core_plan_and_plan_manager_are_untouched",
+          "tests.test_section6_agent_loop_routing_decision_prompt715.TestNothingWired.test_agent_loop_plan_manager_and_process_input_are_untouched",
+          "tests.test_section6_agent_loop_wiring_decision_prompt718.TestNothingIsImplementedOrModifiedByThisPrompt.test_agent_loop_and_process_input_are_byte_identical_to_the_frozen_baseline",
+          "tests.test_section6_agent_loop_wiring_decision_prompt718.TestNothingIsImplementedOrModifiedByThisPrompt.test_the_whole_production_tree_is_unchanged_and_no_new_production_module_exists",
+          "tests.test_section6_tool_step_dispatch_prompt717.TestNothingIsWiredAndProtectedFilesAreUntouched.test_agent_loop_process_input_and_execution_are_untouched_and_unaware",
+          "tests.test_section6_tool_step_route_prompt716.TestNothingIsWiredAndProtectedFilesAreUntouched.test_agent_loop_process_input_and_execution_are_untouched_and_unaware",
+          "tests.test_section9_final_acceptance_prompt786.TestFrozenProductionTreeAndPristineBaselines.test_92_sections_1_to_8_and_all_other_production_modules_are_byte_frozen"
+        ],
+        "per_module": {
+          "test_claude_exit_audit_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 31
+          },
+          "test_claude_exit_final_gate_prompt955": {
+            "failed_or_errored": 0,
+            "tests": 50
+          },
+          "test_persian_brain_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 171
+          },
+          "test_self_builder_foundations_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 133
+          },
+          "test_self_builder_legacy_bridges_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 31
+          },
+          "test_self_builder_pipeline_final_exit001": {
+            "failed_or_errored": 0,
+            "tests": 157
+          }
+        },
+        "seconds": 780.182,
+        "skipped": 0,
+        "tests_run": 23447,
+        "unexpected_failures": 0
+      },
+      "reading": "exactly the 8 known-stale frozen-tree tests fail (as on the untouched baseline); 0 unexpected failures on both interpreters",
+      "skipped_note": "3.12: the 10 BrowserTests of Prompt 956 are skipped because the Playwright package is not installed for 3.12 in this sandbox; they ran and passed on 3.13 (0 skipped there)"
+    },
+    "install_simulation": {
+      "baseline_plus_delta_equals_final_tree": true,
+      "install_steps_exit_code": 0,
+      "note_on_that_zip": "identical 41 delivered files; the only difference to the final ZIP is this very `verification` block",
+      "performed_on_zip_with_sha256": "5d76cfe70529e23c560bf420a3d02838624ab7b8b9223d8dfcba79847d4bd66e",
+      "reconstructed_files": 1667,
+      "reconstructed_tree_hash": "c2bfee0b33f867e78df72243c63a350df6f6ab13c5d37bb3caa53785f9bc99b9",
+      "tests_from_reconstructed_repository": {
+        "exit_code": 0,
+        "modules": [
+          "tests.test_self_builder_foundations_final_exit001",
+          "tests.test_self_builder_pipeline_final_exit001",
+          "tests.test_persian_brain_final_exit001",
+          "tests.test_claude_exit_audit_final_exit001",
+          "tests.test_self_builder_legacy_bridges_final_exit001",
+          "tests.test_claude_exit_final_gate_prompt955"
+        ],
+        "summary": [
+          "Ran 573 tests in 42.930s",
+          "OK"
+        ]
+      },
+      "what": "the bash block of GITHUB_INSTALLATION_MAP.md section 2 executed on a pristine copy of the baseline tree, then the five new test modules and the 955 gate run from the reconstructed repository (python 3.12, -W error::ResourceWarning)"
+    },
+    "line_coverage_of_the_two_new_packages": {
+      "executable_lines": 6373,
+      "note": "measured with sys.monitoring; the legacy-bridges suite executes 100% of the executable lines added to the three modified files",
+      "per_suite_percent": {
+        "audit": 59.1,
+        "brain": 78.5,
+        "bridges": 53.5,
+        "foundations": 26.0,
+        "pipeline": 62.4
+      },
+      "union_percent": 93.0
+    },
+    "mutation_sanity_checks_during_development": {
+      "documentation_consistency_mutants_killed": "6 of 6",
+      "legacy_hook_mutants_killed": "5 of 5"
+    },
+    "new_tests": {
+      "all_passed_in_both_full_runs": true,
+      "gate_955_tests": 50,
+      "modules": {
+        "test_claude_exit_audit_final_exit001": 31,
+        "test_persian_brain_final_exit001": 171,
+        "test_self_builder_foundations_final_exit001": 133,
+        "test_self_builder_legacy_bridges_final_exit001": 31,
+        "test_self_builder_pipeline_final_exit001": 157
+      },
+      "total_new_tests": 523
+    },
+    "not_verified_here": [
+      "Gradle :app:assembleDebug / signed release build",
+      "APK contents and installation on a device/emulator",
+      "the Kotlin/WebView layer (not modified by this delta)"
+    ],
+    "static_scan": {
+      "dangerous_os_calls": 0,
+      "direct_eval_exec_compile___import___calls": 0,
+      "forbidden_imports_network_subprocess_ctypes_pickle_external_ai_sdk": 0,
+      "modules_scanned": 32,
+      "note": "generated modules are loaded through an importlib SourceFileLoader subclass from bytes that passed the AST allowlist; there is no call of eval/exec/compile by name"
+    },
+    "status": "python_runtime_verified__android_gradle_build_and_apk_NOT_run",
+    "verified_on": "2026-10-12"
+  }
+}

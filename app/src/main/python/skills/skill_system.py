@@ -100,6 +100,25 @@ class SkillSystem:
         rows = self.memory.query("SELECT * FROM skills ORDER BY name")
         return rows
 
+    def _dynamic_skill(self, text):
+        """The Persian conversation brain's answer to `text` as a dynamic
+        skill ({"name", "response", ...}), or None.
+
+        The brain (persian_brain/) is the application's deterministic Persian
+        conversation layer - social talk, taught knowledge, and the
+        capability domain of the Self-Builder (build / use / roll back a
+        capability). Which messages it may claim depends on the runtime
+        (persian_brain/activation.py: everything inside the application,
+        only the capability domain in a plain Core). Defensive by design: an
+        inactive scope, a message that is not the brain's, or ANY problem
+        inside the brain means "no dynamic skill" and the stored keyword
+        skills below answer exactly as before."""
+        try:
+            from persian_brain import dynamic_skill
+            return dynamic_skill(self.memory, text)
+        except Exception:
+            return None
+
     def find_matching_skill(self, text):
         """Very simple keyword-trigger matching for this foundation stage.
 
@@ -113,6 +132,9 @@ class SkillSystem:
         no semantic understanding - just word-boundary-aware instead
         of naive substring containment.
         """
+        dynamic = self._dynamic_skill(text)
+        if dynamic is not None:
+            return dynamic
         text_lower = text.lower()
         for row in self.all_skills():
             if row["status"] != "active":

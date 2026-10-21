@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">دستیار هوشمند</string>
     <string name="startup_error">خطا در راه‌اندازی برنامه: %1$s</string>
+    <string name="file_chooser_unavailable">انتخاب‌گر فایل در این دستگاه در دسترس نیست.</string>
 </resources>

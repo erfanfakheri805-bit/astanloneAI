@@ -1,6 +1,8 @@
 // Prompt 956: Persian-first, portrait chat UI over the unchanged local API
 // (GET /api/status, POST /api/message). All Persian strings and display-only
 // conversions live in i18n.js (window.FaUI).
+// Prompt 957: a text/JSON file can be attached (read on this device into the message box - nothing is
+// sent until the user presses send) and very long messages are shown shortened in their bubble.
 (function () {
   "use strict";
 
@@ -12,6 +14,9 @@
   var inputEl = document.getElementById("input-box");
   var sendBtn = document.getElementById("send-btn");
   var hintsEl = document.getElementById("hints");
+  var attachBtn = document.getElementById("attach-btn");
+  var attachInput = document.getElementById("attach-input");
+  var attachNote = document.getElementById("attach-note");
   var statusDot = document.getElementById("status-dot");
   var statusText = document.getElementById("status-text");
   var sheetEl = document.getElementById("info-sheet");
@@ -22,6 +27,8 @@
   var busy = false;
   var typingEl = null;
   var MAX_INPUT_PX = 140; // ~5 lines; the textarea scrolls beyond this.
+  var MAX_ATTACH_BYTES = 200000; // the same ceiling the assistant applies to one extension package.
+  var MAX_SHOWN_CHARS = 600; // longer user messages are shortened in their bubble only.
 
   function scrollToEnd() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -71,6 +78,7 @@
   function setBusy(value) {
     busy = value;
     sendBtn.disabled = value;
+    attachBtn.disabled = value;
     sendBtn.textContent = value ? S.sending : S.send;
     formEl.setAttribute("aria-busy", value ? "true" : "false");
   }
@@ -184,7 +192,8 @@
   function sendMessage(text) {
     if (busy) return;
     if (hintsEl && hintsEl.parentNode) hintsEl.parentNode.removeChild(hintsEl);
-    addMessage("user", text, false);
+    showAttachNote("");
+    addMessage("user", T.shortenForDisplay(text, MAX_SHOWN_CHARS), false); // display only; `text` is sent whole
     setBusy(true);
     showTyping();
 
@@ -192,7 +201,7 @@
     fetch("/api/message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text })
+      body: JSON.stringify({ text: T.protectPackage(text) }) // an extension package keeps its code indentation
     })
       .then(function (res) {
         httpStatus = res.status;
@@ -228,6 +237,52 @@
       syncInput();
     }
   }
+
+  // ---------------- attaching a text file ----------------
+
+  // One honest line about the attached file (read / refused and why). Empty text hides it.
+  function showAttachNote(message) {
+    attachNote.textContent = message || "";
+    attachNote.hidden = !message;
+  }
+
+  // The file is decoded as UTF-8 text on this device and put into the message box, after anything the user
+  // already typed. A binary or non-UTF-8 file, an empty one and one over the size ceiling are refused with
+  // a reason; nothing is ever uploaded or sent from here.
+  function readAttachment(file) {
+    showAttachNote("");
+    if (!file) return;
+    if (!file.size) { showAttachNote(S.attachEmpty); return; }
+    if (file.size > MAX_ATTACH_BYTES) { showAttachNote(S.attachTooLarge); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var text = typeof reader.result === "string" ? reader.result : "";
+      if (text.indexOf("\uFFFD") !== -1 || text.indexOf("\u0000") !== -1) { showAttachNote(S.attachNotText); return; }
+      if (text.trim() === "") { showAttachNote(S.attachEmpty); return; }
+      var typed = inputEl.value.trim();
+      inputEl.value = typed === "" ? text : typed + "\n\n" + text;
+      syncInput();
+      inputEl.focus();
+      showAttachNote(T.fillTemplate(S.attachReady, { name: String(file.name || "").slice(0, 60), n: Array.from(text).length }));
+    };
+    reader.onerror = function () { showAttachNote(S.attachFailed); };
+    try {
+      reader.readAsText(file, "utf-8");
+    } catch (e) {
+      showAttachNote(S.attachFailed);
+    }
+  }
+
+  attachBtn.addEventListener("click", function () {
+    // (while a message is in flight the button is disabled by setBusy, so it fires no click at all)
+    attachInput.value = ""; // choosing the same file twice must still fire "change"
+    attachInput.click();
+  });
+
+  attachInput.addEventListener("change", function () {
+    var files = attachInput.files;
+    readAttachment(files && files.length ? files[0] : null);
+  });
 
   // ---------------- composer ----------------
 

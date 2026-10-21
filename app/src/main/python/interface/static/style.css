@@ -280,6 +280,35 @@ button, textarea { font-family: inherit; }
 #input-box:focus { border-color: var(--accent); }
 #input-box::placeholder { color: var(--text-low); }
 
+.attach-btn {
+  flex: 0 0 auto;
+  min-width: 56px;
+  min-height: 44px;
+  background: var(--bg-2);
+  color: var(--text-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.attach-btn:active { background: var(--bg-3); }
+.attach-btn:disabled { opacity: 0.55; cursor: default; }
+
+/* One honest line about the attached file (read, refused, too large ...); nothing is sent until the user presses send. */
+.attach-note {
+  flex: 0 0 auto;
+  padding: 6px var(--gutter);
+  padding-inline: max(var(--gutter), env(safe-area-inset-left)) max(var(--gutter), env(safe-area-inset-right));
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  color: var(--text-mid);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
 .send-btn {
   flex: 0 0 auto;
   min-width: 64px;
@@ -415,6 +444,7 @@ button, textarea { font-family: inherit; }
 @media (max-width: 340px) {
   .bubble { max-width: 94%; }
   .icon-btn { padding: 0 10px; }
+  .attach-btn { min-width: 48px; padding: 0 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

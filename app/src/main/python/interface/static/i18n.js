@@ -42,7 +42,15 @@
     errorBadRequest: "درخواست نامعتبر بود. لطفاً دوباره تلاش کنید.",
     emptyReply: "پاسخی دریافت نشد.",
     panelTitle: "اطلاعات سیستم",
-    footerNote: "فقط محلی · بدون وابستگی به سرویس هوش مصنوعی خارجی",
+    footerNote: "بدون وابستگی به سرویس هوش مصنوعی خارجی · اینترنت فقط با اجازهٔ خودت",
+    attach: "پیوست",
+    attachLabel: "پیوست فایل متنی",
+    attachReady: "فایل «{name}» خوانده شد ({n} نویسه) و در کادر پیام گذاشته شد. هنوز چیزی فرستاده نشده؛ بررسی کن و «ارسال» را بزن.",
+    attachTooLarge: "این فایل بزرگ‌تر از ۲۰۰ کیلوبایت است؛ نخوانده شد و چیزی فرستاده نشد.",
+    attachEmpty: "این فایل خالی است؛ چیزی خوانده نشد.",
+    attachNotText: "این فایل متن UTF-8 نیست (فقط فایل متنی یا JSON پشتیبانی می‌شود)؛ نخوانده شد.",
+    attachFailed: "خواندن فایل ناموفق بود؛ چیزی تغییر نکرد.",
+    longMessage: "… (پیام بلند است: {n} نویسه. کوتاه‌شدن فقط برای نمایش است؛ متن کامل فرستاده شد.)",
     version: "نسخه",
     metrics: {
       "m-version": "نسخهٔ دستیار",
@@ -143,6 +151,85 @@
     return String(value);
   }
 
+  // "{n}" / "{name}" placeholders in the string table: numbers are written with Persian
+  // digits, text (a file name) is isolated left-to-right so Latin names never reorder the sentence.
+  function fillTemplate(template, values) {
+    return String(template).replace(/\{(\w+)\}/g, function (all, key) {
+      if (!values || !Object.prototype.hasOwnProperty.call(values, key)) return all;
+      var v = values[key];
+      if (typeof v === "number" && isFinite(v)) return toPersianDigits(v);
+      return "\u2066" + String(v) + "\u2069";
+    });
+  }
+
+  // A very long message (a pasted extension package, say) is SHOWN shortened in its bubble; the
+  // text that is sent to the runtime is never shortened. Counts code points, so no character is cut in half.
+  function shortenForDisplay(text, limit) {
+    if (typeof text !== "string") return "";
+    var max = typeof limit === "number" && limit >= 1 ? Math.floor(limit) : 600;
+    var chars = Array.from(text);
+    if (chars.length <= max) return text;
+    return chars.slice(0, max).join("") + "\n" + fillTemplate(STR.longMessage, { n: chars.length });
+  }
+
+  // The assistant folds every run of whitespace in a message into ONE space before anything reads it. An
+  // extension package carries Python code whose meaning depends on indentation, so just before a message that
+  // holds a package ("schema": "ext.v1") is SENT, that JSON object is rewritten compactly with every space of a
+  // run (and every exotic space character) written as a \uXXXX escape. The JSON means exactly the same; no
+  // whitespace is left to fold. Anything that is not such a package is returned untouched.
+  var PACKAGE_MARK = "ext.v1";
+  var MAX_OBJECT_TRIES = 6;
+  var EXOTIC_SPACE = /[\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g;
+
+  function objectEnd(text, start) {
+    var depth = 0;
+    var inString = false;
+    for (var i = start; i < text.length; i++) {
+      var c = text.charAt(i);
+      if (inString) {
+        if (c === "\\") i++;
+        else if (c === '"') inString = false;
+      } else if (c === '"') {
+        inString = true;
+      } else if (c === "{") {
+        depth++;
+      } else if (c === "}") {
+        depth--;
+        if (depth === 0) return i;
+      }
+    }
+    return -1;
+  }
+
+  function escapeSpaces(json) {
+    return json
+      .replace(/ {2,}/g, function (run) {
+        var out = " ";
+        for (var i = 1; i < run.length; i++) out += "\\u0020";
+        return out;
+      })
+      .replace(EXOTIC_SPACE, function (ch) {
+        return "\\u" + ("0000" + ch.charCodeAt(0).toString(16)).slice(-4);
+      });
+  }
+
+  function protectPackage(text) {
+    if (typeof text !== "string" || text.indexOf(PACKAGE_MARK) === -1) return text;
+    var start = text.indexOf("{");
+    for (var tries = 0; start !== -1 && tries < MAX_OBJECT_TRIES; tries++) {
+      var end = objectEnd(text, start);
+      if (end !== -1) {
+        var obj = null;                       // the slice starts with "{": JSON.parse gives an object or throws
+        try { obj = JSON.parse(text.slice(start, end + 1)); } catch (e) { obj = null; }
+        if (obj && obj.schema === PACKAGE_MARK) {
+          return text.slice(0, start) + escapeSpaces(JSON.stringify(obj)) + text.slice(end + 1);
+        }
+      }
+      start = text.indexOf("{", start + 1);
+    }
+    return text;
+  }
+
   function statusLabel(value) {
     var key = String(value === null || value === undefined ? "" : value).toLowerCase();
     return Object.prototype.hasOwnProperty.call(STATUS, key) ? STATUS[key] : String(value);
@@ -180,6 +267,9 @@
     STATUS: STATUS,
     toPersianDigits: toPersianDigits,
     formatCount: formatCount,
+    fillTemplate: fillTemplate,
+    shortenForDisplay: shortenForDisplay,
+    protectPackage: protectPackage,
     statusLabel: statusLabel,
     localizeReply: localizeReply,
     localizeError: localizeError

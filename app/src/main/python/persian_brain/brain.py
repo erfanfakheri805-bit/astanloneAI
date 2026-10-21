@@ -41,6 +41,7 @@ from self_builder.registry import CAP_ACTIVE
 from understanding import persian_nlu
 
 from . import activation
+from . import hub_hooks
 from . import intents as I
 from . import messages as M
 from . import normalization as nz
@@ -114,6 +115,10 @@ class PersianBrain:
 
     # --------------------------------------------------------------- routing
     def _respond(self, text, scope):
+        if scope == activation.SCOPE_FULL:
+            early = hub_hooks.early(self, text)          # the hub's open question / a pasted package / an installed extension
+            if early is not None:
+                return self._hub_reply(scope, early[0], early[1])
         norm = nz.normalize(text)
         if not norm or len(text) > MAX_INPUT_CHARS:
             return None
@@ -132,6 +137,15 @@ class PersianBrain:
             dlg.commit()
         self.last_trace = {"intent": turn.intent.to_dict() if turn.intent else None, "scope": scope,
                            "claimed": reply is not None}
+        if reply is not None and scope == activation.SCOPE_FULL:
+            hub_hooks.note_served(self)                  # real evidence for the capability map: this brain really answered
+        return reply
+
+    def _hub_reply(self, scope, sub, reply):
+        """A reply of the hub's own (hub_hooks): traced like any other and counted as a real answer."""
+        self.last_trace = {"intent": {"kind": "HUB", "sub": sub, "confidence": 1.0, "evidence": ["hub"], "slots": {}},
+                           "scope": scope, "claimed": True}
+        hub_hooks.note_served(self)
         return reply
 
     def _route(self, turn):
@@ -149,6 +163,11 @@ class PersianBrain:
                           persian_nlu.INTENT_DISLIKE, persian_nlu.INTENT_ASK_USER_NAME):
             dlg.clear_pending()
             return None
+        if turn.full:                                      # a hub command is a new topic (it withdraws any open dialogue question)
+            hub_hit = hub_hooks.command(self, turn)
+            if hub_hit is not None:
+                turn.intent = I.Intent("HUB", hub_hit[0], 1.0, ["hub_command"])
+                return hub_hit[1]
         if dlg.pending is not None:
             turn.intent = I.Intent(I.CONTINUATION, "answer", 0.8, ["pending:" + dlg.pending_type])
             reply = self._answer_pending_free(turn)
@@ -186,14 +205,17 @@ class PersianBrain:
             if kind == I.REQUEST and sub == "build":
                 return self._build_request(turn, intent.slots["request"])
             if kind == I.REQUEST and sub == "build_unsupported":
-                return M.unsupported_build()
+                return hub_hooks.unsupported(self, turn) if full else M.unsupported_build()
             if kind == I.TEACHING:
                 return self._teach_command(turn, intent) if full else None
             if kind == I.REFERENCE:
                 return self._reference(turn, intent)
             if kind == I.CONTINUATION:
                 return self._continue(turn, intent)
-            return self._general(turn, intent)
+            reply = self._general(turn, intent)
+            if reply is None and full:                     # nothing answered: if it asks for something the app cannot do yet, say exactly why
+                reply = hub_hooks.gap_reply(self, turn)
+            return reply
         except Exception as e:
             self._log_error(e, turn.text)
             return M.unexpected_error()

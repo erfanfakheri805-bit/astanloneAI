@@ -37,10 +37,16 @@
       <div class="hints-label">نمونه‌هایی برای شروع</div>
       <button type="button" class="chip" data-insert="TEACH sky IS the atmosphere above the earth">یاد دادن یک مطلب</button>
       <button type="button" class="chip" data-insert="ASK sky">پرسیدن از مطلب</button>
+      <button type="button" class="chip" data-insert="چطور افزونه اضافه کنم؟">افزودن قابلیت جدید</button>
+      <button type="button" class="chip" data-insert="نقشهٔ قابلیت‌ها را نشان بده">نقشهٔ قابلیت‌ها</button>
     </div>
   </main>
 
+  <div class="attach-note" id="attach-note" role="status" aria-live="polite" hidden></div>
+
   <form class="composer" id="input-form" autocomplete="off">
+    <button type="button" class="attach-btn" id="attach-btn" aria-label="پیوست فایل متنی" title="پیوست فایل متنی">پیوست</button>
+    <input type="file" id="attach-input" accept=".json,.txt,.md,text/plain,application/json" hidden />
     <textarea
       id="input-box"
       rows="1"
@@ -84,7 +90,7 @@
       <div class="muted small">هنوز ارتقایی انجام نشده است.</div>
     </div>
 
-    <div class="sheet-footer muted small">فقط محلی · بدون وابستگی به سرویس هوش مصنوعی خارجی</div>
+    <div class="sheet-footer muted small">بدون وابستگی به سرویس هوش مصنوعی خارجی · اینترنت فقط با اجازهٔ خودت</div>
   </div>
 </section>
 

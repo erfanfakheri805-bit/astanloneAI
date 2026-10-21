@@ -168,7 +168,7 @@ The path from the APK is the existing one: Android UI -> WebView -> local HTTP s
 `files_dir/data/self_builder` + `memory.db`. The audit test drives exactly this entry point in real
 subprocesses (SIGKILL between them).
 
-## 8. Package `persian_brain/` (8 modules)
+## 8. Package `persian_brain/` (14 modules)
 
 A deterministic, state-aware Persian conversation layer: normalization (Unicode, Arabic/Persian
 letters, ZWNJ vs space, digit styles, punctuation, elongation) -> intent classification
@@ -187,6 +187,8 @@ the dialogue state) -> replies built from fixed templates and the facts at hand.
   `STANDALONE_AI_PERSIAN_BRAIN=1`; scope `capabilities` for a plain library `Core` (only the
   capability domain is claimed, so the older frozen tests that pin the legacy greeting replies
   keep passing); `STANDALONE_AI_PERSIAN_BRAIN=0` switches it off.
+
+Since Prompt 957 the package has six more modules that connect this conversation to the brain hub (`brain_hub/`, `ext_runtime/`, `net_tools/`, `model_runtime/`, `android_adapters/`): `hub_state.py` (the one open question of the hub, persisted with a 30-minute TTL), `hub_intents.py` (closed word lists -> hub commands), `hub_messages.py` and `hub_messages_tools.py` (Persian replies built only from real results), `hub_commands.py` (one handler per command) and `hub_hooks.py` (the four hooks `brain.py` calls, only in the `full` scope). Nothing the hub changes happens without an explicit yes («بله»); see `docs/brain_hub_prompt957.md`.
 
 ## 9. Tests
 
@@ -216,7 +218,10 @@ tests (Prompts 715-719, 786) were not touched.
 
 * Three archetypes only. Anything else (a joke generator, accounting software, a new screen, a
   new model) is *refused*, not attempted. Extending the set means writing a new reviewed
-  template, spec validator and test generator - a developer task by design.
+  template, spec validator and test generator - a developer task by design. (Since Prompt 957
+  the application has a second, general mechanism next to this one: validated `ext.v1`
+  extension packages that the user supplies from inside the app; see
+  `docs/brain_hub_prompt957.md`. The Self-Builder itself is unchanged.)
 * The self-built capabilities are pure computations. There is no capability that reads or writes
   files, uses the network or the phone's hardware, and none can be granted.
 * The Persian understanding is a fixed grammar over closed word lists, not a language model:

@@ -83,8 +83,32 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
-      - name: Assemble debug APK
+      # Prompt 958: first try the build that includes the on-device language-model engine. If that one fails (for
+      # example a dependency cannot be resolved), build the same app without the engine so that there is always an
+      # APK to install; the release notes say which of the two this is, and the log of the failed try is kept.
+      - name: Assemble debug APK (with the on-device language-model engine)
+        id: with_engine
+        continue-on-error: true
+        shell: bash
+        run: gradle --no-daemon :app:assembleDebug -PwithLlm=true 2>&1 | tee engine-build.log
+      - name: Keep the log of the engine build when it failed
+        if: steps.with_engine.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-build-log
+          path: engine-build.log
+          if-no-files-found: warn
+      - name: Assemble debug APK (without the engine - only when the first build failed)
+        if: steps.with_engine.outcome != 'success'
         run: gradle --no-daemon :app:assembleDebug
+      - name: Note whether the engine is in this APK
+        shell: bash
+        run: |
+          if [ "${{ steps.with_engine.outcome }}" = "success" ]; then
+            echo "ENGINE_NOTE=Language-model engine (MediaPipe): INCLUDED." >> "$GITHUB_ENV"
+          else
+            echo "ENGINE_NOTE=Language-model engine (MediaPipe): NOT included in this build (the build that includes it failed; its log is in the engine-build-log artifact)." >> "$GITHUB_ENV"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: standalone-ai-debug-apk
@@ -95,4 +119,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="debug-build-${{ github.run_number }}"
-          gh release create "$TAG" app/build/outputs/apk/debug/*.apk             --repo "$GITHUB_REPOSITORY"             --target "$GITHUB_SHA"             --title "Debug APK build ${{ github.run_number }}"             --notes "Debug APK built from commit $GITHUB_SHA. Download the .apk file below and install it on your Android phone."             --prerelease
+          gh release create "$TAG" app/build/outputs/apk/debug/*.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Debug APK build ${{ github.run_number }}" \
+            --notes "Debug APK built from commit $GITHUB_SHA. $ENGINE_NOTE Download the .apk file below and install it on your Android phone." \
+            --prerelease

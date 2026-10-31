@@ -3,4 +3,8 @@
     <string name="app_name">دستیار هوشمند</string>
     <string name="startup_error">خطا در راه‌اندازی برنامه: %1$s</string>
     <string name="file_chooser_unavailable">انتخاب‌گر فایل در این دستگاه در دسترس نیست.</string>
+    <string name="voice_prompt">بگو چه می‌خواهی…</string>
+    <string name="voice_unavailable">تشخیص گفتار در این گوشی در دسترس نیست (برنامهٔ گوگل یا سرویس گفتار لازم است).</string>
+    <string name="accessibility_service_label">دستیار هوشمند (کار با صفحهٔ برنامه‌ها)</string>
+    <string name="accessibility_service_description">فقط وقتی خودت در چت اجازه بدهی، دستیار می‌تواند در همان برنامه‌ای که انتخاب کرده‌ای متنِ صفحه را بخواند، در آن تایپ کند و دکمه‌ای را بزند؛ آن هم برای مدتی کوتاه. رمزها خوانده نمی‌شوند و تنظیماتِ اندروید، نصبِ برنامه، مجوزها و فروشگاه هرگز لمس نمی‌شوند. هر وقت خواستی همین‌جا خاموشش کن.</string>
 </resources>

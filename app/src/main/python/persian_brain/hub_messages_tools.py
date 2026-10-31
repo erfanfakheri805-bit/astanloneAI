@@ -33,8 +33,9 @@ def _size(n):
 
 
 # ------------------------------------------------------------------ capability map
-def overview(summary, usable_titles, gap_lines, missing_only=False):
-    """`summary` = graph.summary(); `usable_titles` = what can be used now; `gap_lines` = ready-made lines about what cannot yet."""
+def overview(summary, usable_titles, gap_lines, missing_only=False, notes=()):
+    """`summary` = graph.summary(); `usable_titles` = what can be used now; `gap_lines` = ready-made lines about what cannot yet;
+    `notes` = extra honest lines shown under the usable list (for example the state of the language model)."""
     states = summary.get("by_state") or {}
     total = summary.get("total") or sum(states.values())
     usable = summary.get("usable", sum(states.get(s, 0) for s in ("active", "available")))
@@ -51,6 +52,7 @@ def overview(summary, usable_titles, gap_lines, missing_only=False):
                 lines.append("• %s: %s" % (label, fa(states[key])))
         if usable_titles:
             lines.append("قابل استفاده الان: " + "، ".join(usable_titles))
+        lines.extend(notes)
         if gap_lines:
             lines.append("چیزهایی که هنوز نمی‌توانم (نمونه):")
     else:
@@ -71,12 +73,14 @@ def gap_reply(gap, lead=True):
     if gap.next_fa:
         lines.append("قدم بعدی: " + gap.next_fa)
     lines.append("اگر بخشی از این با پایتونِ ساده شدنی است، بگو «پرامپت افزونه» تا یک بستهٔ قابل‌آزمایش بگیری (من چیزی را نصب‌شده نمی‌دانم مگر آزمونش را گذرانده و تو «بله» گفته باشی).")
+    lines.append("یا بگو «از ChatGPT بخواه …» (یا Claude) تا درخواستت را برایش آماده کنم؛ فقط بعد از «بله»ی تو فرستاده می‌شود و جوابش را فقط به‌عنوان متن می‌خوانم و بررسی می‌کنم.")
     return "\n".join(lines)
 
 
 def unsupported_with_hint(base):
     """The old «I cannot build that» text plus the way to extend the app from inside it."""
-    return base + "\nاگر آن چیزی که می‌خواهی با پایتونِ ساده شدنی است، بگو «پرامپت افزونه برای …» تا متن آمادهٔ درخواست را بدهم؛ جوابش را اینجا بچسبان تا آزمایشش کنم."
+    return (base + "\nاگر آن چیزی که می‌خواهی با پایتونِ ساده شدنی است، بگو «پرامپت افزونه برای …» (یا «پرامپت بسته برای …») تا متن آمادهٔ درخواست را بدهم؛ جوابش را اینجا بچسبان یا از آن برنامه «اشتراک‌گذاری» کن تا آزمایشش کنم."
+            "\nیا بگو «از ChatGPT بخواه …» تا درخواست را برایش آماده کنم (فقط بعد از «بله»ی تو فرستاده می‌شود).")
 
 
 # ------------------------------------------------------------------ models
@@ -93,7 +97,8 @@ def models_list(statuses, runtimes):
             if policy and not st.usable:
                 lines.append("   مجوز: %s" % policy)
     else:
-        lines.append("هیچ مدلی ثبت نشده است. برای ثبت، کارت مدل (یک JSON با model_id, title, version, format, source_url, sha256, size_bytes, license) را اینجا بچسبان؛ ثبت‌کردن چیزی دانلود نمی‌کند.")
+        lines.append("هیچ مدلی ثبت نشده است. ساده‌ترین راه: فایل یک مدل («.task» مثل Gemma، یا «.gguf») را از منبعِ مطمئن روی گوشی بگیر و با دکمهٔ «📦 فایل مدل» (کنار کادر پیام) وارد کن؛ "
+                     "بگو «چطور مدل وارد کنم؟» تا قدم‌به‌قدم بگویم. راهِ دیگر: کارت مدل (یک JSON با model_id, title, version, format, source_url, sha256, size_bytes, license) را اینجا بچسبان؛ ثبت‌کردن چیزی دانلود نمی‌کند.")
     if runtimes:
         lines.append("موتورهای اجرای مدل در این نسخه:")
         for rt in runtimes:

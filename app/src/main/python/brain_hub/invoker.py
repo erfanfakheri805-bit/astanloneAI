@@ -174,26 +174,31 @@ def _tool_nodes(hub):
     return out
 
 
+_LLM_FORMATS = frozenset({"task", "gguf"})            # the formats of real language models (the bundled n-gram file is not one)
+
+
 def _local_model_node(hub):
     models = hub.list_models()
     engines = hub.model_runtimes_info()
     usable = [m for m in models if m.usable]
     common = dict(node_id="tool.local_model", kind="tool", title_fa="مدل زبانی محلی", title_en="Local language model",
-                  entry="پیام ← hub.ask_model ← model_runtime ← (n-gram یا llama.cpp)", actions=("generate",),
+                  entry="پیام ← hub.ask_model ← model_runtime ← (n-gram؛ MediaPipe برای «.task»؛ llama.cpp برای «.gguf»)", actions=("generate",),
                   summary_fa="مدلی که روی خود گوشی بارگذاری و با یک آزمون استنتاج واقعی تأیید شده باشد. مدل n-gram همراه برنامه فقط ادامهٔ متن می‌سازد و یک مدل زبانی بزرگ (LLM) نیست.",
                   summary_en="A model that was loaded on this phone and confirmed by a real inference test. The bundled n-gram model only continues text and is not an LLM.")
     if usable:
         return CapabilityNode(state="active", tested=True, evidence=_clip(("%s: آزمون استنتاج گذشت" % m.model_id for m in usable), 3), **common)
     blockers = []
     if not models:
-        blockers.append(_bk("model", "هیچ مدلی ثبت نشده؛ کارت یک مدل را بفرست یا فایلش را در پوشهٔ ورودی بگذار.",
-                            "No model is registered; send a model card or put its file in the inbox folder."))
+        blockers.append(_bk("model", "هیچ مدلی ثبت نشده؛ فایل یک مدل («.task» مثل Gemma، یا «.gguf») را از منبعِ مطمئن روی گوشی بگیر و با دکمهٔ «📦 فایل مدل» وارد کن (یا کارتِ مدل را همین‌جا بچسبان).",
+                            "No model is registered; get a model file ('.task' such as Gemma, or '.gguf') from a source you trust and import it with the model-file button (or paste a model card here)."))
     else:
         blockers.append(_bk("model", "مدل‌های ثبت‌شده هنوز همهٔ مراحل تأیید (هش، سازگاری، بارگذاری، آزمون واقعی) را نگذرانده‌اند.",
                             "The registered models have not passed every stage yet (hash, compatibility, load, real test)."))
-    if not any(e["available"] and "gguf" in e["formats"] for e in engines):
-        blockers.append(_bk("native_code", "موتور مدل‌های بزرگ (llama.cpp) روی این دستگاه نصب نیست و در این APK هم همراه نشده است.",
-                            "The engine for larger models (llama.cpp) is not installed on this device or bundled in this APK."))
+    if not any(e["available"] and set(e["formats"]) & _LLM_FORMATS for e in engines):
+        blockers.append(_bk("native_code", "هیچ موتورِ مدل زبانی روی این دستگاه فعال نیست: فایلِ «.task» موتور MediaPipe می‌خواهد که باید همراهِ APK ساخته شده باشد (و فقط روی خودِ گوشی کار می‌کند)؛ "
+                                           "فایلِ «.gguf» بستهٔ llama.cpp می‌خواهد که در این APK نیست.",
+                            "No language-model engine is active on this device: a '.task' file needs the MediaPipe engine, which has to be built into the APK (and runs only on the phone itself); "
+                            "a '.gguf' file needs the llama.cpp package, which this APK does not include."))
     return CapabilityNode(state="registered" if models else "dependency_blocked", blockers=tuple(blockers),
                           evidence=("مدل‌های ثبت‌شده: %d" % len(models),), **common)
 
@@ -271,6 +276,108 @@ def _feature_title(feature_id, lang):
     return spec.title_fa if lang == "fa" else spec.title_en
 
 
+# ============================================================ the growth platform
+def _packs_node(hub):
+    common = dict(node_id="tool.packs", kind="tool", title_fa="بسته‌های رشد (بستهٔ کد و بستهٔ زبان)", title_en="Growth packs (code and language)",
+                  summary_fa="قابلیت یا دانشِ تازه‌ای که ChatGPT یا Claude می‌نویسد، بدون ساختن نسخهٔ تازهٔ برنامه: بررسیِ ایستا، آزمون در محیطِ ایزوله و فقط با «بله»ی تو نصب می‌شود؛ نسخه‌بندی و بازگشت دارد و در خرابی برنامه به حالتِ امن می‌رود.",
+                  summary_en="New abilities or knowledge written by ChatGPT or Claude, without building a new app version: static scan, a test in an isolated sandbox, installed only with your yes; "
+                             "versioned, reversible, and the app drops to safe mode if something breaks.",
+                  entry="چت یا اشتراک‌گذاری ← pack_system (اسکن ← آزمون در محیط ایزوله ← «بله»ی تو ← نصبِ نسخه‌دار)")
+    pm = None
+    try:
+        from pack_system import boot
+        pm = boot.manager_for(hub.memory)
+    except Exception:
+        pm = None
+    if pm is None:
+        return CapabilityNode(state="dependency_blocked", blockers=(
+            _bk("dependency", "پوشهٔ بسته‌ها در این اجرا در دسترس نیست (مسیر ذخیره‌سازی تعیین نشده).", "The packs folder is not available in this run (no storage path)."),), **common)
+    if not pm.exists():
+        return CapabilityNode(state="available", evidence=("هنوز بسته‌ای نصب نشده", "روی دستگاه واقعی هنوز آزموده نشده"), **common)
+    summary = pm.summary()
+    if int((summary.get("safe_mode") or {}).get("level") or 0) > 0:
+        return CapabilityNode(state="dependency_blocked", blockers=(
+            _bk("approval", "برنامه به حالتِ امن رفته و بسته‌ها بارگذاری نمی‌شوند؛ بگو «از حالت امن خارج شو» وقتی آماده‌ای.", "The app is in safe mode and packs are not loaded; say so when you are ready to leave it."),),
+            evidence=("حالت امن",), **common)
+    active = int(summary.get("active") or 0)
+    if active:
+        return CapabilityNode(state="active", tested=True, evidence=("%d بستهٔ فعال که پیش از نصب در محیط ایزوله آزموده شده‌اند" % active,), **common)
+    return CapabilityNode(state="available", evidence=("بستهٔ فعالی نیست (نصب‌شده: %d)" % int(summary.get("installed") or 0),), **common)
+
+
+def _teacher_node(hub, native):
+    common = dict(node_id="tool.teacher", kind="tool", title_fa="پرسیدن از ChatGPT و Claude (آموزگار)", title_en="Asking ChatGPT and Claude (the teacher)",
+                  summary_fa="درخواست را آماده می‌کنم و فقط با «بله»ی تو به برنامه یا سایتِ آن دستیار می‌فرستم؛ جواب را از کلیپ‌بورد یا «اشتراک‌گذاری» می‌خوانم و فقط به‌عنوان متن نشان می‌دهم "
+                             "(اگر بسته باشد، با بررسی و «بله»ی جدا نصب می‌شود). تایپ در برنامهٔ دیگر فقط با سرویس دسترسی‌پذیری‌ای که خودت روشن کرده‌ای.",
+                  summary_en="I prepare the request and send it to that assistant's app or site only with your yes; I read the answer from the clipboard or the share sheet and show it only as text "
+                             "(a pack in it is installed only after its own review and your own yes). Typing in the other app needs the accessibility service you switched on yourself.",
+                  entry="چت («از ChatGPT بخواه …») ← teacher.service ← native_bridge (اشتراک‌گذاری، کلیپ‌بورد، دسترسی‌پذیری)")
+    if not native:
+        return CapabilityNode(state="dependency_blocked", blockers=(
+            _bk("dependency", "فرستادن درخواست به برنامهٔ دیگر فقط روی گوشی (برنامهٔ اندروید) کار می‌کند و این اجرا روی گوشی نیست.", "Sending a request to another app works only on the phone (the Android app), and this run is not on the phone."),),
+            **common)
+    evidence = ["روی دستگاه واقعی هنوز آزموده نشده"]
+    try:
+        from teacher import service as teacher_service
+        titles = [r["title"] for r in teacher_service.get_service(hub).assistants() if r.get("installed")]
+        evidence.insert(0, ("برنامهٔ روی گوشی: " + "، ".join(titles)) if titles else "برنامهٔ دستیاری روی گوشی دیده نشد؛ سایتشان باز می‌شود")
+    except Exception:
+        pass
+    return CapabilityNode(state="available", evidence=tuple(evidence), **common)
+
+
+_NATIVE_DOORS = (
+    ("voice_input", "گفتار به متن (دکمهٔ «🎤 گفتار»)", "Speech to text (the microphone button)",
+     "پنجرهٔ گفتارِ خودِ اندروید حرفت را به متن تبدیل می‌کند و در کادر پیام می‌گذارد؛ تا «ارسال» نزنی چیزی فرستاده نمی‌شود. بدون مجوزِ میکروفونِ برنامه کار می‌کند.",
+     "Android's own speech dialog turns your words into text and puts it in the message box; nothing is sent until you press send. It needs no microphone permission of the app."),
+    ("file_pick", "انتخاب فایل مدل یا فایل (دکمهٔ «📦 فایل مدل»)", "Picking a model file or a file (the model-file button)",
+     "پنجرهٔ انتخابِ فایلِ اندروید؛ فایلی که خودت انتخاب کنی در پوشهٔ ورودیِ برنامه کپی می‌شود (بدون مجوزِ دسترسی به همهٔ فایل‌ها) و فقط با «بله»ی تو وارد می‌شود.",
+     "Android's file picker; the file you choose is copied into the app's inbox (no all-files permission) and imported only with your yes."),
+    ("share_target", "دریافت متن از برنامهٔ دیگر (اشتراک‌گذاری به این برنامه)", "Receiving text from another app (share to this app)",
+     "از ChatGPT یا Claude می‌توانی جواب را با «اشتراک‌گذاری» به این برنامه بفرستی؛ فقط خوانده و پیشنهاد می‌شود و بدون «بله»ی تو چیزی نصب نمی‌شود.",
+     "From ChatGPT or Claude you can share an answer to this app; it is only read and proposed, and nothing is installed without your yes."),
+    ("accessibility", "سرویس دسترسی‌پذیری (دیدن و تایپ در برنامهٔ دیگر)", "Accessibility service (seeing and typing in another app)",
+     "فقط وقتی خودت در تنظیمات اندروید روشنش کنی و برای همان برنامه اجازه بدهی؛ برنامه نمی‌تواند خودش را روشن کند و صفحه‌های تنظیمات، نصب برنامه و فروشگاه هرگز لمس نمی‌شوند.",
+     "Only when you switch it on in Android settings and allow that one app; the app cannot enable itself and the settings, installer and store screens are never touched."),
+)
+
+
+def _accessibility_enabled(hub):
+    """True / False when the door can tell whether the user switched the service on, None when it cannot be known. Never raises."""
+    try:
+        from teacher import service as teacher_service
+        result = teacher_service.get_service(hub).doors.screen.status()
+        if getattr(result, "ok", False) and isinstance(result.data, dict):
+            return bool(result.data.get("enabled"))
+    except Exception:
+        pass
+    return None
+
+
+def _native_door_nodes(hub, native):
+    out = []
+    for feature, title_fa, title_en, summary_fa, summary_en in _NATIVE_DOORS:
+        base = dict(node_id="android." + feature, kind="android", title_fa=title_fa, title_en=title_en, summary_fa=summary_fa, summary_en=summary_en,
+                    entry="صفحه ← AndroidBridge ← MainActivity (Java) ← پایتون")
+        if feature not in native:
+            out.append(CapabilityNode(state="dependency_blocked", blockers=(
+                _bk("new_apk", "این APK این بخش را ندارد (یا برنامه روی اندروید اجرا نمی‌شود)؛ نسخه‌ای که از GitHub ساخته می‌شود دارد.",
+                    "This APK does not have this part (or the app is not running on Android); the version built from GitHub has it."),), **base))
+        elif feature == "accessibility" and _accessibility_enabled(hub) is not True:
+            out.append(CapabilityNode(state="permission_blocked", blockers=(
+                _bk("permission", "سرویس دسترسی‌پذیری را باید خودت در تنظیمات اندروید روشن کنی (بگو «تنظیمات دسترسی‌پذیری»). روی اندروید ۱۳ به بعد، برای برنامه‌ای که از فروشگاه نصب نشده، اول در صفحهٔ اطلاعات برنامه «تنظیمات محدودشده» را هم باید اجازه بدهی.",
+                    "You must switch the accessibility service on yourself in Android settings. On Android 13+, for an app not installed from a store, you must first allow 'restricted settings' on the app info page."),),
+                evidence=("روی دستگاه واقعی هنوز آزموده نشده",), **base))
+        else:
+            out.append(CapabilityNode(state="available", evidence=("در این APK هست", "روی دستگاه واقعی هنوز آزموده نشده"), **base))
+    return out
+
+
+def _platform_nodes(hub):
+    native = hub.native_features()
+    return [_packs_node(hub), _teacher_node(hub, native)] + _native_door_nodes(hub, native)
+
+
 # =============================================================== scaffolds + gaps
 def _scaffold_nodes(hub):
     out = []
@@ -290,7 +397,7 @@ def _gap_nodes(hub):
             for g in gaps.GAPS]
 
 
-_BUILDERS = (_brain_nodes, _extension_nodes, _self_builder_nodes, _tool_nodes, _model_nodes, _android_nodes,
+_BUILDERS = (_brain_nodes, _extension_nodes, _self_builder_nodes, _tool_nodes, _model_nodes, _android_nodes, _platform_nodes,
              _scaffold_nodes, _gap_nodes)
 
 

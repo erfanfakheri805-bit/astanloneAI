@@ -13,8 +13,11 @@ extension permission OFF) happen at once because they cannot grant anything.
 
 from . import hub_intents as HI
 from . import hub_messages as HM
+from . import hub_messages_llm as HL
+from . import hub_messages_packs as HP
 from . import hub_messages_tools as HT
 from . import hub_state
+from . import hub_teacher
 
 
 class Ctx:
@@ -107,7 +110,14 @@ def h_overview(ctx, cmd):
             why = node.blockers[0].text_fa if node.blockers else ""
             gaps.append("• %s — %s%s" % (node.title_fa, node.to_dict()["state_label_fa"], ("؛ " + why) if why else ""))
     limit = 14 if cmd.slots.get("missing") else 6
-    return HT.overview(summary, usable, gaps[:limit], missing_only=bool(cmd.slots.get("missing")))
+    notes = []
+    model = graph.get("tool.local_model")                 # the one thing a user asks about first: can it answer anything? say where that stands
+    if model is not None and not model.usable:
+        if model.state == "registered":
+            notes.append("مدل زبانی (برای جواب‌دادن به هر پرسش): فایلش وارد شده ولی هنوز قابل اجرا نیست؛ بگو «وضعیت مدل‌ها» تا علتش را دقیق بگویم.")
+        else:
+            notes.append("مدل زبانی (برای جواب‌دادن به هر پرسش): هنوز ندارم؛ فایل یک مدل را با دکمهٔ «📦 فایل مدل» وارد کن (بگو «چطور باهوش‌ترت کنم؟»).")
+    return HT.overview(summary, usable, gaps[:limit], missing_only=bool(cmd.slots.get("missing")), notes=notes)
 
 
 # ------------------------------------------------------------------ extensions
@@ -277,6 +287,30 @@ def h_model_remove(ctx, cmd):
     return HT.ask_model_remove((st.card or {}).get("title") or st.model_id)
 
 
+def h_model_import(ctx, cmd):
+    """«مدل را از فایل وارد کن»: pick the file in the app's inbox, then ASK (one «بله») - the file is read and copied only after it."""
+    hub = ctx.hub
+    wanted = cmd.slots.get("file")
+    if wanted:
+        chosen = hub.find_inbox_file(wanted)
+        if chosen is None:
+            return HL.import_missing(wanted, [f["name"] for f in hub.inbox_model_files()])
+    else:
+        files = hub.inbox_model_files()
+        if not files:
+            return HL.import_how()
+        if len(files) > 1:
+            return HL.import_which(files)
+        chosen = files[0]
+    name = chosen["name"]
+    engines = [r for r in hub.model_runtimes_info() if chosen["format"] in (r.get("formats") or ())]
+    engine_ok = any(r.get("available") for r in engines)
+    reason = "" if engine_ok else next((str(r.get("reason_fa")) for r in engines if r.get("reason_fa")), "")
+    if not ctx.arm("model_import", {"file_name": name, "model_id": hub.model_id_for_file(name)}):
+        return HT.unexpected()
+    return HL.import_ask(name, chosen["size"], chosen["format"], hub.license_for_file(name), engine_ok, reason)
+
+
 def h_model_license(ctx, cmd):
     st, reply = _pick_model(ctx, cmd, "مجوزش را تأیید کنم")
     if st is None:
@@ -327,13 +361,130 @@ def h_repair_store(ctx, cmd):
     return HM.store_unusable_ask()
 
 
+# ------------------------------------------------------------------ packs (see pack_system)
+def pack_manager(memory):
+    """The pack manager of this app, or None when the pack system cannot be reached."""
+    try:
+        from pack_system import boot
+        return boot.manager_for(memory)
+    except Exception:
+        return None
+
+
+def _pick_pack(ctx, action):
+    """(pack row, None) or (None, reply): the one the sentence names, else the only one installed."""
+    pm = pack_manager(ctx.memory)
+    rows = pm.list() if pm is not None else []
+    if not rows:
+        return None, HP.no_packs()
+    text = ctx.turn.text if ctx.turn is not None else ctx.norm
+    row = pm.find(text)
+    if row is None and len(rows) == 1:
+        row = rows[0]
+    if row is None:
+        return None, HP.which_pack(action, rows)
+    return row, None
+
+
+def h_pack_list(ctx, cmd):
+    pm = pack_manager(ctx.memory)
+    if pm is None:
+        return HT.unexpected()
+    return HP.pack_list(pm.list(), pm.pending(), pm.restart_needed(), pm.safe_mode())
+
+
+def h_pack_history(ctx, cmd):
+    pm = pack_manager(ctx.memory)
+    if pm is None:
+        return HT.unexpected()
+    row = pm.find(ctx.turn.text if ctx.turn is not None else ctx.norm)
+    return HP.pack_history(pm.history(row["pack_id"] if row else None, limit=12))
+
+
+def h_pack_status(ctx, cmd):
+    pm = pack_manager(ctx.memory)
+    if pm is None:
+        return HT.unexpected()
+    return HP.status(pm.summary())
+
+
+def h_pack_rollback(ctx, cmd):
+    row, reply = _pick_pack(ctx, "برگردانم")
+    if row is None:
+        return reply
+    active, versions = row["active_version"], row["versions"]
+    wanted = cmd.slots.get("version")
+    older = [v for v in versions if active is None or v < active]
+    if wanted is not None and wanted not in versions:
+        return HP.rollback_failed({"code": "E_PACK_NO_VERSION"})
+    if wanted is None and not older:
+        return HP.rollback_failed({"code": "E_PACK_NO_PREVIOUS"})
+    target = wanted if wanted is not None else max(older)
+    if target == active:
+        return "نسخهٔ %s از «%s» همین حالا هم نسخهٔ فعال است؛ چیزی تغییر نکرد." % (target, row["title"])
+    if not ctx.arm("pack_rollback", {"pack_id": row["pack_id"], "title": row["title"], "to_version": target}):
+        return HT.unexpected()
+    return HP.ask_rollback(row["title"], active, target)
+
+
+def _pack_switch(ctx, action, qtype, ask, wanted_state):
+    row, reply = _pick_pack(ctx, action)
+    if row is None:
+        return reply
+    if wanted_state == "off" and row["state"] in ("disabled", "quarantined"):
+        return "بستهٔ «%s» همین حالا هم فعال نیست." % row["title"]
+    if wanted_state == "on" and row["state"] in ("active", "pending_restart"):
+        return "بستهٔ «%s» همین حالا هم فعال است." % row["title"]
+    if not ctx.arm(qtype, {"pack_id": row["pack_id"], "title": row["title"]}):
+        return HT.unexpected()
+    return ask(row["title"])
+
+
+def h_pack_disable(ctx, cmd):
+    return _pack_switch(ctx, "خاموش کنم", "pack_disable", HP.ask_disable, "off")
+
+
+def h_pack_enable(ctx, cmd):
+    return _pack_switch(ctx, "روشن کنم", "pack_enable", HP.ask_enable, "on")
+
+
+def h_pack_remove(ctx, cmd):
+    return _pack_switch(ctx, "حذف کنم", "pack_remove", HP.ask_remove, "any")
+
+
+def h_pack_safe_leave(ctx, cmd):
+    pm = pack_manager(ctx.memory)
+    if pm is None:
+        return HT.unexpected()
+    if not pm.safe_mode()["level"]:
+        return HP.not_in_safe_mode()
+    if not ctx.arm("pack_safe_leave", {}):
+        return HT.unexpected()
+    return HP.ask_safe_leave()
+
+
+def h_pack_help(ctx, cmd):
+    return HP.help_text()
+
+
+def h_pack_prompt(ctx, cmd):
+    from brain_hub import pack_prompt
+    wish = cmd.slots.get("wish") or ""
+    remembered = "" if wish else hub_state.load_wish(ctx.memory, ctx.clock)
+    return HP.prompt_reply(pack_prompt.build_prompt(wish or remembered, kind=cmd.slots.get("kind") or "code"), from_memory=bool(remembered))
+
+
 HANDLERS = {
     HI.OVERVIEW: h_overview, HI.EXT_LIST: h_ext_list, HI.EXT_HISTORY: h_ext_history, HI.EXT_ROLLBACK: h_ext_rollback,
     HI.EXT_DISABLE: h_ext_disable, HI.EXT_ENABLE: h_ext_enable, HI.EXT_PERM_GRANT: h_ext_perm_grant,
     HI.EXT_PERM_REVOKE: h_ext_perm_revoke, HI.NET_ON: h_net_on, HI.NET_OFF: h_net_off, HI.NET_STATUS: h_net_status,
     HI.FETCH: h_fetch, HI.MODELS_LIST: h_models_list, HI.MODEL_DOWNLOAD: h_model_download, HI.MODEL_PREPARE: h_model_prepare,
-    HI.MODEL_REMOVE: h_model_remove, HI.MODEL_LICENSE: h_model_license, HI.ANDROID_STATUS: h_android_status,
+    HI.MODEL_REMOVE: h_model_remove, HI.MODEL_LICENSE: h_model_license, HI.MODEL_IMPORT: h_model_import, HI.ANDROID_STATUS: h_android_status,
     HI.PERMISSIONS: h_permissions, HI.EXT_PROMPT: h_ext_prompt, HI.EXT_HELP: h_ext_help, HI.REPAIR_STORE: h_repair_store,
+    HI.PACK_LIST: h_pack_list, HI.PACK_HISTORY: h_pack_history, HI.PACK_ROLLBACK: h_pack_rollback, HI.PACK_DISABLE: h_pack_disable,
+    HI.PACK_ENABLE: h_pack_enable, HI.PACK_REMOVE: h_pack_remove, HI.PACK_STATUS: h_pack_status, HI.PACK_SAFE_LEAVE: h_pack_safe_leave,
+    HI.PACK_HELP: h_pack_help, HI.PACK_PROMPT: h_pack_prompt,
+    **hub_teacher.HANDLERS,
 }
 
-__all__ = ["Ctx", "HANDLERS"]
+__all__ = ["Ctx", "HANDLERS", "pack_manager"]

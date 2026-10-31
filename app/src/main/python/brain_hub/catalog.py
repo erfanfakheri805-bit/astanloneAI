@@ -80,7 +80,7 @@ CONNECTED = (
         "The Core pipeline (context, reasoning, planning, capabilities) that runs on each message; when it knows nothing it honestly says it cannot yet.",
         "Core.process_input ← parser ← context ← reasoning ← planning"),
     ConnectedArea(
-        "language_intelligence", "language_intelligence", "زیرساخت زبان و مدل محلی", "Language-intelligence plumbing",
+        "language_intelligence", "language_intelligence", "زیرساخت اتصال مدل زبانی (بدون مدل چیزی تولید نمی‌کند)", "Language-model plumbing (generates nothing without a model)",
         "زیرساخت قراردادی برای مدل زبانی محلی (LocalLanguageModelBackend). بدون یک مدل واقعی که بارگذاری و آزمایش شده باشد، چیزی تولید نمی‌کند.",
         "The contract plumbing for a local language model (LocalLanguageModelBackend). Without a loaded, smoke-tested model it generates nothing.",
         "Core ← language_intelligence ← model_runtime (only with a usable model)"),

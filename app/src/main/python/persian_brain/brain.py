@@ -45,6 +45,7 @@ from . import hub_hooks
 from . import intents as I
 from . import messages as M
 from . import normalization as nz
+from . import wire_text
 from .dialogue import MAX_PENDING_ATTEMPTS, Dialogue
 
 MAX_INPUT_CHARS = 2000
@@ -86,6 +87,7 @@ class PersianBrain:
     def respond(self, text, scope=None):
         """Reply text for `text`, or None when the message is not the brain's."""
         self.last_trace = None
+        text = wire_text.decode(text)                    # a pack pasted in the chat arrives as one escaped line (the core folds all white space)
         if not isinstance(text, str) or not text.strip():
             return None
         if scope is None:
@@ -215,6 +217,12 @@ class PersianBrain:
             reply = self._general(turn, intent)
             if reply is None and full:                     # nothing answered: if it asks for something the app cannot do yet, say exactly why
                 reply = hub_hooks.gap_reply(self, turn)
+            if reply is None and full:                     # still nothing: a language model on the phone (only when the user imported one) answers
+                reply = hub_hooks.llm_reply(self, turn)
+                if reply is not None:
+                    turn.intent = I.Intent("LLM", "answer", 0.6, ["local_language_model"])
+            if reply is None and full:                     # nothing at all: say honestly what is missing and how to grow (not the core's blank fallback);
+                reply = hub_hooks.unknown_reply(self, turn, intent)     # the intent stays what it was (a question), this is not a hub command
             return reply
         except Exception as e:
             self._log_error(e, turn.text)
@@ -590,7 +598,7 @@ class PersianBrain:
         service = turn.service
         sub = intent.sub
         if sub == "help":
-            return M.help_text()
+            return hub_hooks.help_reply(self, turn) if turn.full else M.help_text()
         if service is None:
             return self._need_service()
         if sub in ("list", "history", "detail", "rollback", "disable"):
@@ -604,6 +612,10 @@ class PersianBrain:
                 return self._capability_question(turn, q)
             records = service.capabilities()
             turn.dlg.set_last("list")
+            if turn.full:                      # the full app answers «what can you do?» once, from what it really has (hub_self), then what it built
+                own = hub_hooks.about_reply(self, turn, records)
+                if own is not None:
+                    return own
             return M.capability_list(records)
         if sub == "status":
             return M.status_report(service.status(), service.self_check() if service.exists() else None)

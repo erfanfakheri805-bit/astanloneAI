@@ -21,16 +21,24 @@ import time
 
 PENDING_KEY = "persian_brain.hub_pending.v1"
 WISH_KEY = "persian_brain.hub_wish.v1"
+LLM_NOTE_KEY = "persian_brain.llm_note.v1"
 PENDING_TTL_SECONDS = 30 * 60
 WISH_TTL_SECONDS = 24 * 3600
 MAX_WISH_CHARS = 600
 
+PACK_TYPES = frozenset({"pack_install", "pack_install_risky", "pack_rollback", "pack_disable", "pack_enable", "pack_remove",
+                        "pack_safe_leave"})
+TEACHER_TYPES = frozenset({"teacher_send", "teacher_screen"})
 PENDING_TYPES = frozenset({"install", "rollback", "disable", "enable", "perm_grant", "net_on", "model_download",
-                           "model_license", "model_remove", "repair_store"})
+                           "model_license", "model_remove", "model_import", "repair_store"}) | PACK_TYPES | TEACHER_TYPES
 
 _PROPOSAL_RE = re.compile(r"^p[0-9a-f]{6,24}$")
+_PACK_PROPOSAL_RE = re.compile(r"^q[0-9a-f]{8,24}$")
+_MISSION_RE = re.compile(r"^m[0-9a-f]{10}\Z")
+_PACKAGE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+){1,8}\Z")
 _ID_RE = re.compile(r"^[a-z][a-z0-9_]{1,59}$")
 _MODEL_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{1,63}$")
+_FILE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}\Z")
 _PERMISSION_RE = re.compile(r"^[a-z_]{3,20}$")
 
 
@@ -60,9 +68,40 @@ def _data_is_valid(type_, d):
         return ok
     if type_ in ("model_download", "model_license", "model_remove"):
         return isinstance(d.get("model_id"), str) and bool(_MODEL_RE.match(d["model_id"]))
+    if type_ == "model_import":      # one file of the app's own inbox (a plain name) that becomes the model `model_id`
+        return (set(d) == {"file_name", "model_id"} and isinstance(d["file_name"], str) and bool(_FILE_RE.match(d["file_name"]))
+                and isinstance(d["model_id"], str) and bool(_MODEL_RE.match(d["model_id"])))
+    if type_ in PACK_TYPES:
+        return _pack_data_is_valid(type_, d)
+    if type_ in TEACHER_TYPES:
+        return _teacher_data_is_valid(type_, d)
     if type_ == "net_on":      # optionally remembers the page the user wanted to read when the internet was off
         return set(d) <= {"url"} and (d.get("url") is None or (_text(d.get("url"), 600) and d["url"].lower().startswith("https://")))
     return type_ == "repair_store" and not d
+
+
+def _pack_data_is_valid(type_, d):
+    """The questions of the pack system (see `pack_system`): a pack proposal, or an action on one installed pack."""
+    if type_ == "pack_safe_leave":
+        return not d
+    ok = isinstance(d.get("pack_id"), str) and bool(_ID_RE.match(d["pack_id"])) and _text(d.get("title"), 200)
+    if type_ in ("pack_install", "pack_install_risky"):
+        return (ok and isinstance(d.get("proposal_id"), str) and bool(_PACK_PROPOSAL_RE.match(d["proposal_id"]))
+                and d.get("kind") in ("code.v1", "lang.v1") and _int_or_none(d.get("planned_version")))
+    if type_ == "pack_rollback":
+        return ok and _int_or_none(d.get("to_version"))
+    return ok
+
+
+def _teacher_data_is_valid(type_, d):
+    """The questions of the teacher (asking another assistant, or letting the app look into another app): see `teacher`."""
+    if not (isinstance(d.get("mission_id"), str) and _MISSION_RE.match(d["mission_id"])):
+        return False
+    if type_ == "teacher_send":
+        return (set(d) == {"mission_id", "assistant", "kind"} and isinstance(d.get("assistant"), str) and bool(_ID_RE.match(d["assistant"]))
+                and d.get("kind") in ("code", "lang", "ask"))
+    return (set(d) == {"mission_id", "package"} and isinstance(d.get("package"), str) and len(d["package"]) <= 150
+            and bool(_PACKAGE_RE.match(d["package"])))
 
 
 def _now(clock):
@@ -152,5 +191,21 @@ def load_wish(memory, clock=None):
     return value["text"][:MAX_WISH_CHARS]
 
 
-__all__ = ["PENDING_KEY", "WISH_KEY", "PENDING_TYPES", "PENDING_TTL_SECONDS", "WISH_TTL_SECONDS", "load", "lapsed", "save",
-           "clear", "save_wish", "load_wish"]
+def llm_note_shown(memory, model_id):
+    """Has the one-time note about a language model's answers already been shown for this model? Never raises."""
+    try:
+        return memory.get_state(LLM_NOTE_KEY) == str(model_id)
+    except Exception:
+        return True            # when it cannot be known, do not nag
+
+
+def mark_llm_note(memory, model_id):
+    try:
+        memory.set_state(LLM_NOTE_KEY, str(model_id)[:64])
+    except Exception:
+        return False
+    return True
+
+
+__all__ = ["PENDING_KEY", "WISH_KEY", "LLM_NOTE_KEY", "llm_note_shown", "mark_llm_note", "PENDING_TYPES", "PACK_TYPES", "TEACHER_TYPES", "PENDING_TTL_SECONDS", "WISH_TTL_SECONDS", "load",
+           "lapsed", "save", "clear", "save_wish", "load_wish"]

@@ -124,6 +124,11 @@ class AndroidAdapterLayer:
         value = _guard(self._bridge.native_features, frozenset())
         return frozenset(v for v in value if isinstance(v, str)) if isinstance(value, (set, frozenset, list, tuple)) else frozenset()
 
+    def native_features(self) -> frozenset:
+        """The names of the native doors the installed APK really declares (the same list the page gets from `AndroidBridge.features()`).
+        Empty when there is no bridge (a computer, a test) or it cannot be read. Never raises."""
+        return self._native()
+
     def _declared(self) -> Optional[frozenset]:
         value = _guard(self._bridge.declared_permissions, None)
         return frozenset(v for v in value if isinstance(v, str)) if isinstance(value, (set, frozenset, list, tuple)) else None

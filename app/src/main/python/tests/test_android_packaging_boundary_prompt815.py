@@ -69,9 +69,13 @@ class GradleConfigTests(unittest.TestCase):
         self.assertNotRegex(app, r"\binstall\s*[\(\"']")
 
     def test_only_appcompat_dependency(self):
+        # Prompt 958 (a conscious change of this pin): the one other library is the on-device language-model engine (Google's
+        # MediaPipe LLM Inference, Apache-2.0). It is declared INSIDE `if (project.findProperty('withLlm') == 'true')`, so an ordinary
+        # build still has appcompat as its only dependency; the workflow tries the engine first and falls back to the plain build.
         app = _read("app", "build.gradle")
         deps = re.findall(r"^\s*(?:implementation|api|compileOnly|runtimeOnly)\s+['\"]([^'\"]+)", app, re.M)
-        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0"])
+        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27"])
+        self.assertRegex(_code(app, "//"), r"if \(project\.findProperty\('withLlm'\) == 'true'\) \{\s*implementation 'com\.google\.mediapipe:tasks-genai:0\.10\.27'\s*\}")
 
     def test_gitignore_blocks_bytecode_and_build_output(self):
         gi = _read(".gitignore")
@@ -81,29 +85,40 @@ class GradleConfigTests(unittest.TestCase):
 
 @unittest.skipUnless(_HAS_PROJECT, "Gradle project files not present")
 class ManifestAndJavaTests(unittest.TestCase):
-    def test_manifest_permissions_are_internet_only(self):
+    def test_manifest_permissions_are_internet_and_notifications_only(self):
+        # Prompt 958 (a conscious change of this pin, was "internet only"): POST_NOTIFICATIONS is added because Android 13+ shows a
+        # notification only after the user allowed it in a system dialog, and an app can ask for a permission only if it declares it.
+        # Nothing else is added (no storage, microphone, camera, install, overlay or background-start permission).
         manifest = _read("app", "src", "main", "AndroidManifest.xml")
         perms = re.findall(r'<uses-permission android:name="([^"]+)"', manifest)
-        self.assertEqual(perms, ["android.permission.INTERNET"])
+        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS"])
 
     def test_single_launcher_activity(self):
         manifest = _read("app", "src", "main", "AndroidManifest.xml")
         self.assertEqual(manifest.count("<activity"), 1)
         self.assertIn("android.intent.category.LAUNCHER", manifest)
 
-    def test_java_layer_is_one_thin_file(self):
+    def test_java_layer_is_two_thin_files(self):
+        # Prompt 958 (a conscious change of this pin, was "one thin file"): Android requires an accessibility service to be a class
+        # of its own, so there is a second file, PyAccessibilityService.java. It never calls Python (Python calls its static methods).
+        # MainActivity may now name two Python modules: android_entry (the app) and platform_boot (a tiny never-raising module
+        # made for exactly this: the boot step and the text shared into the app). tests/test_android_files_prompt958.py checks every
+        # name, argument count and key between the Java files and Python.
         java_root = os.path.join(_APP, "src", "main", "java")
-        files = [os.path.join(r, f) for r, _, fs in os.walk(java_root) for f in fs]
-        self.assertEqual([os.path.basename(f) for f in files], ["MainActivity.java"])
-        src = _read_abs(files[0])
-        # The only Python module the Java layer may touch is android_entry.
-        self.assertEqual(re.findall(r'getModule\("([^"]+)"\)', src), ["android_entry"])
-        self.assertEqual(re.findall(r'callAttr\("([^"]+)"', src), ["start"])
+        files = sorted(os.path.join(r, f) for r, _, fs in os.walk(java_root) for f in fs)
+        self.assertEqual([os.path.basename(f) for f in files], ["MainActivity.java", "PyAccessibilityService.java"])
+        main = _read_abs(files[0])
+        self.assertEqual(sorted(re.findall(r'getModule\("([^"]+)"\)', main)), ["android_entry", "platform_boot", "platform_boot"])
+        self.assertEqual(sorted(re.findall(r'callAttr\("([^"]+)"', main)), ["inbox_dir", "on_shared_text", "prepare", "start"])
+        service = _read_abs(files[1])
+        self.assertNotIn("getModule", service)
+        self.assertNotIn("callAttr", service)
+        self.assertNotIn("com.chaquo", service)
 
     def test_webview_targets_loopback_only(self):
-        src = _read_abs(os.path.join(_APP, "src", "main", "java", "com", "erfan",
-                                     "standaloneai", "MainActivity.java"))
-        self.assertNotRegex(src, r"https?://")
+        for name in ("MainActivity.java", "PyAccessibilityService.java"):
+            src = _read_abs(os.path.join(_APP, "src", "main", "java", "com", "erfan", "standaloneai", name))
+            self.assertNotRegex(src, r"https?://")
         sys.path.insert(0, _PY_ROOT)
         try:
             from core.config import UIConfig

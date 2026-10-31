@@ -1129,7 +1129,11 @@ class TestKnowledgeAndTeaching(BrainCase):
         reply = self.say("زمین گرد است")
         self.assertIn("(بله / نه)", reply)
         self.assertEqual(self.pending_type(), "confirm_teach")
-        self.assertIsNone(self.say("زمین چیست؟"))                 # nothing was learned yet (and the old question is dropped)
+        # Updated in Prompt 958 on purpose: an unanswerable question now gets the honest «نمی‌دانم» reply instead of None (see hub_self.unknown).
+        # «Nothing was learned yet» is still what is proven: the reply states no fact about the earth. (The old open question is dropped as before.)
+        unknown = self.say("زمین چیست؟")
+        self.assertIn("نمی‌دانم", unknown)
+        self.assertNotIn("گرد", unknown)
         self.say("زمین گرد است")
         self.assertIn("یاد گرفتم", self.say("بله"))
         self.assertIn("گرد", self.say("زمین چیست؟"))
@@ -1137,7 +1141,10 @@ class TestKnowledgeAndTeaching(BrainCase):
     def test_declining_a_statement_stores_nothing(self):
         self.say("زمین گرد است")
         self.assertIn("یادداشت نکردم", self.say("نه"))
-        self.assertIsNone(self.say("زمین چیست؟"))
+        # Updated in Prompt 958 on purpose: the honest «نمی‌دانم» reply replaces None; nothing was stored, so no fact about the earth appears.
+        unknown = self.say("زمین چیست؟")
+        self.assertIn("نمی‌دانم", unknown)
+        self.assertNotIn("گرد", unknown)
 
     def test_an_incomplete_teaching_command_asks_for_the_sentence(self):
         reply = self.say("یاد بگیر")
@@ -1145,8 +1152,13 @@ class TestKnowledgeAndTeaching(BrainCase):
         self.assertNotIn("یاد گرفتم", reply)
 
     def test_unknown_knowledge_questions_are_left_to_the_existing_pipeline(self):
-        self.assertIsNone(self.say("خورشید چیست؟"))
-        self.assertIsNone(self.say("امروز هوا چطوره؟"))
+        # Updated in Prompt 958 on purpose (the name is kept so the history of this test stays readable): nothing in the pipeline - no rule, no taught
+        # fact, no pack, no language model - can answer these, so the brain no longer hands them to the core's blank fallback; hub_self.unknown() says
+        # «نمی‌دانم» and names the real ways to grow. Still proven: no answer is invented, and a personal fact is not touched.
+        for text, invented in (("خورشید چیست؟", "ستاره"), ("امروز هوا چطوره؟", "آفتابی")):
+            reply = self.say(text)
+            self.assertIn("نمی‌دانم", reply)
+            self.assertNotIn(invented, reply)
 
     def test_likes_questions_use_the_stored_likes(self):
         self.assertIn("هنوز چیزی دربارهٔ علایقت نمی‌دانم", self.say("چی دوست دارم؟"))
@@ -1438,7 +1450,9 @@ class TestOpenQuestionVersusNewRequest(BrainCase):
         self.say("BMI را حساب کن")
         self.assertIn("وزن", self.say("هر چی"))                                          # «whatever»: still waiting
         self.assertEqual(self.pending_type(), "ask_inputs")
-        self.assertIsNone(self.say("اسم تو چیست؟"))                                      # a real question: another topic
+        # Updated in Prompt 958 on purpose: «اسم تو چیست؟» used to get no reply from the brain; it is a question about the assistant itself and is now
+        # answered by hub_self (who it is). What the test protects is unchanged: a real question is another topic and drops the open question.
+        self.assertIn("دستیار شخصی", self.say("اسم تو چیست؟"))                            # a real question: another topic
         self.assertIsNone(self.pending_type())
 
     def test_the_matcher_tells_answers_from_messages_with_numbers_in_them(self):
@@ -2055,9 +2069,16 @@ class TestNoResponseTable(unittest.TestCase):
         self.addCleanup(mem._conn.close)
         activation.enable(mem, activation.SCOPE_FULL)
         brain = PersianBrain(mem)
-        for text in ("خورشید چیست؟", "امروز هوا چطوره؟", "پایتخت فرانسه کجاست؟", "فیلم دیشب را دیدی؟", "چرا آسمان آبی است؟",
-                     "بهترین کتاب کدام است؟"):
-            self.assertIsNone(brain.respond(text), text)
+        # Updated in Prompt 958 on purpose. «Nothing answers» used to mean that the brain stayed silent (None) and the core's blank fallback spoke. In the full
+        # scope the brain now says plainly «این را نمی‌دانم» and names the real ways to grow (hub_self.unknown; see tests/test_self_knowledge_prompt958.py).
+        # What this test protects is unchanged: no ANSWER is invented. The reply says «نمی‌دانم» and states none of the facts a made-up answer would.
+        made_up = (("خورشید چیست؟", "ستاره"), ("امروز هوا چطوره؟", "آفتابی"), ("پایتخت فرانسه کجاست؟", "پاریس"), ("فیلم دیشب را دیدی؟", "دیدم"),
+                   ("چرا آسمان آبی است؟", "پراکنده"), ("بهترین کتاب کدام است؟", "رمان"))
+        for text, fact in made_up:
+            reply = brain.respond(text)
+            self.assertIsNotNone(reply, text)
+            self.assertIn("نمی‌دانم", reply, text)
+            self.assertNotIn(fact, reply, text)
 
     def test_the_replies_follow_the_facts_not_the_wording_of_a_table(self):
         """Same sentence, different stored facts -> different (and correct) answers."""

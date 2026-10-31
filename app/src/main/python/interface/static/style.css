@@ -296,6 +296,36 @@ button, textarea { font-family: inherit; }
 .attach-btn:active { background: var(--bg-3); }
 .attach-btn:disabled { opacity: 0.55; cursor: default; }
 
+/* Prompt 958: the phone's own buttons (speech, model file). Shown by app.js only inside the Android app; gone again while the
+   keyboard has squeezed the page (see the max-height rule below) so the conversation keeps its room. */
+.native-bar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px var(--gutter);
+  padding-inline: max(var(--gutter), env(safe-area-inset-left)) max(var(--gutter), env(safe-area-inset-right));
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+}
+
+.native-bar[hidden], .native-btn[hidden] { display: none; }
+
+.native-btn {
+  flex: 0 1 auto;
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--bg-2);
+  color: var(--text-hi);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.native-btn:active { background: var(--bg-3); }
+.native-btn:disabled { opacity: 0.55; cursor: default; }
+
 /* One honest line about the attached file (read, refused, too large ...); nothing is sent until the user presses send. */
 .attach-note {
   flex: 0 0 auto;
@@ -436,6 +466,7 @@ button, textarea { font-family: inherit; }
 /* Short screens (small phones, keyboard open): tighten chrome so the
    conversation keeps most of the height. */
 @media (max-height: 480px) {
+  .native-bar { display: none; }
   .app-header { padding-block: 4px; }
   .brand-mark { width: 26px; height: 26px; }
   .messages { padding-block: 8px; }

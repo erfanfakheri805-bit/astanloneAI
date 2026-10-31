@@ -50,6 +50,42 @@
     attachEmpty: "این فایل خالی است؛ چیزی خوانده نشد.",
     attachNotText: "این فایل متن UTF-8 نیست (فقط فایل متنی یا JSON پشتیبانی می‌شود)؛ نخوانده شد.",
     attachFailed: "خواندن فایل ناموفق بود؛ چیزی تغییر نکرد.",
+    // Prompt 958: the phone's own buttons (they exist only inside the Android app). Every note says what really
+    // happened and what did NOT: nothing is sent or imported by these buttons without the user's own next step.
+    nativeBarLabel: "ابزارهای گوشی",
+    voiceButton: "🎤 گفتار",
+    voiceLabel: "گفتار به متن",
+    modelButton: "📦 فایل مدل",
+    modelLabel: "وارد کردن فایل مدل زبانی",
+    voiceUnavailable: "گفتار روی این گوشی یا در این لحظه در دسترس نیست؛ چیزی تغییر نکرد.",
+    voiceHeard: "متنِ شنیده‌شده ({n} نویسه) در کادر پیام گذاشته شد. هنوز چیزی فرستاده نشده؛ بررسی کن و «ارسال» را بزن.",
+    voiceNothing: "چیزی شنیده نشد یا گفتار لغو شد؛ چیزی تغییر نکرد.",
+    pickUnavailable: "پنجرهٔ انتخابِ فایل باز نشد؛ چیزی تغییر نکرد.",
+    copyProgress: "در حال کپیِ «{name}» از گوشی: {done} از {total} ({percent}٪)",
+    copyProgressUnknown: "در حال کپیِ «{name}» از گوشی: {done} کپی شد…",
+    modelCopied: "فایل «{name}» ({size}) از گوشی کپی شد. حالا برنامه می‌پرسد که وارد کند یا نه؛ بدون «بله»ی خودت چیزی وارد نمی‌شود.",
+    fileCopied: "فایل «{name}» ({size}) در پوشهٔ ورودیِ برنامه گذاشته شد.",
+    importCommand: "مدل {name} را وارد کن",
+    pickCancelled: "انتخابِ فایل لغو شد؛ چیزی تغییر نکرد.",
+    pickBusy: "کپیِ فایلِ دیگری هنوز ادامه دارد؛ کمی صبر کن.",
+    pickUnsupported: "این فایل مدلِ زبانی نیست؛ فقط فایل‌های «.task» و «.gguf» پذیرفته می‌شوند.",
+    pickTooLargeModel: "این فایل از سقفِ مجاز (۸ گیگابایت) بزرگ‌تر است؛ چیزی کپی نشد.",
+    pickTooLargeFile: "این فایل از سقفِ مجاز (۶۴ مگابایت) بزرگ‌تر است؛ چیزی کپی نشد.",
+    pickNoSpace: "جای خالیِ کافی روی گوشی نیست؛ چیزی کپی نشد.",
+    pickUnreadable: "فایل خوانده نشد (اندروید دسترسی نداد)؛ چیزی کپی نشد.",
+    pickIoError: "هنگام کپی خطا رخ داد؛ فایلِ ناقص پاک شد.",
+    pickSizeMismatch: "اندازهٔ فایلِ کپی‌شده با اصل یکی نبود؛ فایلِ ناقص پاک شد. دوباره امتحان کن.",
+    pickEmpty: "فایل خالی بود؛ چیزی کپی نشد.",
+    pickNoInbox: "پوشهٔ ورودیِ برنامه ساخته نشد؛ چیزی کپی نشد.",
+    pickFailed: "کپیِ فایل ناموفق بود؛ چیزی تغییر نکرد.",
+    answerCame: "جواب آمد",
+    sharedMission: "متنی که از برنامهٔ دیگر فرستادی ({n} نویسه) گرفته شد. چون درخواستی منتظرِ جواب بود، همین را به چت دادم تا بررسی کند؛ چیزی نصب نمی‌شود مگر با «بله»ی خودت.",
+    sharedReady: "متنی که از برنامهٔ دیگر فرستادی ({n} نویسه) در کادر پیام گذاشته شد. هنوز چیزی فرستاده نشده؛ بررسی کن و «ارسال» را بزن.",
+    sharedTooLong: "متنِ فرستاده‌شده ({n} نویسه) برای کادر پیام زیادی بلند است؛ فقط در پوشهٔ ورودی ذخیره شد و چیزی فرستاده نشد.",
+    sharedCut: "متنِ فرستاده‌شده خیلی بلند بود ({n} نویسه) و فقط بخشِ اولش ذخیره شد؛ چیزی فرستاده نشد.",
+    sharedNotText: "متنِ فرستاده‌شده نویسهٔ نامعتبر داشت؛ ذخیره شد ولی در کادر پیام نگذاشتمش و چیزی فرستاده نشد.",
+    sharedEmpty: "متنِ فرستاده‌شده خالی بود؛ چیزی ذخیره نشد.",
+    sharedFailed: "ذخیرهٔ متنِ فرستاده‌شده ناموفق بود؛ چیزی تغییر نکرد.",
     longMessage: "… (پیام بلند است: {n} نویسه. کوتاه‌شدن فقط برای نمایش است؛ متن کامل فرستاده شد.)",
     version: "نسخه",
     metrics: {
@@ -153,13 +189,34 @@
 
   // "{n}" / "{name}" placeholders in the string table: numbers are written with Persian
   // digits, text (a file name) is isolated left-to-right so Latin names never reorder the sentence.
+  // Text that is already Persian (a size such as \u00ab\u06f1\u066b\u06f2 \u06af\u06cc\u06af\u0627\u0628\u0627\u06cc\u062a\u00bb) is passed as plain(text) and put in as it is.
+  function plain(text) {
+    return { plain: String(text) };
+  }
+
   function fillTemplate(template, values) {
     return String(template).replace(/\{(\w+)\}/g, function (all, key) {
       if (!values || !Object.prototype.hasOwnProperty.call(values, key)) return all;
       var v = values[key];
       if (typeof v === "number" && isFinite(v)) return toPersianDigits(v);
+      if (v && typeof v === "object" && typeof v.plain === "string") return v.plain;
       return "\u2066" + String(v) + "\u2069";
     });
+  }
+
+  // A size for a person: \u00ab\u06f1\u066b\u06f5 \u06a9\u06cc\u0644\u0648\u0628\u0627\u06cc\u062a\u00bb, \u00ab\u06f4\u066b\u06f0 \u06af\u06cc\u06af\u0627\u0628\u0627\u06cc\u062a\u00bb (Persian digits and decimal separator); under a kilobyte, bytes.
+  var SIZE_UNITS = [[1073741824, "\u06af\u06cc\u06af\u0627\u0628\u0627\u06cc\u062a"], [1048576, "\u0645\u06af\u0627\u0628\u0627\u06cc\u062a"], [1024, "\u06a9\u06cc\u0644\u0648\u0628\u0627\u06cc\u062a"]];
+
+  function formatBytes(value) {
+    var n = typeof value === "number" && isFinite(value) && value > 0 ? value : 0;
+    for (var i = 0; i < SIZE_UNITS.length; i++) {
+      if (n >= SIZE_UNITS[i][0]) {
+        var v = n / SIZE_UNITS[i][0];
+        var shown = v >= 100 ? String(Math.round(v)) : (Math.round(v * 10) / 10).toFixed(1);
+        return toPersianDigits(shown.replace(".", "\u066b")) + " " + SIZE_UNITS[i][1];
+      }
+    }
+    return toPersianDigits(Math.round(n)) + " \u0628\u0627\u06cc\u062a";
   }
 
   // A very long message (a pasted extension package, say) is SHOWN shortened in its bubble; the
@@ -172,14 +229,23 @@
     return chars.slice(0, max).join("") + "\n" + fillTemplate(STR.longMessage, { n: chars.length });
   }
 
-  // The assistant folds every run of whitespace in a message into ONE space before anything reads it. An
-  // extension package carries Python code whose meaning depends on indentation, so just before a message that
-  // holds a package ("schema": "ext.v1") is SENT, that JSON object is rewritten compactly with every space of a
-  // run (and every exotic space character) written as a \uXXXX escape. The JSON means exactly the same; no
-  // whitespace is left to fold. Anything that is not such a package is returned untouched.
-  var PACKAGE_MARK = "ext.v1";
+  // The assistant folds every run of whitespace in a message into ONE space before anything reads it. A package
+  // carries Python code whose meaning depends on indentation, so just before a message that holds a package is
+  // SENT it is rewritten so that no whitespace is left to fold:
+  //   * a JSON package ("schema": "ext.v1" | "code.v1" | "lang.v1"): that object is rewritten compactly with every
+  //     space of a run (and every exotic space character) written as a \uXXXX escape. The JSON means exactly the same.
+  //   * a package in its text form (a line "=== PACK code.v1 ===" ... "=== END PACK ==="): the whole message becomes
+  //     ONE line, "=== ESCAPED TEXT v1 === <body>", whose newlines, tabs and runs of spaces are written as escapes.
+  //     The assistant's Persian brain decodes it first thing (persian_brain/wire_text.py; a test runs both coders on
+  //     the same texts and demands the same result).
+  // Anything that is not such a package is returned untouched.
+  var PACKAGE_MARKS = ["ext.v1", "code.v1", "lang.v1"];
   var MAX_OBJECT_TRIES = 6;
   var EXOTIC_SPACE = /[\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g;
+  var PACK_HEADER_LINE = /^[ \t]*=== PACK (?:code|lang)\.v[0-9]{1,4} ===[ \t]*$/m;
+  var WIRE_MARK = "=== ESCAPED TEXT v1 ===";
+  // every character the core's folding treats as white space, except the plain space (its runs have their own rule)
+  var WIRE_WHITE = /[\t\n\u000b\u000c\r\u001c-\u001f\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g;
 
   function objectEnd(text, start) {
     var depth = 0;
@@ -213,21 +279,56 @@
       });
   }
 
-  function protectPackage(text) {
-    if (typeof text !== "string" || text.indexOf(PACKAGE_MARK) === -1) return text;
+  function mentionsPackageMark(text) {
+    for (var i = 0; i < PACKAGE_MARKS.length; i++) {
+      if (text.indexOf(PACKAGE_MARKS[i]) !== -1) return true;
+    }
+    return false;
+  }
+
+  function protectJsonPackage(text) {
+    if (!mentionsPackageMark(text)) return text;
     var start = text.indexOf("{");
     for (var tries = 0; start !== -1 && tries < MAX_OBJECT_TRIES; tries++) {
       var end = objectEnd(text, start);
       if (end !== -1) {
         var obj = null;                       // the slice starts with "{": JSON.parse gives an object or throws
         try { obj = JSON.parse(text.slice(start, end + 1)); } catch (e) { obj = null; }
-        if (obj && obj.schema === PACKAGE_MARK) {
+        if (obj && PACKAGE_MARKS.indexOf(obj.schema) !== -1) {
           return text.slice(0, start) + escapeSpaces(JSON.stringify(obj)) + text.slice(end + 1);
         }
       }
       start = text.indexOf("{", start + 1);
     }
     return text;
+  }
+
+  function wireWhite(ch) {
+    if (ch === "\n") return "\\n";
+    if (ch === "\t") return "\\t";
+    if (ch === "\r") return "\\r";
+    return "\\u" + ("0000" + ch.charCodeAt(0).toString(16)).slice(-4);
+  }
+
+  // One space between two other characters stays; every space that touches another space, or an end, is "\s".
+  function wireSpaces(run, at, whole) {
+    if (run.length === 1 && at > 0 && at + 1 < whole.length) return run;
+    var out = "";
+    for (var i = 0; i < run.length; i++) out += "\\s";
+    return out;
+  }
+
+  function encodeWire(text) {
+    var body = text.replace(/\\/g, "\\\\").replace(WIRE_WHITE, wireWhite).replace(/ +/g, wireSpaces);
+    return body === "" ? WIRE_MARK : WIRE_MARK + " " + body;
+  }
+
+  // The text form wins: a header line makes the whole message one package, and a JSON-looking piece inside its source
+  // code is just source (rewriting it would change the code).
+  function protectPackage(text) {
+    if (typeof text !== "string") return text;
+    if (PACK_HEADER_LINE.test(text)) return encodeWire(text);
+    return protectJsonPackage(text);
   }
 
   function statusLabel(value) {
@@ -268,8 +369,11 @@
     toPersianDigits: toPersianDigits,
     formatCount: formatCount,
     fillTemplate: fillTemplate,
+    plain: plain,
+    formatBytes: formatBytes,
     shortenForDisplay: shortenForDisplay,
     protectPackage: protectPackage,
+    encodeWire: encodeWire,
     statusLabel: statusLabel,
     localizeReply: localizeReply,
     localizeError: localizeError

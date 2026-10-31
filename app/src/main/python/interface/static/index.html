@@ -42,6 +42,13 @@
     </div>
   </main>
 
+  <!-- Prompt 958: the phone's own buttons. They appear only inside the Android app (app.js shows them when the app
+       says it can do the thing); in an ordinary browser this bar stays hidden. -->
+  <div class="native-bar" id="native-bar" role="group" aria-label="ابزارهای گوشی" hidden>
+    <button type="button" class="native-btn" id="voice-btn" aria-label="گفتار به متن" title="گفتار به متن" hidden>🎤 گفتار</button>
+    <button type="button" class="native-btn" id="model-btn" aria-label="وارد کردن فایل مدل زبانی" title="وارد کردن فایل مدل زبانی" hidden>📦 فایل مدل</button>
+  </div>
+
   <div class="attach-note" id="attach-note" role="status" aria-live="polite" hidden></div>
 
   <form class="composer" id="input-form" autocomplete="off">

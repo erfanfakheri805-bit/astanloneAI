@@ -80,8 +80,10 @@ FEATURES: Dict[str, FeatureSpec] = {spec.feature_id: spec for spec in (
           limitations_en="The WebView (the attach button in the chat) does the picking; Python never opens phone files itself and only receives text you selected."),
     _spec(feature_id="microphone", title_fa="میکروفون", title_en="Microphone", android_permissions=("android.permission.RECORD_AUDIO",),
           permission_kind="runtime", min_sdk=24, needs_native_feature=None,
-          limitations_fa="فقط وضعیت مجوز بررسی می‌شود؛ ضبط صدا، تشخیص گفتار و کلمهٔ بیدارباش «جارویس» هنوز پیاده‌سازی نشده‌اند.",
-          limitations_en="Only the permission state is checked; audio recording, speech recognition and the 'Jarvis' wake word are not implemented yet."),
+          limitations_fa="اینجا فقط وضعیت مجوزِ میکروفون بررسی می‌شود. گفتار به متن جدا هست و به این مجوز نیاز ندارد (دکمهٔ «🎤 گفتار» پنجرهٔ گفتارِ خودِ اندروید را باز می‌کند)؛ "
+                         "ضبطِ مستقیم، گوش‌دادنِ همیشگی و کلمهٔ بیدارباش «جارویس» هنوز پیاده‌سازی نشده‌اند.",
+          limitations_en="Only the microphone permission state is checked here. Speech-to-text is separate and needs no such permission (the speech button opens Android's own dialog); "
+                         "direct recording, always-on listening and the 'Jarvis' wake word are not implemented yet."),
     _spec(feature_id="camera", title_fa="دوربین", title_en="Camera", android_permissions=("android.permission.CAMERA",),
           permission_kind="runtime", min_sdk=24, needs_native_feature=None,
           limitations_fa="فقط وضعیت مجوز بررسی می‌شود؛ گرفتن عکس یا فیلم هنوز پیاده‌سازی نشده است.",

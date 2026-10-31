@@ -459,7 +459,11 @@ class A07Unsupported(AppCase):
     def test_an_unknown_question_is_not_dressed_up_as_knowledge(self):
         reply = self.ask("پایتون چیست؟")
         self.assertNotIn("یاد گرفتم", reply)
-        self.assertNotIn("زبان", reply)
+        # Updated in Prompt 958 on purpose: the unknown question now gets an honest «I do not know» that also names the ways to grow (a language
+        # model, packs, asking ChatGPT/Claude), so the bare word «زبان» appears inside «مدل زبانی». What this test protects is that the app does
+        # not state the FACT it was never taught, so it now checks for that fact («برنامه‌نویسی») and for the plain admission.
+        self.assertNotIn("برنامه‌نویسی", reply)
+        self.assertIn("نمی‌دانم", reply)
         self.assertIn("یاد گرفتم", self.ask("یاد بگیر که پایتون یک زبان برنامه‌نویسی است"))     # only a real teaching says so
         self.assertIn("زبان", self.ask("پایتون چیست؟"))
 

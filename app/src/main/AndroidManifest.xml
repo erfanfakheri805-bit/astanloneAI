@@ -5,6 +5,28 @@
          socket use (including loopback) behind this permission. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Prompt 958: on Android 13 and newer a notification can be shown only after the user
+         allowed it in Android's own dialog. The app asks for that only when the user asks
+         for notifications in the chat; declaring it here is what makes the dialog possible. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Prompt 958: since Android 11 an app cannot see which other apps are installed unless they
+         are named here. These are the assistant apps the user may choose to ask for help (the list
+         is the same as teacher/assistants.py; a test keeps both equal) and the speech dialog.
+         Naming an app here gives no access to it: it only lets this app know whether it is installed. -->
+    <queries>
+        <package android:name="com.openai.chatgpt" />
+        <package android:name="com.anthropic.claude" />
+        <package android:name="com.google.android.apps.bard" />
+        <package android:name="com.microsoft.copilot" />
+        <package android:name="ai.perplexity.app.android" />
+        <package android:name="com.deepseek.chat" />
+        <package android:name="ai.x.grok" />
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -12,20 +34,54 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.StandaloneAI">
+
+        <!-- Prompt 958: lets the on-device language model use the phone's GPU library when the phone has one
+             (Android 12+ hides these libraries from an app that does not name them). Optional: the app
+             installs and runs without them. -->
+        <uses-native-library android:name="libOpenCL.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL-car.so" android:required="false" />
+
         <!-- Prompt 956: a mobile assistant, portrait by default.
              adjustResize shrinks the WebView when the soft keyboard opens so
-             the composer stays visible above it. -->
+             the composer stays visible above it.
+             Prompt 958: singleTask, so that a text shared into the app from another app reaches
+             the already running window (onNewIntent) instead of opening a second copy. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Prompt 958: "Share" in another app lists this app for plain text. The text is only
+                 saved in the app's own inbox; nothing is run or sent. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
         </activity>
+
+        <!-- Prompt 958: the accessibility service. It does nothing until the user switches it on in Android's
+             settings (the app can never do that itself), and even then it acts only in an app the user
+             allowed in the chat, for a limited time. Only the system may bind to it (the permission below). -->
+        <service
+            android:name=".PyAccessibilityService"
+            android:exported="true"
+            android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
     </application>
 
 </manifest>

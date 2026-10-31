@@ -17,6 +17,9 @@
   var attachBtn = document.getElementById("attach-btn");
   var attachInput = document.getElementById("attach-input");
   var attachNote = document.getElementById("attach-note");
+  var nativeBar = document.getElementById("native-bar");
+  var voiceBtn = document.getElementById("voice-btn");
+  var modelBtn = document.getElementById("model-btn");
   var statusDot = document.getElementById("status-dot");
   var statusText = document.getElementById("status-text");
   var sheetEl = document.getElementById("info-sheet");
@@ -79,6 +82,8 @@
     busy = value;
     sendBtn.disabled = value;
     attachBtn.disabled = value;
+    voiceBtn.disabled = value;
+    modelBtn.disabled = value;
     sendBtn.textContent = value ? S.sending : S.send;
     formEl.setAttribute("aria-busy", value ? "true" : "false");
   }
@@ -227,6 +232,7 @@
       })
       .then(function () {
         setBusy(false);
+        flushQueued();
       });
   }
 
@@ -283,6 +289,170 @@
     var files = attachInput.files;
     readAttachment(files && files.length ? files[0] : null);
   });
+
+  // ---------------- the phone's own buttons (inside the Android app only) ----------------
+
+  // `window.AndroidBridge` is added to this page by the Android app and exists nowhere else: in an ordinary browser the
+  // bar stays hidden and none of this runs. Each button needs the user's own tap here AND a dialog of Android's; what
+  // comes back arrives through the four window.nativeOn... functions below (the app calls them with ONE JSON text).
+  // Speech and shared text only FILL the message box. The two messages this page sends by itself (sendOrQueue) are plain
+  // sentences that the user's own action asked for («جواب آمد» after he shared an answer into the app while a request
+  // was waiting; «مدل <file> را وارد کن» after he chose a model file) - the assistant still asks its own question
+  // and changes nothing without the user's «بله».
+  var MODEL_NAME_RE = /^(?=[A-Za-z0-9._-]{1,100}$)[A-Za-z0-9][A-Za-z0-9._-]*\.(?:task|gguf)$/i;
+  var FILE_PROBLEMS = {
+    cancelled: "pickCancelled", busy: "pickBusy", unsupported_type: "pickUnsupported", no_space: "pickNoSpace",
+    unreadable: "pickUnreadable", io_error: "pickIoError", size_mismatch: "pickSizeMismatch", empty: "pickEmpty",
+    no_inbox: "pickNoInbox"
+  };
+  var MAX_QUEUED = 5;
+  var queued = [];
+
+  function bridgeFeatures() {
+    try {
+      var bridge = window.AndroidBridge;
+      if (!bridge || typeof bridge.features !== "function") return [];
+      var list = JSON.parse(String(bridge.features()));
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // True only when the app really started the thing (its dialog is open).
+  function bridgeCall(name, arg) {
+    try {
+      var bridge = window.AndroidBridge;
+      return !!(bridge && typeof bridge[name] === "function" && bridge[name](arg));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function parseNative(json) {
+    try {
+      var data = JSON.parse(String(json));
+      return data && typeof data === "object" ? data : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // The same refusal as for an attached file: a replacement character or a NUL means the text is not text.
+  function hasBadChars(text) {
+    return text.indexOf(String.fromCharCode(65533)) !== -1 || text.indexOf(String.fromCharCode(0)) !== -1;
+  }
+
+  // Text into the message box, after whatever the user has already typed there.
+  function putInComposer(text, separator) {
+    var typed = inputEl.value.trim();
+    inputEl.value = typed === "" ? text : typed + separator + text;
+    syncInput();
+    inputEl.focus();
+  }
+
+  // A message this page sends for the user's own action: right away, or after the one that is still on its way.
+  function sendOrQueue(text) {
+    if (busy) {
+      if (queued.length < MAX_QUEUED) queued.push(text);
+      return;
+    }
+    sendMessage(text);
+  }
+
+  function flushQueued() {
+    if (!busy && queued.length > 0) sendMessage(queued.shift());
+  }
+
+  voiceBtn.addEventListener("click", function () {
+    if (busy) return;
+    showAttachNote("");
+    if (!bridgeCall("startVoice", "fa-IR")) showAttachNote(S.voiceUnavailable);
+  });
+
+  modelBtn.addEventListener("click", function () {
+    if (busy) return;
+    showAttachNote("");
+    if (!bridgeCall("pickFile", "model")) showAttachNote(S.pickUnavailable);
+  });
+
+  window.nativeOnVoice = function (json) {
+    var data = parseNative(json);
+    var text = data && typeof data.text === "string" ? data.text.trim() : "";
+    if (!data || !data.ok || text === "" || hasBadChars(text)) {
+      showAttachNote(S.voiceNothing);
+      return;
+    }
+    putInComposer(text, " ");
+    showAttachNote(T.fillTemplate(S.voiceHeard, { n: Array.from(text).length }));
+  };
+
+  window.nativeOnShared = function (json) {
+    var data = parseNative(json);
+    if (!data) return;
+    if (!data.ok) {
+      showAttachNote(data.code === "empty" ? S.sharedEmpty : S.sharedFailed);
+      return;
+    }
+    var n = typeof data.chars === "number" ? data.chars : 0;
+    if (data.mission_open) {
+      sendOrQueue(S.answerCame);                  // the assistant reads the saved text itself and only reviews it
+      showAttachNote(T.fillTemplate(S.sharedMission, { n: n }));
+      return;
+    }
+    var text = typeof data.text === "string" ? data.text : "";
+    if (text === "") {
+      showAttachNote(T.fillTemplate(data.truncated ? S.sharedCut : S.sharedTooLong, { n: n }));
+      return;
+    }
+    if (hasBadChars(text)) {
+      showAttachNote(S.sharedNotText);
+      return;
+    }
+    putInComposer(text, "\n\n");
+    showAttachNote(T.fillTemplate(S.sharedReady, { n: Array.from(text).length }));
+  };
+
+  window.nativeOnProgress = function (json) {
+    var data = parseNative(json);
+    if (!data) return;
+    var copied = Number(data.copied) || 0;
+    var total = Number(data.total) || 0;
+    var values = { name: String(data.name || "").slice(0, 100), done: T.plain(T.formatBytes(copied)) };
+    if (total > 0) {
+      values.total = T.plain(T.formatBytes(total));
+      values.percent = Math.min(99, Math.floor((copied * 100) / total));
+      showAttachNote(T.fillTemplate(S.copyProgress, values));
+    } else {
+      showAttachNote(T.fillTemplate(S.copyProgressUnknown, values));
+    }
+  };
+
+  window.nativeOnFile = function (json) {
+    var data = parseNative(json);
+    if (!data) return;
+    var name = typeof data.name === "string" ? data.name.slice(0, 100) : "";
+    var purpose = data.purpose === "model" ? "model" : "file";
+    if (data.ok) {
+      var size = T.plain(T.formatBytes(Number(data.size) || 0));
+      if (purpose === "model" && MODEL_NAME_RE.test(name)) {
+        sendOrQueue(S.importCommand.replace("{name}", name));   // only the question: the file is read and copied after the user's «بله»
+        showAttachNote(T.fillTemplate(S.modelCopied, { name: name, size: size }));
+      } else {
+        showAttachNote(T.fillTemplate(S.fileCopied, { name: name, size: size }));
+      }
+      return;
+    }
+    var key = data.code === "too_large" ? (purpose === "model" ? "pickTooLargeModel" : "pickTooLargeFile") : FILE_PROBLEMS[data.code];
+    showAttachNote(S[key] || S.pickFailed);
+  };
+
+  (function showNativeBar() {
+    var features = bridgeFeatures();
+    voiceBtn.hidden = features.indexOf("voice_input") === -1;
+    modelBtn.hidden = features.indexOf("file_pick") === -1;
+    nativeBar.hidden = voiceBtn.hidden && modelBtn.hidden;
+  })();
 
   // ---------------- composer ----------------
 

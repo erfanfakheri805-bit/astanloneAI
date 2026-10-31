@@ -1,8 +1,8 @@
 """
 model_runtime.runtimes - the engines that can really load and run a model file
 ==============================================================================
-An `InferenceRuntime` turns a verified model file into generated text. Two
-exist today:
+An `InferenceRuntime` turns a verified model file into generated text. Three
+exist today (the third lives in `mediapipe_runtime.py`):
 
 * `NgramRuntime` ("ngram-json") - the pure-Python statistical n-gram model in
   `ngram.py`. It really loads and generates, always available, but it is a
@@ -10,6 +10,9 @@ exist today:
 * `LlamaCppRuntime` ("gguf") - a thin adapter over the `llama_cpp` Python
   package. It reports itself available ONLY when that package can really be
   found; on a stock Chaquopy build it cannot, and it says exactly that.
+
+* `MediaPipeLlmRuntime` ("task") - a real language model (Gemma and the like) through MediaPipe's
+  LLM Inference Java API; available ONLY inside an APK that was built with that engine.
 
 Formats without a runtime here ("onnx", "tflite") stay unsupported; the
 manager reports `no_runtime_for_format` instead of pretending.
@@ -214,4 +217,5 @@ class LlamaCppRuntime(InferenceRuntime):
 
 
 def default_runtimes() -> Sequence[InferenceRuntime]:
-    return (NgramRuntime(), LlamaCppRuntime())
+    from .mediapipe_runtime import MediaPipeLlmRuntime     # lazy: that module imports this one
+    return (NgramRuntime(), LlamaCppRuntime(), MediaPipeLlmRuntime())

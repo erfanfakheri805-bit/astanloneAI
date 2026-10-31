@@ -81,11 +81,14 @@ class GraphOverview(HubCase):
         counts = {}
         for node in graph.nodes():
             counts[node.kind] = counts.get(node.kind, 0) + 1
-        self.assertEqual(counts, {"brain": 6, "tool": 2, "android": 9, "infra": 11, "gap": 17})
-        self.assertEqual(len(graph), 45)
+        # Updated in Prompt 958 on purpose (the 957 numbers were brain 6 / tool 2 / android 9 / infra 11 / gap 17 = 45): the growth platform
+        # added a builder (`_platform_nodes`) with two tools - the packs (`tool.packs`) and the teacher (`tool.teacher`) - and four native doors
+        # of the APK (`android.voice_input`, `file_pick`, `share_target`, `accessibility`), so the capability map shows what the app really has.
+        self.assertEqual(counts, {"brain": 6, "tool": 4, "android": 13, "infra": 11, "gap": 17})
+        self.assertEqual(len(graph), 51)
         self.assertFalse(os.path.exists(self.root))
         summary = graph.summary()
-        self.assertEqual(sum(summary["by_state"].values()), 45)
+        self.assertEqual(sum(summary["by_state"].values()), 51)
         self.assertTrue(set(summary["by_state"]) <= set(graph_mod.STATES))
         self.assertEqual(summary["usable"], len(graph.usable()))
         self.assertEqual(summary["by_kind"], counts)
@@ -136,7 +139,13 @@ class GraphOverview(HubCase):
         self.assertEqual((broken.state, broken.usable), ("broken", False))
         self.assertIsNotNone(graph.get("brain.conversation"))
         self.assertIsNotNone(graph.get("infra.images_audio"))
-        self.assertEqual(len(graph.nodes(kind="android")), 0)
+        # Updated in Prompt 958 on purpose: the four native-door nodes come from the separate platform builder and stay; what the failed
+        # builder owns - every node made from `android_statuses()` - must be absent (it was "no android node at all" before that builder existed).
+        owned = ("android.file_picker", "android.microphone", "android.camera", "android.notifications", "android.settings_write", "android.telephony",
+                 "android.network_state", "android.battery_status", "android.clipboard")
+        self.assertEqual([n for n in owned if graph.get(n) is not None], [])
+        self.assertEqual(sorted(n.node_id for n in graph.nodes(kind="android")),
+                         ["android.accessibility", "android.file_pick", "android.share_target", "android.voice_input"])
 
 
 class SelfBuilderNodes(HubCase):

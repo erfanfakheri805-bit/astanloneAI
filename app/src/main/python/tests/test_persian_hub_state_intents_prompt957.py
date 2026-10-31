@@ -49,6 +49,7 @@ class Clock:
 
 
 INSTALL = {"proposal_id": "pabc1234ef", "capability_id": "bmi_calc", "title": "BMI", "action": "create", "planned_version": 1}
+PACK_INSTALL = {"proposal_id": "q0123456789ab", "pack_id": "demo_pack", "title": "x", "kind": "code.v1", "planned_version": 1}
 
 
 class OpenQuestion(unittest.TestCase):
@@ -60,12 +61,44 @@ class OpenQuestion(unittest.TestCase):
                  "disable": {"capability_id": "bmi_calc", "title": "x"}, "enable": {"capability_id": "bmi_calc", "title": "x"},
                  "perm_grant": {"capability_id": "bmi_calc", "title": "x", "permission": "network"}, "net_on": {},
                  "model_download": {"model_id": "fa-ngram"}, "model_license": {"model_id": "fa-ngram"},
-                 "model_remove": {"model_id": "fa-ngram"}, "repair_store": {}}
+                 "model_remove": {"model_id": "fa-ngram"}, "repair_store": {},
+                 # Prompt 958: the pack system (code / language packs) asks its questions through the same one-question mechanism
+                 "pack_install": PACK_INSTALL, "pack_install_risky": PACK_INSTALL,
+                 "pack_rollback": {"pack_id": "demo_pack", "title": "x", "to_version": 1},
+                 "pack_disable": {"pack_id": "demo_pack", "title": "x"}, "pack_enable": {"pack_id": "demo_pack", "title": "x"},
+                 "pack_remove": {"pack_id": "demo_pack", "title": "x"}, "pack_safe_leave": {},
+                 # Prompt 958: the teacher (asking another assistant / letting the app look into another app)
+                 "teacher_send": {"mission_id": "m0123456789", "assistant": "chatgpt", "kind": "code"},
+                 "teacher_screen": {"mission_id": "m0123456789", "package": "com.openai.chatgpt"},
+                 # Prompt 958: importing a model file the user picked himself (a plain file name of the app's inbox + the model id made from it)
+                 "model_import": {"file_name": "gemma.task", "model_id": "gemma"}}
         self.assertEqual(set(cases), set(hub_state.PENDING_TYPES))
         for type_, data in cases.items():
             with self.subTest(type_):
                 self.assertTrue(hub_state.save(self.kv, type_, data, self.clock))
                 self.assertEqual(hub_state.load(self.kv, self.clock), (type_, data))
+
+    def test_teacher_questions_reject_malformed_data(self):
+        good_send = {"mission_id": "m0123456789", "assistant": "chatgpt", "kind": "ask"}
+        bad = [("teacher_send", dict(good_send, mission_id="x0123456789")), ("teacher_send", dict(good_send, kind="evil")),
+               ("teacher_send", dict(good_send, assistant="Chat GPT")), ("teacher_send", dict(good_send, extra=1)), ("teacher_send", {}),
+               ("teacher_screen", {"mission_id": "m0123456789", "package": "not a package"}),
+               ("teacher_screen", {"mission_id": "m0123456789", "package": "../x"}), ("teacher_screen", {"mission_id": "m0123456789"}),
+               ("teacher_screen", {"mission_id": "m0123456789\n", "package": "com.a.b"})]
+        for type_, data in bad:
+            with self.subTest(type_, data=data):
+                self.assertFalse(hub_state.save(self.kv, type_, data, self.clock))
+        self.assertTrue(hub_state.save(self.kv, "teacher_send", good_send, self.clock))
+
+    def test_pack_questions_reject_malformed_data(self):
+        bad = [("pack_install", dict(PACK_INSTALL, proposal_id="p0123456789ab")), ("pack_install", dict(PACK_INSTALL, kind="ext.v1")),
+               ("pack_install", dict(PACK_INSTALL, pack_id="Bad-Id")), ("pack_install_risky", {"pack_id": "demo_pack"}),
+               ("pack_rollback", {"pack_id": "demo_pack", "title": "x", "to_version": 0}), ("pack_disable", {"title": "x"}),
+               ("pack_safe_leave", {"x": 1})]
+        for type_, data in bad:
+            with self.subTest(type_, data=data):
+                self.assertFalse(hub_state.save(self.kv, type_, data, self.clock))
+                self.assertIsNone(hub_state.load(self.kv, self.clock))
 
     def test_only_one_question_is_open_and_a_new_one_replaces_it(self):
         hub_state.save(self.kv, "net_on", {}, self.clock)

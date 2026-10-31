@@ -19,7 +19,7 @@ from typing import Mapping, Tuple
 
 __all__ = ["KNOWN_FORMATS", "LOCAL_IMPORT", "ModelCard", "CardError", "parse_card", "license_policy"]
 
-KNOWN_FORMATS: Tuple[str, ...] = ("ngram-json", "gguf", "onnx", "tflite")
+KNOWN_FORMATS: Tuple[str, ...] = ("ngram-json", "gguf", "onnx", "tflite", "task")
 LOCAL_IMPORT = "local-import"
 MAX_SIZE_BYTES = 8 * 2 ** 30
 
@@ -32,7 +32,9 @@ _REQUIRED = ("model_id", "title", "version", "format", "source_url", "sha256", "
 _OPTIONAL = {"languages": (), "runtime_hint": "", "min_free_mb": 0, "notes": ""}
 
 _PERMISSIVE = frozenset({"apache-2.0", "mit", "bsd-2-clause", "bsd-3-clause", "isc", "cc0-1.0", "cc-by-4.0", "unlicense"})
-_REVIEW_PREFIXES = ("cc-by-sa", "gpl", "agpl", "lgpl", "openrail", "llama", "gemma", "research")
+# "user-supplied": a model file the user picked himself and whose licence the app could not recognise - it works only after his own
+# explicit acknowledgement (the same question every other licence under review needs)
+_REVIEW_PREFIXES = ("cc-by-sa", "gpl", "agpl", "lgpl", "openrail", "llama", "gemma", "research", "user-supplied")
 _RESTRICTED = frozenset({"proprietary", "non-commercial"})
 
 

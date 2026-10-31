@@ -51,6 +51,8 @@ _BUILTIN_ABILITIES = (
     "ساختن قابلیت تازه برای خودم، آزمودنش، ثبت و نسخه‌گذاری‌اش (تبدیل واحد، فرمول، ابزار متنی)",
 )
 
+BUILTIN_ABILITIES = _BUILTIN_ABILITIES          # the plain-language list of what the first versions could do (the hub's own answer starts from it)
+
 SUPPORTED_KINDS_TEXT = ("تبدیل واحد (مثل «کیلومتر به مایل»)، فرمول (مثل «مساحت دایره = pi * r ** 2») "
                         "و ابزار متنی (مثل شمارش کلمات)")
 
@@ -133,21 +135,26 @@ def _kind(kind):
     return KIND_LABEL.get(kind, kind)
 
 
-def capability_list(records, with_help=True):
-    lines = ["من این کارها را بلدم:", bullets(_BUILTIN_ABILITIES)]
+def capability_registry_lines(records, with_help=True):
+    """The lines about the capabilities the assistant built for itself (or that there are none yet), without the header and the built-in abilities."""
+    lines = []
     active = [r for r in records if r.get("status") == "active" and r.get("version") is not None]
     disabled = [r for r in records if r not in active]
     if active:
-        lines.append("")
         lines.append(f"قابلیت‌هایی که خودم ساخته‌ام ({fa(len(active))}):")
         lines.append(numbered(f"{quoted(r['title'])} — {_kind(r['kind'])}، {ver(r['version'])}" for r in active))
         if with_help:
             lines.append("برای دیدن جزئیات یکی بگو: «جزئیات " + active[0]["title"] + "».")
     else:
-        lines.append("")
         lines.append("هنوز قابلیتی برای خودم نساخته‌ام. مثلاً بگو: «یک مبدل کیلومتر به مایل بساز».")
     if disabled:
         lines.append("غیرفعال: " + "، ".join(quoted(r["title"]) for r in disabled))
+    return lines
+
+
+def capability_list(records, with_help=True):
+    lines = ["من این کارها را بلدم:", bullets(_BUILTIN_ABILITIES), ""]
+    lines.extend(capability_registry_lines(records, with_help))
     return "\n".join(lines)
 
 
@@ -289,7 +296,8 @@ def ask_kind():
             + bullets(["تبدیل واحد — مثلاً «تبدیل کیلومتر به مایل»",
                        "فرمول — مثلاً «مساحت دایره = pi * r ** 2»",
                        "ابزار متنی — مثلاً «شمارش کلمات» یا «معکوس کردن متن»"])
-            + "\nکدام را می‌خواهی؟ (برای انصراف بگو «لغو»)")
+            + "\nکدام را می‌خواهی؟ (برای انصراف بگو «لغو»)"
+            + "\nاگر قابلیتِ دیگری می‌خواهی، بگو «لغو» و بعد «پرامپت بسته برای …» یا «از ChatGPT بخواه …»؛ متنِ درخواست را آماده می‌کنم و جوابش را بررسی و فقط با «بله»ی تو نصب می‌کنم.")
 
 
 def clarify(request, missing_note=None):

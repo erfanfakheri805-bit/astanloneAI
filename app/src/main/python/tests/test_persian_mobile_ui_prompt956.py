@@ -260,24 +260,30 @@ class PortraitConfigTests(unittest.TestCase):
         self.assertIn("android.intent.category.LAUNCHER", self.manifest)
         self.assertIn('android:exported="true"', self.manifest)
 
-    def test_permissions_unchanged(self):
+    def test_permissions_unchanged_except_notifications(self):
+        # Prompt 958 (a conscious change of this pin): POST_NOTIFICATIONS was added (Android 13+ needs the declaration before the
+        # user can be asked); every other permission is still absent.
         perms = re.findall(r'<uses-permission android:name="([^"]+)"', self.manifest)
-        self.assertEqual(perms, ["android.permission.INTERNET"])
+        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS"])
         self.assertIn('android:usesCleartextTraffic="true"', self.manifest)
 
     def test_android_entry_not_modified(self):
         self.assertEqual(sha256_file(os.path.join(PY_ROOT, "android_entry.py")), PINNED["android_entry.py"])
 
-    def test_java_layer_still_only_calls_android_entry_start(self):
+    def test_java_layer_calls_only_the_two_entry_modules(self):
+        # Prompt 958 (a conscious change of this pin, was "only android_entry.start"): the activity also calls platform_boot
+        # (prepare / inbox_dir / on_shared_text). Nothing else in Python is reachable from the Java layer.
         java = read(MAIN, "java", "com", "erfan", "standaloneai", "MainActivity.java")
-        self.assertEqual(re.findall(r'getModule\("([^"]+)"\)', java), ["android_entry"])
-        self.assertEqual(re.findall(r'callAttr\("([^"]+)"', java), ["start"])
+        self.assertEqual(sorted(set(re.findall(r'getModule\("([^"]+)"\)', java))), ["android_entry", "platform_boot"])
+        self.assertEqual(sorted(re.findall(r'callAttr\("([^"]+)"', java)), ["inbox_dir", "on_shared_text", "prepare", "start"])
         self.assertNotRegex(java, r"https?://")
 
-    def test_gradle_dependencies_unchanged(self):
+    def test_gradle_dependencies_unchanged_except_the_optional_engine(self):
+        # Prompt 958 (a conscious change of this pin): the on-device language-model engine, declared only inside the
+        # `withLlm` condition (see tests/test_android_files_prompt958.py).
         gradle = read(PROJECT_ROOT, "app", "build.gradle")
         deps = re.findall(r"^\s*(?:implementation|api|compileOnly|runtimeOnly)\s+['\"]([^'\"]+)", gradle, re.M)
-        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0"])
+        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27"])
 
     def test_theme_resources_exist_and_resolve(self):
         styles = read(MAIN, "res", "values", "styles.xml")
@@ -614,7 +620,14 @@ class PreservedArchitectureTests(unittest.TestCase):
         if HAS_PROJECT:
             for rel in (("res", "values", "strings.xml"), ("AndroidManifest.xml",),
                         ("java", "com", "erfan", "standaloneai", "MainActivity.java")):
-                low = read(MAIN, *rel).lower()
+                text = read(MAIN, *rel)
+                if rel == ("AndroidManifest.xml",):
+                    # Prompt 958 (a conscious change of this check): the <queries> block lists the package names of the assistant
+                    # apps the user may choose to ask. It is only Android's package-visibility declaration (it lets the app know
+                    # whether such an app is installed): no API, no key, no network, no access to that app. The same list is kept
+                    # equal to teacher/assistants.py by tests/test_android_files_prompt958.py. Everything else is still scanned.
+                    text = re.sub(r"<queries>.*?</queries>", "", text, flags=re.S)
+                low = text.lower()
                 for n in needles:
                     self.assertNotIn(n, low)
 

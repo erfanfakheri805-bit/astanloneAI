@@ -36,12 +36,12 @@ WebView (interface/static: index.html, app.js, i18n.js, style.css)
 
 | Package | Modules | Role |
 | --- | --- | --- |
-| `brain_hub/` | `graph.py`, `catalog.py`, `gaps.py`, `invoker.py`, `service.py`, `permissions.py`, `audit.py`, `atomic.py`, `builtin_tools.py`, `templates.py` | the capability graph built from the LIVE systems, the honest "cannot yet" catalogue, the single execution choke point, the app-level permission (internet), a hash-chained hub audit log, atomic file helpers, the extension prompt for ChatGPT-like assistants |
+| `brain_hub/` | `graph.py`, `catalog.py`, `gaps.py`, `invoker.py`, `service.py`, `permissions.py`, `audit.py`, `atomic.py`, `builtin_tools.py`, `templates.py`, `pack_prompt.py`, `llm.py` | the capability graph built from the LIVE systems, the honest "cannot yet" catalogue, the single execution choke point, the app-level permission (internet), a hash-chained hub audit log, atomic file helpers, the extension prompt and the pack prompt (Prompt 958) for ChatGPT-like assistants, and (Prompt 958) the layer that asks a language model the user imported (chat format, deadline, one answer at a time) |
 | `ext_runtime/` | `manifest.py`, `srcvalidate.py`, `instrument.py`, `guards.py`, `sandbox.py`, `suite.py`, `patterns.py`, `intake.py`, `lifecycle.py`, `calls.py`, `hubstore.py`, `limits.py`, `errors.py` | the `ext.v1` package, static validation, metering, sandbox, acceptance suite, trigger matching, intake, the manager (propose -> approve -> verify -> activate -> invoke -> update -> rollback -> reconcile), storage |
 | `net_tools/` | `policy.py`, `transport.py`, `redirects.py`, `fetch.py`, `html_text.py`, `download.py`, `permission.py`, `status.py` | one real, permission-first web read and one verified download |
-| `model_runtime/` | `card.py`, `store.py`, `manager.py`, `runtimes.py`, `ngram.py`, `bridge.py` | the model lifecycle (registered -> downloading -> downloaded -> verified -> compatible -> usable) |
+| `model_runtime/` | `card.py`, `store.py`, `manager.py`, `runtimes.py`, `mediapipe_runtime.py`, `ngram.py`, `bridge.py` | the model lifecycle (registered -> downloading -> downloaded -> verified -> compatible -> usable) |
 | `android_adapters/` | `catalog.py`, `layer.py`, `bridge.py` | what Android features exist, what they need, what is REALLY implemented |
-| `persian_brain/` | `hub_state.py`, `hub_intents.py`, `hub_messages.py`, `hub_messages_tools.py`, `hub_commands.py`, `hub_hooks.py` | the Persian conversation with the hub (replies are built only from real results) |
+| `persian_brain/` | `hub_state.py`, `hub_intents.py`, `hub_messages.py`, `hub_messages_tools.py`, `hub_messages_packs.py`, `hub_messages_teacher.py`, `hub_messages_llm.py`, `hub_messages_self.py`, `hub_self.py`, `hub_teacher.py`, `hub_commands.py`, `hub_hooks.py` | the Persian conversation with the hub (replies are built only from real results; `hub_self.py` + `hub_messages_self.py` answer questions about the assistant itself from what the app really has) |
 
 ## 3. The capability graph (registry + invoker)
 
@@ -137,7 +137,7 @@ readable text. Offline, blocked or failing, it says exactly why (a stable code p
 The audit line keeps the host and path only, never a query string.
 
 **Models (`model_runtime/`).** A model is described by a card (`model_id, title, version, format, source_url, sha256, size_bytes, license`,
-formats `ngram-json gguf onnx tflite`, <= 8 GiB, https source). Registering downloads nothing. Download needs the user's explicit yes,
+formats `ngram-json gguf onnx tflite task`, <= 8 GiB, https source). Registering downloads nothing. Download needs the user's explicit yes,
 the internet permission, an accepted licence (permissive ones pass; ones that need review - CC-BY-SA, GPL, OpenRAIL, Llama, Gemma ... - need your explicit
 acknowledgement; restricted and unknown ones are refused), enough free space and a matching SHA-256; a mismatch moves the file to `.rejected/`. A file becomes **usable** only after size + hash,
 licence/format, a runtime that REALLY loaded it and a REAL inference smoke test; after a restart a persisted "usable" is trusted

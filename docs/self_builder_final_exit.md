@@ -168,7 +168,7 @@ The path from the APK is the existing one: Android UI -> WebView -> local HTTP s
 `files_dir/data/self_builder` + `memory.db`. The audit test drives exactly this entry point in real
 subprocesses (SIGKILL between them).
 
-## 8. Package `persian_brain/` (14 modules)
+## 8. Package `persian_brain/` (21 modules)
 
 A deterministic, state-aware Persian conversation layer: normalization (Unicode, Arabic/Persian
 letters, ZWNJ vs space, digit styles, punctuation, elongation) -> intent classification
@@ -181,14 +181,19 @@ the dialogue state) -> replies built from fixed templates and the facts at hand.
   (`persian_brain.dialogue.v1`, with a TTL), so a question asked before the app was killed can
   still be answered afterwards; damaged state is validated and discarded.
 * Personal facts («من عرفان هستم») and English input are left to the existing pipeline: the brain
-  returns `None` for anything it cannot really handle.
+  returns `None` for anything it cannot really handle. (Changed in Prompt 958, on purpose: inside
+  the `full` scope a Persian QUESTION or REQUEST that nothing in the app can answer - no rule, no
+  taught fact, no pack, no language model - no longer falls through to the core's blank fallback;
+  `hub_self.unknown()` says plainly «این را نمی‌دانم», names the real ways to grow and remembers the
+  sentence for a plain «از ChatGPT بخواه». A greeting, a statement, a bare yes/no and one word are
+  still left alone, and the `capabilities` scope is unchanged.)
 * Activation (`persian_brain/activation.py`): scope `full` inside the application (any platform
   adapter other than the plain desktop one, i.e. after `android_entry.start()`), or with
   `STANDALONE_AI_PERSIAN_BRAIN=1`; scope `capabilities` for a plain library `Core` (only the
   capability domain is claimed, so the older frozen tests that pin the legacy greeting replies
   keep passing); `STANDALONE_AI_PERSIAN_BRAIN=0` switches it off.
 
-Since Prompt 957 the package has six more modules that connect this conversation to the brain hub (`brain_hub/`, `ext_runtime/`, `net_tools/`, `model_runtime/`, `android_adapters/`): `hub_state.py` (the one open question of the hub, persisted with a 30-minute TTL), `hub_intents.py` (closed word lists -> hub commands), `hub_messages.py` and `hub_messages_tools.py` (Persian replies built only from real results), `hub_commands.py` (one handler per command) and `hub_hooks.py` (the four hooks `brain.py` calls, only in the `full` scope). Nothing the hub changes happens without an explicit yes («بله»); see `docs/brain_hub_prompt957.md`.
+Since Prompt 957 the package has six more modules that connect this conversation to the brain hub (`brain_hub/`, `ext_runtime/`, `net_tools/`, `model_runtime/`, `android_adapters/`): `hub_state.py` (the one open question of the hub, persisted with a 30-minute TTL), `hub_intents.py` (closed word lists -> hub commands), `hub_messages.py` and `hub_messages_tools.py` (Persian replies built only from real results), `hub_commands.py` (one handler per command) and `hub_hooks.py` (the four hooks `brain.py` calls, only in the `full` scope). Nothing the hub changes happens without an explicit yes («بله»); see `docs/brain_hub_prompt957.md`. Since Prompt 958 four more modules belong to the same road: `hub_messages_packs.py` (the pack system's replies), `hub_teacher.py` and `hub_messages_teacher.py` (asking another assistant such as ChatGPT or Claude, with the user's yes first) and `hub_messages_llm.py` (importing a model file the user picked himself, and the answers of the language model on the phone). Two more answer questions about the assistant itself: `hub_self.py` (which sentence asks what the assistant can do, whether it has a Persian brain, whether it can upgrade itself, hear speech or use other apps; and what the phone's app really has right now) and `hub_messages_self.py` (the replies, written only from that snapshot - a thing that is absent is never claimed). `wire_text.py` is the fold-proof text envelope in which a chat assistant's answer (a pack) survives the core's whitespace folding.
 
 ## 9. Tests
 

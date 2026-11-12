@@ -17,6 +17,11 @@ net_tools.transport - the only module that opens sockets
 * no cookies, no credentials, no automatic redirects (3xx is returned as is);
   bodies are read for 2xx answers only.
 
+Prompt 959 (stage A) adds ONE narrow thing for the user's own cloud brain: a JSON `POST` with a request body and the few headers an API call
+needs (`content-type: application/json`, `authorization`, `x-api-key`, `x-goog-api-key`, `anthropic-version`). Every guarantee above still
+holds for it (public addresses only, certificate checks, one wall-clock deadline, identity encoding, size limits, no redirects); an answer that
+is not 2xx may carry a SMALL body (`read_error_body`) so the caller can say why (bad key, quota) - it is never read for a GET.
+
 Failures raise `TransportError(code, detail)`; `detail` is a short fixed token,
 never exception text. A fake transport (any callable taking a
 `TransportRequest`) can replace this class in tests; downloads additionally use
@@ -40,7 +45,7 @@ from .policy import FetchPolicy, classify_ip
 
 __all__ = [
     "TRANSPORT_CODES", "TransportError", "TransportRequest", "TransportResponse",
-    "StreamResponse", "HttpClientTransport", "make_ssl_context",
+    "StreamResponse", "HttpClientTransport", "make_ssl_context", "MAX_POST_BYTES", "MAX_ERROR_BODY_BYTES",
 ]
 
 TRANSPORT_CODES = (
@@ -48,6 +53,9 @@ TRANSPORT_CODES = (
     "too_large", "protocol_error", "unsupported_encoding", "unknown_error",
 )
 _ALLOWED_REQUEST_HEADERS = ("accept", "accept-language")
+_POST_HEADERS = ("content-type", "authorization", "x-api-key", "x-goog-api-key", "anthropic-version")
+MAX_POST_BYTES = 262144
+MAX_ERROR_BODY_BYTES = 16384
 _DEFAULT_ACCEPT = "text/html,text/plain,application/json;q=0.9,application/xml;q=0.8,*/*;q=0.1"
 _CHUNK = 65536
 _MAX_HEADER_VALUE = 8192
@@ -77,6 +85,8 @@ class TransportRequest:
     max_bytes: int
     oversize: str = "reject"
     total_timeout_s: Optional[float] = None  # overall wall-clock limit; defaults to timeout_s
+    body: bytes = b""                        # POST only: the request body (the caller builds it; at most MAX_POST_BYTES)
+    read_error_body: bool = False            # POST only: also read (at most MAX_ERROR_BODY_BYTES of) the body of a non-2xx answer
 
 
 @dataclass(frozen=True)
@@ -230,6 +240,8 @@ class HttpClientTransport:
             headers = self._headers(resp)
             status = int(resp.status)
             if not 200 <= status < 300:
+                if request.method == "POST" and request.read_error_body:
+                    return TransportResponse(status, headers, self._small_body(resp, headers), False, conn.peer_ip)
                 return TransportResponse(status, headers, b"", False, conn.peer_ip)
             declared = self._check_body_headers(headers, resp, request)
             body, truncated = self._read_all(resp, request, declared)
@@ -303,8 +315,13 @@ class HttpClientTransport:
 
     @staticmethod
     def _validate(req: TransportRequest) -> None:
-        if req.method != "GET":
+        if req.method not in ("GET", "POST"):
             raise TransportError("protocol_error", "method_not_supported")
+        post = req.method == "POST"
+        if post and (not isinstance(req.body, (bytes, bytearray)) or not 0 < len(req.body) <= MAX_POST_BYTES):
+            raise TransportError("protocol_error", "bad_body")
+        if not post and req.body:
+            raise TransportError("protocol_error", "body_on_get")
         if req.scheme not in ("http", "https"):
             raise TransportError("protocol_error", "scheme_not_supported")
         if not isinstance(req.port, int) or not 1 <= req.port <= 65535:
@@ -315,9 +332,14 @@ class HttpClientTransport:
             raise TransportError("protocol_error", "bad_host")
         if req.timeout_s <= 0 or req.max_bytes <= 0:
             raise TransportError("protocol_error", "bad_limits")
+        allowed = _ALLOWED_REQUEST_HEADERS + (_POST_HEADERS if post else ())
         for name, value in dict(req.headers or {}).items():
-            if name.lower() not in _ALLOWED_REQUEST_HEADERS or any(c in str(value) for c in "\r\n\x00"):
+            if name.lower() not in allowed or any(c in str(value) for c in "\r\n\x00") or len(str(value)) > _MAX_HEADER_VALUE:
                 raise TransportError("protocol_error", "bad_request_header")
+        if post:
+            kind = str(dict((k.lower(), v) for k, v in dict(req.headers or {}).items()).get("content-type", "")).split(";", 1)[0].strip().lower()
+            if kind != "application/json":
+                raise TransportError("protocol_error", "bad_content_type")
 
     def _resolve(self, host: str, port: int, timeout: float) -> List[Tuple[int, str, tuple]]:
         box: Dict[str, object] = {}
@@ -422,17 +444,25 @@ class HttpClientTransport:
         default = 443 if req.scheme == "https" else 80
         shown = "[%s]" % req.host if ":" in req.host else req.host
         host_header = shown if req.port == default else "%s:%d" % (shown, req.port)
+        post = req.method == "POST"
         lines = [
-            "GET %s HTTP/1.1" % req.path_query,
+            "%s %s HTTP/1.1" % ("POST" if post else "GET", req.path_query),
             "Host: %s" % host_header,
             "User-Agent: %s" % self._policy.user_agent,
-            "Accept: %s" % extra.get("accept", _DEFAULT_ACCEPT),
+            "Accept: %s" % extra.get("accept", "application/json" if post else _DEFAULT_ACCEPT),
             "Accept-Encoding: identity",
             "Connection: close",
         ]
         if "accept-language" in extra:
             lines.append("Accept-Language: %s" % extra["accept-language"])
+        if post:
+            for name in _POST_HEADERS:
+                if name in extra:
+                    lines.append("%s: %s" % ("-".join(part.capitalize() for part in name.split("-")), extra[name]))
+            lines.append("Content-Length: %d" % len(req.body))
         data = ("\r\n".join(lines) + "\r\n\r\n").encode("ascii")
+        if post:
+            data += bytes(req.body)
         remaining = deadline - self._clock()
         if remaining <= 0:
             raise TransportError("timeout", "send")
@@ -451,6 +481,23 @@ class HttpClientTransport:
             value = str(value)[:_MAX_HEADER_VALUE]
             out[key] = value if key not in out else (out[key] + ", " + value)[:_MAX_HEADER_VALUE]
         return out
+
+    @staticmethod
+    def _small_body(resp, headers: Mapping[str, str]) -> bytes:
+        """The (bounded) body of a non-2xx answer to a POST, so the caller can tell a bad key from a full quota. Never raises; b"" when unreadable."""
+        if headers.get("content-encoding", "").strip().lower() not in ("", "identity"):
+            return b""
+        try:
+            chunks, total = [], 0
+            while total < MAX_ERROR_BODY_BYTES:
+                data = resp.read1(min(_CHUNK, MAX_ERROR_BODY_BYTES - total))
+                if not data:
+                    break
+                chunks.append(data)
+                total += len(data)
+            return b"".join(chunks)
+        except Exception:
+            return b""
 
     @staticmethod
     def _check_body_headers(headers: Mapping[str, str], resp, req: TransportRequest, streaming: bool = False) -> Optional[int]:

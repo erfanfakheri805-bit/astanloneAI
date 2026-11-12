@@ -111,14 +111,14 @@ class TeacherService:
         if not wish:
             return _no("empty_wish", "متن درخواست خالی است.")
         assistant = A.get(assistant_id) or A.get(self.default_assistant())
-        text, kind = R.build(wish, kind, assistant.title)
+        text, kind = R.build(wish, kind, assistant.title, own_brain=assistant.assistant_id == A.BRAIN_ID)
         mission = self.store.create(kind, wish, assistant.assistant_id, len(text), C.sha16(text))
         self._audit("teacher.draft", mission["id"], {"assistant": assistant.assistant_id, "kind": kind, "chars": len(text)})
         return _ok("drafted", mission=mission, request_chars=len(text), assistant=assistant.assistant_id, title=assistant.title)
 
     def request_text(self, mission):
         assistant = A.get(mission["assistant"]) or A.get(DEFAULT_ORDER[0])
-        text, _kind = R.build(mission["wish"], mission["kind"], assistant.title)
+        text, _kind = R.build(mission["wish"], mission["kind"], assistant.title, own_brain=assistant.assistant_id == A.BRAIN_ID)
         return text
 
     def _mission(self, mission_id):

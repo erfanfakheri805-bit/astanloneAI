@@ -21,7 +21,7 @@ __all__ = ["TeacherStore", "STATES", "OPEN_STATES", "ROUTES", "KINDS", "FILE_NAM
 
 FILE_NAME = "state.json"
 KINDS = ("code", "lang", "ask")
-ROUTES = ("", "share", "copy_open", "site", "screen")
+ROUTES = ("", "share", "copy_open", "site", "screen", "brain")
 STATES = ("drafted", "sent", "running", "captured", "proposed", "done", "failed", "cancelled")
 OPEN_STATES = frozenset({"drafted", "sent", "running", "captured"})
 MAX_MISSIONS = 12

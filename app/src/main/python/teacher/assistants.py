@@ -12,7 +12,7 @@ visible" and the website route is offered instead.
 import re
 from dataclasses import dataclass
 
-__all__ = ["Assistant", "ASSISTANTS", "get", "find_assistant", "find_in_tokens", "all_packages", "squash"]
+__all__ = ["Assistant", "ASSISTANTS", "BRAIN", "BRAIN_ID", "get", "find_assistant", "find_in_tokens", "all_packages", "squash"]
 
 
 @dataclass(frozen=True)
@@ -54,7 +54,12 @@ ASSISTANTS = (
     _a("deepseek", "DeepSeek", ("com.deepseek.chat",), "https://chat.deepseek.com/", "deepseek", "deep seek", "دیپ سیک", "دیپسیک"),
     _a("grok", "Grok", ("ai.x.grok",), "https://grok.com/", "grok", "گراک"),
 )
+BRAIN_ID = "brain"
+# The user's OWN cloud brain (Prompt 959) is a route of the teacher, not an outside app: no package, no website, no alias - so it is not in
+# ASSISTANTS (which is listed to the user and mirrored in the manifest's <queries>) and `find_in_tokens` never takes it for an app name.
+BRAIN = Assistant(BRAIN_ID, "مغز ابری", (), "", ())
 _BY_ID = {a.assistant_id: a for a in ASSISTANTS}
+_BY_ID[BRAIN_ID] = BRAIN
 _ALIAS = {alias: a.assistant_id for a in ASSISTANTS for alias in a.aliases}
 
 

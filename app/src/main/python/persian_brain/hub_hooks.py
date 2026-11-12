@@ -21,6 +21,7 @@ import re
 
 from self_builder import fa_text
 
+from . import hub_brain
 from . import hub_commands as HC
 from . import hub_intents as HI
 from . import hub_messages as HM
@@ -104,6 +105,9 @@ def _guard(brain, text, fn):
 def early(brain, text):
     memory, clock = brain.memory, brain._clock
     _bind(brain)
+    mine = hub_brain.early(brain, text)                   # Prompt 959: the emergency words and the cloud brain's own open question
+    if mine is not None:
+        return mine
     state = hub_state.load(memory, clock)
     toks = fa_text.words(nz.normalize(text)) if len(text) <= MAX_ANSWER_CHARS else []
     word = I.answer_word(toks) if toks else None
@@ -496,6 +500,9 @@ _CONFIRMED = {"install": _c_install, "rollback": _c_rollback, "disable": _c_disa
 # ================================================================== commands
 def command(brain, turn):
     """`(kind, reply)` when the sentence is a hub command, else None. A command is a new topic: it withdraws any open dialogue question."""
+    mine = hub_brain.command(brain, turn)                  # Prompt 959: «مغز ابری را فعال کن», «وضعیت مغز ابری», «کلید را فراموش کن» ...
+    if mine is not None:
+        return mine
     hub = get_hub(brain)
     named = False
     if hub is not None:
@@ -652,6 +659,12 @@ def llm_reply(brain, turn):
         return None
 
 
+def cloud_reply(brain, turn, intent=None):
+    """What the user's own cloud brain says to a sentence nothing else in the app could answer (only when he switched it on), or None.
+    The answer is only shown as text - never run, never taken as a command. Never raises."""
+    return hub_brain.reply(brain, turn, intent)
+
+
 def unsupported(brain, turn):
     """The reply to a build request the Self-Builder does not support: the exact gap if there is one, else the old text plus a way forward."""
     detail = gap_reply(brain, turn, lead=False)
@@ -661,5 +674,5 @@ def unsupported(brain, turn):
     return HT.unsupported_with_hint(M.unsupported_build())
 
 
-__all__ = ["early", "command", "gap_reply", "self_reply", "about_reply", "help_reply", "llm_reply", "unknown_reply", "unsupported", "answer_pending", "note_served",
-           "get_hub", "packs"]
+__all__ = ["early", "command", "gap_reply", "self_reply", "about_reply", "help_reply", "llm_reply", "cloud_reply", "unknown_reply", "unsupported",
+           "answer_pending", "note_served", "get_hub", "packs"]

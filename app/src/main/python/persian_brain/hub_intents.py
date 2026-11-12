@@ -300,10 +300,55 @@ def _mentions_outside_assistant(toks):
     return None
 
 
+_OWN_BRAIN_WORD = frozenset({"مغزت", "مغزتو", "مغزتان", "مغزتون"})
+_OWN_BRAIN_NOUN = frozenset({"مغز", "هوش"})
+_OWN_BRAIN_ADJ = ("ابری", "آنلاین", "اینترنتی")
+_OWN_BRAIN_SUFFIX = frozenset({"م", "ت", "ش", "مان", "تان", "شان", "مون", "تون", "شون"})     # «ابری‌ام», «ابریت», «ابریتون»
+
+
+def _own_brain_len(toks, i):
+    """How many words a mention of the user's OWN cloud brain takes at position `i` («مغزت», «مغز ابری», «مغز ابریم», «مغز خودت»); 0 if none."""
+    tok = toks[i]
+    if tok in _OWN_BRAIN_WORD:
+        return 1
+    nxt = toks[i + 1] if i + 1 < len(toks) else ""
+    if tok in _OWN_BRAIN_NOUN and nxt:
+        if nxt in ("خودت", "خودتان", "خودتون"):
+            return 2 if tok == "مغز" else 0
+        for adj in _OWN_BRAIN_ADJ:
+            if nxt == adj or (nxt.startswith(adj) and nxt[len(adj):] in _OWN_BRAIN_SUFFIX):
+                return 2
+        if tok == "مغز" and nxt == "ابر":
+            return 2
+    if tok == "ابر" and nxt == "مغز":
+        return 2
+    return 0
+
+
+def _mentions_own_brain(toks):
+    """The user's OWN cloud brain named after a preposition («از مغزت بخواه …», «از مغز ابری‌ات بپرس …»): the index after the name, else None."""
+    for i in range(1, len(toks)):
+        if toks[i - 1] in _T_PREPOSITIONS:
+            n = _own_brain_len(toks, i)
+            if n:
+                return i + n
+    return None
+
+
+def _own_brain_ask(raw, norm, toks, tset, stems):
+    """«از مغزت بخواه برایم X بسازد» / «از مغز ابری‌ات بپرس X»: a request TO the user's own cloud brain (never the commands ABOUT it)."""
+    if _mentions_own_brain(toks) is None or not (tset & _T_ASK or stems & _T_ASK):
+        return None
+    wish = _teacher_wish(raw)
+    if not wish and lx.any_phrase(toks, _T_ABILITY):       # «می‌تونی از مغزت کمک بگیری؟» is a question about the app (hub_self), not a request
+        return None
+    return HubCommand(TEACHER_ASK, {"assistant": "brain", "wish": wish, "kind": _teacher_kind(tset, toks, norm), "auto": False})
+
+
 def _teacher(raw, norm, toks, tset, stems, has_ext, teacher_open):
     """Asking another assistant, and what follows: the answer arrived, let the app do it itself, status, cancel, list, revoke."""
-    if has_ext:
-        return None
+    if has_ext:                                            # a sentence about extensions belongs to the extension commands - except a plain request TO the cloud brain
+        return _own_brain_ask(raw, norm, toks, tset, stems) if _mentions_outside_assistant(toks) is None else None
     # the accessibility settings page (the user switches the service on himself - the app can only open the page)
     access_word = ("دسترس" in tset or "دسترسی" in tset) and "پذیری" in tset or "accessibility" in tset     # Android's Persian label drops the «ی»; people type both
     if access_word and tset & _T_ACCESS_PAGE and (tset & _T_OPEN or len(toks) <= 5):
@@ -330,6 +375,10 @@ def _teacher(raw, norm, toks, tset, stems, has_ext, teacher_open):
         if tset & _T_CANCEL and _assistants.find_in_tokens(toks) is not None and len(toks) <= 9:
             return HubCommand(TEACHER_CANCEL)
     mention = _mentions_outside_assistant(toks)
+    if mention is None:
+        own = _own_brain_ask(raw, norm, toks, tset, stems)
+        if own is not None:
+            return own
     if mention is not None and (tset & _T_ASK or "یاد" in tset and ("بگیر" in tset or "بده" in tset) or stems & _T_ASK):
         assistant_id, _end = mention
         wish = _teacher_wish(raw)

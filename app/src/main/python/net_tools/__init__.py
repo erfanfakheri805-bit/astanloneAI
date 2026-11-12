@@ -11,6 +11,7 @@ connection that was not made.
     fetch_text(url, gate=..., policy=..., transport=...)   -> FetchResult
     download_file(url, dest_root, rel_dest, gate=..., expected_sha256=..., max_bytes=...) -> DownloadResult
     network_status(probe)                                   -> NetworkStatus (unknown without evidence)
+    post_json(url, payload, headers=..., gate=...)          -> PostResult (Prompt 959: one JSON POST for the user's own cloud brain)
 
 Importing this package has no side effects (no sockets, files or threads).
 """
@@ -19,6 +20,7 @@ from .download import DOWNLOAD_CODES, DownloadResult, download_file
 from .fetch import FETCH_CODES, FetchResult, decode_body, fetch_text, message_for
 from .html_text import html_to_text
 from .permission import NETWORK, CallableGate, PermissionGate, StaticGate
+from .post import POST_CODES, PostResult, error_summary, post_json, post_message_for, scrub
 from .policy import FetchPolicy, ParsedUrl, UrlError, classify_ip, parse_url
 from .status import NetworkStatus, network_status
 from .transport import (HttpClientTransport, StreamResponse, TransportError, TransportRequest,
@@ -29,5 +31,5 @@ __all__ = [
     "message_for", "html_to_text", "NETWORK", "CallableGate", "PermissionGate", "StaticGate",
     "FetchPolicy", "ParsedUrl", "UrlError", "classify_ip", "parse_url", "NetworkStatus", "network_status",
     "HttpClientTransport", "StreamResponse", "TransportError", "TransportRequest", "TransportResponse",
-    "make_ssl_context",
+    "make_ssl_context", "POST_CODES", "PostResult", "error_summary", "post_json", "post_message_for", "scrub",
 ]

@@ -221,6 +221,10 @@ class PersianBrain:
                 reply = hub_hooks.llm_reply(self, turn)
                 if reply is not None:
                     turn.intent = I.Intent("LLM", "answer", 0.6, ["local_language_model"])
+            if reply is None and full:                     # Prompt 959: the user's own cloud brain (only when he switched it on, with his key)
+                reply = hub_hooks.cloud_reply(self, turn, intent)
+                if reply is not None:
+                    turn.intent = I.Intent("CLOUD", "answer", 0.6, ["cloud_brain"])
             if reply is None and full:                     # nothing at all: say honestly what is missing and how to grow (not the core's blank fallback);
                 reply = hub_hooks.unknown_reply(self, turn, intent)     # the intent stays what it was (a question), this is not a hub command
             return reply

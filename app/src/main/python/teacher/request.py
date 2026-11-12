@@ -16,7 +16,7 @@ import re
 
 from brain_hub import pack_prompt
 
-__all__ = ["KINDS", "build", "clean_wish", "MAX_WISH_CHARS", "make_preface"]
+__all__ = ["KINDS", "build", "clean_wish", "MAX_WISH_CHARS", "make_preface", "make_own_preface"]
 
 KINDS = ("code", "lang", "ask")
 MAX_WISH_CHARS = pack_prompt.MAX_REQUEST_CHARS
@@ -33,16 +33,23 @@ def make_preface(assistant_title):
             "این پیام را صاحبم خودش فرستاده است. لطفاً دقیقاً مطابق دستورِ پایین جواب بده." % assistant_title)
 
 
-def build(wish, kind="code", assistant_title="دستیار"):
+def make_own_preface():
+    """The first lines when the receiver is the app's OWN cloud brain (the user's key): it is told who is asking and why."""
+    return ("تو «مغز ابری» برنامهٔ «دستیار هوشمند» روی گوشیِ صاحب‌اش هستی. این پیام را صاحبِ برنامه خودش خواسته و خودِ برنامه می‌فرستد. "
+            "لطفاً دقیقاً مطابق دستورِ پایین جواب بده.")
+
+
+def build(wish, kind="code", assistant_title="دستیار", own_brain=False):
     """`(text, kind)` - the full request for `wish`. Unknown kinds fall back to a plain question."""
     wish = clean_wish(wish)
     if not wish:
         raise ValueError("empty wish")
     if kind not in KINDS:
         kind = "ask"
+    preface = make_own_preface() if own_brain else make_preface(assistant_title)
     if kind == "ask":
         body = "\n".join([
-            make_preface(assistant_title),
+            preface,
             "",
             "سؤال: " + wish,
             "",
@@ -50,4 +57,4 @@ def build(wish, kind="code", assistant_title="دستیار"):
         ])
         return body, "ask"
     prompt = pack_prompt.build_prompt(wish, kind)
-    return make_preface(assistant_title) + "\n\n" + prompt, kind
+    return preface + "\n\n" + prompt, kind

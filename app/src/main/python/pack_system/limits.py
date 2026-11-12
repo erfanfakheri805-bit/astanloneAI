@@ -52,12 +52,13 @@ PERMISSIONS = ("network", "android", "clipboard", "screen", "model", "teacher", 
 RISKY_PERMISSIONS = frozenset({"replace_core", "unsafe_native", "screen"})
 
 # modules a pack may never replace (the approval gates, the audit/permission stores, the network policy, the extension
-# sandbox, the pack system itself, the data store and the seven files pinned by the project's frozen tests)
+# sandbox, the pack system itself, the data store, the optional cloud brain - it holds the user's key and the privacy filter -
+# and the seven files pinned by the project's frozen tests)
 PINNED_MODULES = frozenset({
     "android_entry", "core.core", "ael.interpreter", "runtime_integration.bridge", "interface.server",
     "runtime_integration.runtime_core", "runtime_growth.runtime_growth_cycle"})
 PROTECTED_PREFIXES = ("pack_system", "platform_boot", "net_tools", "ext_runtime", "brain_hub", "android_adapters",
-                      "persian_brain.hub_", "memory", "platform_layer")
+                      "persian_brain.hub_", "memory", "platform_layer", "brain_v2")
 
 # bootstrapping / safe mode
 BOOT_GOOD_AFTER_SECONDS = 30.0               # a start that is still alive after this long is a good start

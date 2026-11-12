@@ -11,9 +11,15 @@ What needs the user's explicit «بله» (one open question, see `hub_state`):
 What happens at once (it only reads or restricts): status, list of assistants, cancel, taking the permission back,
 opening Android's accessibility page (the user switches the service on himself), reading the answer when the user says it arrived.
 Whatever an assistant answers is TEXT: a pack goes through the pack system's own review and its own «بله»; an answer is only shown.
+
+The user's OWN cloud brain is one more "assistant" («از مغزت بخواه برایم X بسازد»): the same two-step question, but the request is sent
+by the app itself, in ONE tool-less request with his own key (see `brain_v2.service.BrainV2.author`) - never to another app. What comes
+back is TEXT like any other answer: a pack is reviewed (not run) and installed only after his second «بله».
 """
 
+from . import hub_brain
 from . import hub_intents as HI
+from . import hub_messages_brain as BM
 from . import hub_messages_teacher as HTc
 from . import hub_messages_tools as HT
 from . import hub_state
@@ -63,6 +69,8 @@ def h_ask(ctx, cmd):
     if svc is None:
         return HT.unexpected()
     from teacher import assistants
+    if cmd.slots.get("assistant") == assistants.BRAIN_ID:
+        return _ask_own_brain(ctx, svc, cmd)
     rows = svc.assistants()
     assistant_id = cmd.slots.get("assistant") or svc.default_assistant(rows)
     wish = cmd.slots.get("wish") or ""
@@ -91,6 +99,8 @@ def c_send(ctx, d):
     mission = svc.store.get(d["mission_id"]) if svc is not None else None
     if svc is None or mission is None or mission["state"] != "drafted":
         return HTc.mission_gone()
+    if mission["assistant"] == "brain":
+        return _send_to_own_brain(ctx, svc, mission)
     title = _title(mission["assistant"])
     svc.supersede(mission["id"])
     result = svc.deliver(mission["id"])
@@ -101,6 +111,92 @@ def c_send(ctx, d):
     else:
         svc.finish(mission["id"], "failed", note=str(result.get("code") or "failed")[:60])
     return HTc.send_failed(result, title)
+
+
+# ================================================================== the user's own cloud brain
+def _ask_own_brain(ctx, svc, cmd):
+    """«از مغزت بخواه …» / «از مغز ابری‌ات بپرس …». A plain question is answered at once (it is the same as any free sentence the cloud
+    brain answers); a pack request first shows exactly what leaves the phone and waits for the user's «بله»."""
+    brain = hub_brain.service(ctx.brain)
+    if brain is None:
+        return HT.unexpected()
+    wish = cmd.slots.get("wish") or ""
+    remembered = False
+    if not wish:
+        wish = hub_state.load_wish(ctx.memory, ctx.clock)          # «از مغزت بخواه» right after a «this I cannot do yet» answer
+        remembered = bool(wish)
+    if not wish:
+        return BM.teacher_need_wish()
+    kind = cmd.slots.get("kind") or "code"
+    if kind == "ask":
+        reply = brain.reply(wish)
+        shown = hub_brain._render(brain, reply)
+        if shown is not None:
+            return shown
+        return BM.teacher_not_ready(reply.code) if reply.kind == "not_ready" else HT.unexpected()
+    ready, why = brain.ready()
+    if not ready:
+        return BM.teacher_not_ready(why)
+    refused = brain.precheck(wish)                                 # a secret in the wish is refused BEFORE the user is asked anything
+    if refused is not None:
+        return hub_brain._render(brain, refused) or HT.unexpected()
+    drafted = svc.draft(wish, kind, "brain")
+    if not drafted["ok"]:
+        return HTc.send_failed(drafted, "مغز ابری")
+    mission = drafted["mission"]
+    superseded = any(m["state"] in ("sent", "running", "captured") and m["id"] != mission["id"] for m in svc.store.missions())
+    if not ctx.arm("teacher_send", {"mission_id": mission["id"], "assistant": "brain", "kind": mission["kind"]}):
+        svc.finish(mission["id"], "cancelled", "پرسش ذخیره نشد")
+        return HT.unexpected()
+    return BM.teacher_ask_send(brain.status(), mission["wish"], mission["kind"], drafted["request_chars"], from_memory=remembered,
+                               superseded=superseded)
+
+
+_NOT_SENT = frozenset({"halted", "not_ready", "blocked", "rate"})          # outcomes in which the request never left the phone
+
+
+def _send_to_own_brain(ctx, svc, mission):
+    """The user said «بله»: ONE authoring request to his own cloud brain, then the same review as any pasted pack (no execution)."""
+    brain = hub_brain.service(ctx.brain)
+    if brain is None:
+        svc.finish(mission["id"], "cancelled", "مغز ابری در دسترس نبود")
+        return HT.unexpected()
+    svc.supersede(mission["id"])
+    svc.store.update(mission["id"], state="sent", route="brain", note="درخواست به مغز ابری رفت؛ منتظر جواب")
+    try:
+        reply = brain.author(svc.request_text(mission), wish=mission["wish"])
+    except Exception:                                              # `author` never raises; this keeps the mission from staying "sent" if it ever did
+        svc.finish(mission["id"], "failed", "خطای داخلی")
+        return HT.unexpected()
+    if reply.kind != "answer":
+        code = (reply.code or reply.kind)[:40]
+        svc.finish(mission["id"], "cancelled" if reply.kind in _NOT_SENT or (reply.kind == "too_long" and reply.code == "request") else "failed",
+                   note="مغز ابری: " + code)
+        return _author_problem(reply)
+    from teacher import capture
+    klass = capture.classify(reply.text)
+    if klass in ("pack", "other_pack"):
+        fresh = svc.store.get(mission["id"]) or mission
+        return _take_answer(ctx, svc, {"mission": fresh, "text": reply.text, "klass": klass, "source": "brain"})
+    svc.finish(mission["id"], "failed", note="جوابِ مغز ابری بسته نبود")
+    return BM.teacher_no_pack(reply.text)
+
+
+def _author_problem(reply):
+    kind = reply.kind
+    if kind == "halted":
+        return BM.halted()
+    if kind == "not_ready":
+        return BM.teacher_not_ready(reply.code)
+    if kind == "blocked":
+        return BM.blocked(reply.code, reply.label_fa, reply.secret)
+    if kind == "rate":
+        return BM.rate_limited()
+    if kind == "too_long":
+        return BM.teacher_answer_cut() if reply.code == "answer" else BM.teacher_request_too_long()
+    if kind == "failed":
+        return BM.teacher_failed(reply.reason_fa, reply.detail)
+    return HT.unexpected()
 
 
 def drop_draft(brain, data):

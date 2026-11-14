@@ -540,8 +540,10 @@ def _gap_for(turn):
 def _self_snapshot(brain):
     """What this phone's app really has right now, as plain data (see `hub_self.snapshot`). Never raises."""
     hub = get_hub(brain)
-    return hub_self.snapshot(hub, packs(brain), HTe.service(brain, hub) if hub is not None else None,
+    snap = hub_self.snapshot(hub, packs(brain), HTe.service(brain, hub) if hub is not None else None,
                              hub_state.load_wish(brain.memory, brain._clock))
+    snap["cloud_on"] = hub_brain.is_on(brain)              # Prompt 959: the «I do not know» replies point to the cloud brain only while it is off
+    return snap
 
 
 def _registry_lines(turn):
@@ -590,15 +592,25 @@ def self_reply(brain, turn):
         return None
 
 
+def _is_persian(text):
+    """Does the sentence hold at least one Persian/Arabic LETTER? (digits and symbols alone do not make it a Persian sentence)"""
+    return any("\u0600" <= ch <= "\u06ff" and ch.isalpha() for ch in text)
+
+
 def unknown_reply(brain, turn, intent):
     """Nothing in the app answered a question or a request (no rule, no taught fact, no pack, no language model): an honest reply that says
     what is missing and the real ways to grow, instead of the core's blank fallback. The sentence is remembered, so a plain
     «از ChatGPT بخواه» can take it on. None for anything that is not a question or a request, or too short to be one. Never raises."""
     try:
-        if intent is None or intent.kind not in (I.QUESTION, I.REQUEST) or len(turn.toks) < 2 or len(turn.text) > MAX_LLM_CHARS:
+        if intent is None or len(turn.toks) < 2 or len(turn.text) > MAX_LLM_CHARS:
             return None
-        remembered = hub_state.save_wish(brain.memory, turn.text, brain._clock)
-        return hub_self.unknown(brain.memory, brain._clock, _self_snapshot(brain), remembered)
+        if intent.kind in (I.QUESTION, I.REQUEST):
+            remembered = hub_state.save_wish(brain.memory, turn.text, brain._clock)
+            return hub_self.unknown(brain.memory, brain._clock, _self_snapshot(brain), remembered)
+        if intent.kind in (I.STATEMENT, I.UNKNOWN) and _is_persian(turn.text):
+            # Prompt 959 (corrective release): a Persian sentence that is not a question either used to fall to the core's English line about AEL
+            return hub_self.unknown(brain.memory, brain._clock, _self_snapshot(brain), False, statement=True)
+        return None
     except Exception as exc:
         brain._log_error(exc, turn.text)
         return None

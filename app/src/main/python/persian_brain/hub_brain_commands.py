@@ -40,9 +40,21 @@ MAX_CHARS = 400
 MAX_TOKENS = 30
 
 _CLOUD = lx.phrases("مغز ابری", "مغز آنلاین", "مغز اینترنتی", "مغز ابر", "هوش ابری", "هوش آنلاین", "ابر مغز", "مغز دوم ابری")
-_ON = lx.word_set("فعال روشن راه‌اندازی راه‌انداز راهاندازی وصل اتصال برقرار شروع نصب بساز داشته باشی بشی بشو بگیر بده بدم بدهم بیا")
+# Prompt 959 (corrective): people say «مغز ابریت», «مغز ابری‌ات», «مغز ابریمو», «هوش مصنوعیِ ابری» - the exact phrases above miss them
+_CLOUD_NOUN = frozenset({"مغز", "هوش"})
+_CLOUD_ADJ = ("ابری", "آنلاین", "اینترنتی")
+_CLOUD_SUFFIX = frozenset({"م", "ت", "ش", "مان", "تان", "شان", "مون", "تون", "شون", "مو", "تو", "شو", "ام", "ات", "اش"})
+_ON = lx.word_set("فعال روشن راه‌اندازی راه‌انداز راهاندازی وصل اتصال برقرار شروع نصب بساز داشته باشی بشی بشو بگیر بده بدم بدهم بیا "
+                  "بنداز بندازیم بندازی بندازم بندازید استفاده")
 _OFF = lx.word_set("خاموش غیرفعال قطع ببند نخواه متوقف")
 _STATUS = lx.word_set("وضعیت چطوره چطوری چطوریه روشنه وصله کار هست هستش آماده")
+_NOT_DO = lx.word_set("نکن نکنی نکنید نکنین نشو نشه نباشه")              # «مغز ابری را خاموش نکن»: the opposite of a switch-off
+_WANT = lx.word_set("میخوام میخواهم میخواستم میخوایم خوام خواهم")
+_NOT_WANT = lx.word_set("نمیخوام نمیخواهم نخوام نخواهم نمیخوایم")
+_HOW = lx.word_set("چجوری چطوری چطور چگونه چیکار چکار چجور")
+_HOW_PHRASES = lx.phrases("چه کار", "چی کار", "چه جوری", "چه طوری", "به چه شکل")
+_PRIVACY_Q = lx.word_set("امن امنه ایمن ایمنه خطرناک خطرناکه میره میفرستی")
+_BUILD_WORDS = lx.word_set("بنویس بنویسه بنویسد بنویسی بسازه بسازد بسازی قابلیت بسته پک پیشنویس افزونه")   # a wish for the teacher route, not a switch-on
 _ASK_FROM = lx.word_set("بخواه بخواهی بخواهید بخوای بخواین بخوام بخواهم بپرس بپرسی بپرسید بپرسین بپرسم")
 _PROBE = lx.word_set("امتحان تست آزمایش آزمون بررسی چک")
 _MODEL = lx.word_set("مدل")
@@ -55,7 +67,7 @@ _HISTORY = lx.word_set("تاریخچه گفتگو سابقه حافظه")
 _PERSONAL = lx.word_set("شخصی خصوصی")
 _SEND = lx.word_set("بفرست ارسال بفرستی بفرستید بده")
 _NOSEND = lx.word_set("نفرست نفرستی نفرستید ارسال‌نکن")
-_QUESTION = lx.word_set("چیست چیه چی چطور چگونه توضیح یعنی")
+_QUESTION = lx.word_set("چیست چیه چی چطور چگونه توضیح یعنی چرا فایده دردی")
 _MODEL_ID_RE = re.compile(r"(?<![\w.:/@+-])([A-Za-z0-9][A-Za-z0-9._:/@+-]{1,79})(?![\w.:/@+-])")
 _NOT_MODEL = frozenset({"api", "ai", "http", "https", "key", "gpt-api"})
 _ANSWER_NOUN = frozenset({"جواب", "پاسخ", "جوابها", "پاسخها", "جوابا", "پاسخا"})
@@ -98,6 +110,37 @@ def is_resume(toks):
     return _squash(toks) in _RESUME or toks[0] == "ادامه" and len(toks) <= 2
 
 
+_CLARIFY_FILLER = frozenset({"آخه", "خب", "پس", "ولی", "اصلا", "لطفا", "ببخشید", "هان", "اوه", "وای"})
+_CLARIFY = lx.phrases(
+    "چرا", "برای چی", "واسه چی", "برای چه", "چه فایده", "فایده اش چیه", "فایده ش چیه", "یعنی چی", "یعنی چه", "چی هست", "چیه", "چیست",
+    "این چیه", "این چیست", "چی بنویسم", "چی بگم", "چی بدم", "چی بفرستم", "چیکار کنم", "چکار کنم", "چه کار کنم", "چی کار کنم", "چه کنم",
+    "چطوری", "چجوری", "چطور", "چگونه", "از کجا", "کجا", "کجا بگیرم", "کجا میگیرم", "کمک", "کمکم کن", "کمک کن", "راهنمایی", "راهنما",
+    "توضیح بده", "توضیح بیشتر", "بیشتر توضیح بده", "بیشتر بگو", "نمی فهمم", "نمیفهمم", "نفهمیدم", "متوجه نشدم", "نمی دونم", "نمیدونم",
+    "نمی دانم", "کدوم", "کدام", "کدوم بهتره", "کدام بهتر است", "فرقشون چیه", "فرقشان چیست", "همه چیه", "اینا چیه")
+
+
+_CLARIFY_START = lx.phrases("چرا", "برای چی", "واسه چی", "برای چه", "چه فایده", "یعنی چی", "یعنی چه")           # may be followed by a few more words
+_CLARIFY_ANY = lx.phrases("از کجا", "کجا بگیرم", "کجا میگیرم", "چی بنویسم", "چی بگم", "چی بدم", "چی بفرستم", "چیکار کنم", "چکار کنم",
+                          "چه کار کنم", "چی کار کنم", "چه کنم", "نمی فهمم", "نمیفهمم", "نفهمیدم", "متوجه نشدم", "نمی دونم", "نمیدونم",
+                          "نمی دانم", "یعنی چی", "یعنی چه", "کدوم بهتره", "کدام بهتر است", "فرقشون چیه", "فرقشان چیست")     # anywhere in a short sentence
+
+
+_CLARIFY_TOPIC = lx.word_set("باید کلید کلیدمو کلیدم میپرسی میخوای میخواهی لازم لازمه نیاز اجازه سرویس مغز ابری api اینو این اینجا")
+
+
+def is_clarify(toks):
+    """A SHORT question about the question the app just asked («چرا؟», «یعنی چی؟», «از کجا بگیرم؟», «نمی‌فهمم») - never a yes, a no or a cancel.
+    Only used while a cloud-brain question is open: the answer explains that step and the same question stays open."""
+    words = [t for t in toks if t not in _CLARIFY_FILLER]
+    if not words or len(words) > 6 or set(words) & (lx.CONFIRM_WORDS | lx.DENY_WORDS | lx.CANCEL_WORDS):
+        return False
+    if any(tuple(words[:len(ph)]) == ph for ph in _CLARIFY_START):
+        return len(words) <= 2 or bool(set(words) & _CLARIFY_TOPIC)      # «چرا آسمان آبی است؟» is a new question, not about this step
+    if len(words) <= 5 and lx.any_phrase(words, _CLARIFY_ANY):
+        return True
+    return any(tuple(words[:len(ph)]) == ph and len(words) <= len(ph) + 2 for ph in _CLARIFY)
+
+
 def model_id(text):
     """The model name written in a sentence («gemini-3.8-flash», «gpt-5.4-mini», «openrouter/auto»), or ''."""
     for match in _MODEL_ID_RE.finditer(text or ""):
@@ -109,8 +152,35 @@ def model_id(text):
     return ""
 
 
+def _cloud_at(toks, i):
+    """How many words a mention of the cloud brain takes at position `i` («مغز ابری», «مغز ابریت», «مغز ابریمو», «هوش مصنوعیِ ابری»); 0 if none."""
+    if toks[i] not in _CLOUD_NOUN:
+        return 0
+    j = i + 1
+    if toks[i] == "هوش" and j < len(toks) and toks[j] == "مصنوعی":
+        j += 1
+    if j >= len(toks):
+        return 0
+    nxt = toks[j]
+    for adj in _CLOUD_ADJ:
+        if nxt == adj or (nxt.startswith(adj) and nxt[len(adj):] in _CLOUD_SUFFIX):
+            return j - i + 1
+    return 0
+
+
 def _is_cloud(toks):
-    return lx.any_phrase(toks, _CLOUD)
+    return lx.any_phrase(toks, _CLOUD) or any(_cloud_at(toks, i) for i in range(len(toks)))
+
+
+def _wants(toks):
+    """(wants, does_not_want): «می‌خوام …» / «نمی‌خوام …» - the joined «میخوام» and the split «می» + «خوام» are both read."""
+    tset = set(toks)
+    no = bool(tset & _NOT_WANT) or any(a == "نمی" and b in ("خوام", "خواهم", "خوایم") for a, b in zip(toks, toks[1:]))
+    return (not no and bool(tset & _WANT)), no
+
+
+def _asks_how(toks):
+    return bool(set(toks) & _HOW) or lx.any_phrase(toks, _HOW_PHRASES)
 
 
 def _memory_command(toks):
@@ -144,8 +214,9 @@ def classify(text, norm, toks):
         return None
     tset = set(toks)
     cloud = _is_cloud(toks)
-    if cloud and tset & _ASK_FROM:      # «از مغز ابری‌ات بخواه … بسازد»: a request TO the brain (the teacher route), not a command about it
-        return None
+    wants, not_wants = _wants(toks)
+    if cloud and (tset & _ASK_FROM or (wants and tset & _BUILD_WORDS)):
+        return None                     # «از مغز ابری‌ات بخواه … بسازد» / «از مغزِ ابری‌ات می‌خوام یه بسته بنویسه»: a request TO the brain (the teacher route)
     key_noun = bool(tset & _KEY)
     api = bool(tset & _API)
     if cloud or (key_noun and api):
@@ -167,15 +238,20 @@ def classify(text, norm, toks):
                 return BrainCommand(PRIVATE_OFF)
             if tset & _SEND:
                 return BrainCommand(PRIVATE_ON)
-        if tset & _OFF and not tset & _ON:
+        if not_wants:                   # «نمی‌خوام مغز ابری رو»: the safe reading of «not wanted» is «off» (if it never was on, the answer just says so)
             return BrainCommand(OFF)
+        if tset & _OFF and not tset & _ON:
+            return BrainCommand(STATUS if tset & _NOT_DO else OFF)      # «مغز ابری را خاموش نکن» is the opposite of a switch-off
         if tset & _PROBE:
             return BrainCommand(PROBE)
-        if tset & _ON or (key_noun and api):
-            return BrainCommand(SETUP)
+        how = _asks_how(toks)
+        if tset & _ON or (key_noun and api) or wants:
+            return BrainCommand(SETUP, {"how": True} if how else {})    # «چجوری مغز ابریت رو فعال کنم»: the guided setup IS the answer
+        if how and "کار" in tset:                                       # «مغز ابری چطور کار می‌کند؟» asks how it works, not how it is doing
+            return BrainCommand(HELP)
         if tset & _STATUS:
             return BrainCommand(STATUS)
-        if tset & _QUESTION:
+        if tset & (_QUESTION | _PRIVACY_Q):
             return BrainCommand(HELP)
         return BrainCommand(STATUS) if len(toks) <= 3 else None
     if key_noun and tset & _FORGET and len(toks) <= 6:           # «کلید را فراموش کن» (the key is the cloud brain's only key)
@@ -187,5 +263,5 @@ def classify(text, norm, toks):
     return _memory_command(toks)
 
 
-__all__ = ["BrainCommand", "classify", "is_halt", "is_resume", "model_id", "KINDS", "SETUP", "OFF", "STATUS", "PROBE", "MODEL",
+__all__ = ["BrainCommand", "classify", "is_halt", "is_resume", "is_clarify", "model_id", "KINDS", "SETUP", "OFF", "STATUS", "PROBE", "MODEL",
            "FORGET_KEY", "CHANGE_KEY", "PRIVATE_ON", "PRIVATE_OFF", "HISTORY_CLEAR", "HELP", "MEM_STATUS", "MEM_ON", "MEM_OFF", "MEM_CLEAR"]

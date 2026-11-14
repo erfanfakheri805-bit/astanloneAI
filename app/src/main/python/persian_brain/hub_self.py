@@ -245,15 +245,17 @@ def _quiet(memory, clock):
         return False
 
 
-def unknown(memory, clock, snap, remembered=True):
-    """The reply to a question or request that no rule, no taught fact and no language model could answer. The long explanation is shown
-    once per quiet period; asked again within 15 minutes, only the short line is."""
+def unknown(memory, clock, snap, remembered=True, statement=False):
+    """The reply to a question or request that no rule, no taught fact and no language model could answer (or, with `statement`, to a Persian
+    sentence that is neither). The long explanation is shown once per quiet period; asked again within 15 minutes, only the short line is."""
     quiet = _quiet(memory, clock)
     if not quiet:
         try:
             memory.set_state(UNKNOWN_KEY, hub_state._now(clock))
         except Exception:
             pass
+    if statement:
+        return HS.unknown_statement_short(snap) if quiet else HS.unknown_statement_first(snap)
     return HS.unknown_short(snap, remembered) if quiet else HS.unknown_first(snap, remembered)
 
 

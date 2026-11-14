@@ -24,11 +24,55 @@ WHY_FA = {
 
 
 # ------------------------------------------------------------------ setup
-def setup_intro():
+def provider_question():
     rows = "\n".join("%s) %s" % (_D(str(i)), providers.PRESETS[pid].title_fa) for i, pid in enumerate(providers.ORDER, 1))
+    return "کدام سرویس؟ (شماره یا اسمش را بنویس)\n%s\nاگر منصرف شدی بگو «نه»." % rows
+
+
+def setup_intro():
     return ("«مغز ابری» یعنی من برای فهمیدنِ جمله‌های آزاد از یک سرویس هوش مصنوعی روی اینترنت کمک بگیرم — با کلیدِ خودِ تو، نه کلید من. "
-            "تا وقتی خودت روشنش نکنی هیچ چیزی از گوشی بیرون نمی‌رود، و هر وقت بخواهی با یک جمله خاموشش می‌کنی.\n\n"
-            "کدام سرویس؟ (شماره یا اسمش را بنویس)\n%s\nاگر منصرف شدی بگو «نه»." % rows)
+            "تا وقتی خودت روشنش نکنی هیچ چیزی از گوشی بیرون نمی‌رود، و هر وقت بخواهی با یک جمله خاموشش می‌کنی.\n\n" + provider_question())
+
+
+def setup_how_lead():
+    """Said before the intro when the user ASKED how to switch it on («چجوری مغز ابریت رو فعال کنم»): the guided setup is the answer."""
+    return "برای فعال‌کردنش همین الان قدم‌به‌قدم با هم پیش می‌رویم؛ تو فقط جواب بده. هر جا خواستی بگو «نه» تا همه‌چیز لغو شود.\n\n"
+
+
+def setup_failed():
+    """The app could not even open its question (a storage problem) - never worded like the user's own «no»."""
+    return ("نتوانستم این سؤال را باز کنم (مشکلی در ذخیرهٔ داخلیِ برنامه پیش آمد)، پس چیزی راه‌اندازی نشد و چیزی هم جایی نرفت. "
+            "یک بار دیگر «مغز ابری را فعال کن» را بگو؛ اگر باز هم همین را دیدی، این یک خطای برنامه است نه اشتباهِ تو؛ همین پیام را برای سازنده بفرست.")
+
+
+def provider_again():
+    return "برای ادامه باید یکی از این سرویس‌ها را انتخاب کنی.\n\n" + provider_question()
+
+
+def clarify_provider():
+    return ("چرا می‌پرسم؟ چون «مغز ابری» باید با یک سرویس مشخص کار کند و انتخابش با خودِ توست. من خودم فقط جمله‌هایی را می‌فهمم که از پیش بلدم؛ "
+            "برای بقیه می‌توانم از یکی از این سرویس‌ها کمک بگیرم — با کلیدِ خودت و فقط اگر خودت بخواهی. "
+            "تا آخرِ این مراحل هیچ چیزی ذخیره یا فرستاده نمی‌شود. اگر نمی‌دانی کدام، «۱» (گوگل جمینای) برای شروع ساده‌تر است "
+            "(طبق توضیحِ خودِ سرویس یک سطحِ رایگانِ سبک دارد؛ شرایطش با خودِ سرویس است).\n\n" + provider_question())
+
+
+def clarify_url():
+    return ("«آدرس پایه» نشانیِ اینترنتیِ سرویسی است که می‌خواهی با آن کار کنم؛ آن را از سایتِ همان سرویس بردار.\n\n" + ask_custom_url())
+
+
+def clarify_consent(provider, host):
+    return ("این کارت می‌گوید دقیقاً چه چیزی، به کجا می‌رود و چه چیزی هرگز نمی‌رود. تا «بله» نگویی هیچ چیزی ذخیره یا فرستاده نمی‌شود؛ "
+            "با «نه» همه‌چیز لغو می‌شود.\n\n" + consent_card(provider, host))
+
+
+def clarify_key(provider):
+    return ("«کلید API» مثل یک رمزِ اختصاصی است که خودِ سرویس به حساب تو می‌دهد تا من از طرفِ تو با آن کار کنم؛ هزینه‌اش (اگر داشته باشد) از حساب خودت "
+            "حساب می‌شود، نه از من. فقط داخل حافظهٔ خصوصیِ همین برنامه می‌ماند و پیامِ کلید را از تاریخچه پاک می‌کنم.\n\n" + ask_key(provider))
+
+
+def clarify_private():
+    return ("این سؤالِ آخر است: اگر در پیامی ایمیل، شمارهٔ تلفن یا کدملی باشد، آن را هم به مغز ابری بفرستم؟ «نه» امن‌تر و پیش‌فرض است. "
+            "رمز و کارت و کد پیامکی در هیچ حالتی نمی‌رود. (بله / نه)")
 
 
 def ask_custom_url():
@@ -117,9 +161,25 @@ def status(st):
              "• اطلاعات شخصی: %s" % ("می‌رود (رمز و کارت هرگز)" if st["share_private"] else "نمی‌رود"),
              "• گفتگوی نگه‌داشته‌شده برای فهمیدن ادامهٔ بحث: %s تبادل" % _D(str(st["history"])),
              "• جواب‌های نگه‌داشته‌شده برای استفادهٔ آفلاین: %s (نگه‌داشتن: %s)" % (_D(str(st["learned"])), "روشن" if st["memory_on"] else "خاموش"),
-             "• پرسش‌های این یک ساعت: %s از %s" % (_D(str(st["calls_last_hour"])), _D(str(MAX_CALLS_PER_HOUR)))]
-    lines.append("نتیجه: " + ("آماده است ✅" if st["ready"] else "الان کار نمی‌کند، چون " + WHY_FA.get(st["why"], st["why"])))
+             "• پرسش‌های این یک ساعت: %s از %s" % (_D(str(st["calls_last_hour"])), _D(str(MAX_CALLS_PER_HOUR))),
+             "• آخرین تلاش برای وصل‌شدن: " + _last_try(st)]
+    if not st["ready"]:
+        lines.append("نتیجه: الان کار نمی‌کند، چون " + WHY_FA.get(st["why"], st["why"]))
+    elif st.get("last_ok") is False:
+        lines.append("نتیجه: تنظیمات کامل است، ولی آخرین تلاش برای وصل‌شدن ناموفق بود ❌ — مشکل را که رفع کردی بگو «مغز ابری را امتحان کن».")
+    else:
+        lines.append("نتیجه: آماده است ✅")
     return "\n".join(lines)
+
+
+def _last_try(st):
+    """Prompt 959 (corrective release): «ready» only says the settings are complete; this line says whether the service was really reached."""
+    last = st.get("last_ok")
+    if last is None:
+        return "از وقتی برنامه باز شده هنوز تلاشی نشده (برای امتحان بگو «مغز ابری را امتحان کن»)"
+    if last:
+        return "✅ سرویس جواب داد"
+    return "❌ " + (st.get("last_reason") or "به سرویس نرسیدم")
 
 
 def turned_off():
@@ -362,7 +422,8 @@ def teacher_no_pack(text):
             "می‌توانی درخواست را دقیق‌تر بگویی؛ یا بگو «پرامپت بستهٔ کد برای …» تا متنِ آماده را خودت پیش هر دستیاری ببری.")
 
 
-__all__ = ["setup_intro", "ask_custom_url", "bad_custom_url", "consent_card", "ask_key", "key_not_a_key", "key_saved_probing", "key_check_ok",
+__all__ = ["setup_intro", "provider_question", "setup_how_lead", "setup_failed", "provider_again", "clarify_provider", "clarify_url",
+           "clarify_consent", "clarify_key", "clarify_private", "ask_custom_url", "bad_custom_url", "consent_card", "ask_key", "key_not_a_key", "key_saved_probing", "key_check_ok",
            "key_check_failed", "setup_done", "setup_cancelled", "stray_key", "status", "turned_off", "turned_on", "need_setup", "model_set",
            "model_bad", "model_missing", "probe_ok", "probe_failed", "not_ready_probe", "private_set", "history_cleared", "ask_forget",
            "forgotten", "forget_cancelled", "no_key_to_forget", "need_key_first", "halted", "halt_done", "resume_done", "help_text",

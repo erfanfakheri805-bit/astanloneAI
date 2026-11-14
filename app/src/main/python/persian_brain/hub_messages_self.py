@@ -46,6 +46,11 @@ def model_line(snap):
     return "هنوز هیچ مدل زبانی‌ای روی گوشی ندارم، برای همین به پرسش‌هایی که قاعده‌اش را بلد نیستم جواب آزاد نمی‌دهم."
 
 
+CLOUD_WAY = ("۴) مغز ابری (آسان‌ترین راه برای جمله‌های آزاد): بگو «مغز ابری را فعال کن»؛ با کلیدِ خودت از یک سرویس هوش مصنوعی کمک می‌گیرم، "
+             "و تا «بله» نگویی چیزی از گوشی بیرون نمی‌رود.")
+CLOUD_SHORT = "یا بگو «مغز ابری را فعال کن» تا برای جمله‌های آزاد از یک سرویس هوش مصنوعی (با کلیدِ خودت) کمک بگیرم."
+
+
 def grow_ways(snap):
     """The three honest ways to make the assistant smarter, as lines. Used by «brain», «upgrade» and the fallback."""
     model = (snap.get("model") or {}).get("state")
@@ -60,6 +65,8 @@ def grow_ways(snap):
     titles = _titles(snap)
     asker = ("«%s»" % "» یا «".join(titles)) if titles else "ChatGPT یا Claude"
     lines.append("۳) پرسیدن از %s: بگو «از ChatGPT بخواه …» (یا Claude)؛ درخواست را آماده می‌کنم و فقط بعد از «بله»ی تو به آن برنامه می‌فرستم." % asker)
+    if snap.get("cloud_on") is False:                     # Prompt 959: the easiest way for free sentences - only said while it is not switched on
+        lines.append(CLOUD_WAY)
     return lines
 
 
@@ -121,7 +128,7 @@ def brain(snap):
     lines = ["«مغز فارسیِ» من دو لایه دارد:",
              "۱) لایهٔ همیشه‌حاضر، بدون هیچ فایلِ اضافه: فهمیدنِ جمله‌های فارسی برای کارهایی که قاعده‌اش را دارم (سلام و احوال‌پرسی، اسم و علایقت، «یاد بگیر که …»، پرسیدن از چیزهایی که یادم داده‌ای، ساختن ابزارِ ساده، و دستورهای مدیریتِ خودم مثل بسته‌ها، مدل و اینترنت). این لایه قاعده‌محور است؛ هر جملهٔ آزادی را نمی‌فهمد.",
              "۲) لایهٔ زبانی، برای هر پرسش و هر موضوع: به یک مدل زبانیِ واقعی نیاز دارد. " + model_line(snap),
-             "برای باهوش‌ترشدنِ من این سه راه هست (هر کدام فقط با اجازهٔ تو):"]
+             "برای باهوش‌ترشدنِ من این راه‌ها هست (هر کدام فقط با اجازهٔ تو):"]
     lines.extend(grow_ways(snap))
     lines.append("صادقانه: مدلی که روی گوشی جا می‌شود کوچک است؛ برای کارهای سنگین، پرسیدن از ChatGPT یا Claude بهتر است.")
     return "\n".join(lines)
@@ -134,6 +141,8 @@ def upgrade(snap):
              "• مدل زبانی: با فایلِ مدل و دکمهٔ «%s»." % MODEL_BUTTON,
              "• فایل‌های اصلیِ برنامه و بخشِ اندروید را بی‌صدا و خودسرانه عوض نمی‌کنم؛ آن‌ها فقط با ساختنِ نسخهٔ تازه در GitHub و نصبِ آن عوض می‌شوند (آن کارِ تو است).",
              "شروع: بگو چه قابلیتی می‌خواهی، مثلاً «از ChatGPT بخواه برایم قابلیتِ … بسازد»؛ یا «پرامپت بسته برای …» تا متنِ آماده بدهم. همین الان هم می‌توانی برای راه‌های دیگر بگویی «چطور باهوش‌ترت کنم؟»."]
+    if snap.get("cloud_on") is False:                     # Prompt 959: only while the cloud brain is off
+        lines.insert(-1, "• مغز ابری (اگر بخواهی): با کلیدِ خودت از یک سرویس هوش مصنوعی کمک می‌گیرم؛ بگو «مغز ابری را فعال کن». تا «بله» نگویی چیزی از گوشی بیرون نمی‌رود.")
     return "\n".join(lines)
 
 
@@ -181,11 +190,30 @@ def unknown_first(snap, remembered=True):
 
 def unknown_short(snap, remembered=True):
     """The same, shorter, when it was said a moment ago."""
+    hint = (" " + CLOUD_SHORT) if snap.get("cloud_on") is False else ""
     if remembered:
         return ("این را هم نمی‌دانم. بگو «از ChatGPT بخواه» تا همین پرسش را برایش آماده کنم (فقط با «بله»ی تو فرستاده می‌شود)، "
-                "یا فایل مدل را با دکمهٔ «%s» وارد کن." % MODEL_BUTTON)
-    return "این را هم نمی‌دانم. برای جوابِ آزاد، فایل مدل را با دکمهٔ «%s» وارد کن، یا بگو «از ChatGPT بخواه …» و پرسشت را بنویس." % MODEL_BUTTON
+                "یا فایل مدل را با دکمهٔ «%s» وارد کن.%s" % (MODEL_BUTTON, hint))
+    return "این را هم نمی‌دانم. برای جوابِ آزاد، فایل مدل را با دکمهٔ «%s» وارد کن، یا بگو «از ChatGPT بخواه …» و پرسشت را بنویس.%s" % (MODEL_BUTTON, hint)
 
 
-__all__ = ["about", "brain", "upgrade", "voice", "outside", "unknown_first", "unknown_short", "model_line", "grow_ways", "help_more",
-           "MODEL_BUTTON", "VOICE_BUTTON"]
+def unknown_statement_first(snap):
+    """A Persian sentence that is neither a question nor a request and that no rule understands (e.g. «من امروز خیلی خسته‌ام»). Before the
+    corrective release of Prompt 959 the core answered such a sentence with an English line about AEL."""
+    lines = ["حرفت را خواندم، ولی این جمله را با قاعده‌هایی که دارم نمی‌فهمم — من هنوز «فهمِ آزاد» ندارم، فقط چند قاعدهٔ فارسیِ ساده.",
+             "• ببین چه می‌فهمم: «چه کارهایی بلدی؟»",
+             "• چیزی را می‌خواهی یادم بدهی: «یاد بگیر که …»"]
+    if snap.get("cloud_on") is False:
+        lines.append("• برای فهمیدنِ جمله‌های آزاد: «مغز ابری را فعال کن» — با کلیدِ خودت از یک سرویس هوش مصنوعی کمک می‌گیرم، "
+                     "و تا «بله» نگویی چیزی از گوشی بیرون نمی‌رود.")
+    return "\n".join(lines)
+
+
+def unknown_statement_short(snap):
+    if snap.get("cloud_on") is False:
+        return "این جمله را هم نفهمیدم. «چه کارهایی بلدی؟» را بگو، یا «مغز ابری را فعال کن» تا جمله‌های آزاد را هم بفهمم."
+    return "این جمله را هم نفهمیدم. «چه کارهایی بلدی؟» را بگو تا ببینی چه می‌فهمم."
+
+
+__all__ = ["about", "brain", "upgrade", "voice", "outside", "unknown_first", "unknown_short", "unknown_statement_first", "unknown_statement_short",
+           "model_line", "grow_ways", "help_more", "CLOUD_WAY", "CLOUD_SHORT", "MODEL_BUTTON", "VOICE_BUTTON"]

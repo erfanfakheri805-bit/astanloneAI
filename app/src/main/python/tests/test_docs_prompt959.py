@@ -18,6 +18,7 @@ from brain_v2 import history, learned, providers
 from brain_v2.service import MAX_CALLS_PER_HOUR
 from persian_brain import hub_brain_commands as BC
 from persian_brain import hub_intents as HI
+from persian_brain import hub_self
 from persian_brain import normalization as nz
 from self_builder import fa_text
 
@@ -52,7 +53,12 @@ def quoted(text):
 def understood(phrase):
     norm = nz.normalize(phrase)
     toks = fa_text.words(norm)
-    return bool(HI.classify(phrase, norm, toks, named_pack=True) or BC.classify(phrase, norm, toks) or BC.is_halt(toks) or BC.is_resume(toks))
+    # Prompt 959 (a conscious change of this pin, was: no clarification phrases): the guide also tells the user what to say to the app's OWN open
+    # question («چرا؟», «یعنی چی؟», «از کجا بگیرم؟») - it is answered by `BC.is_clarify` inside the setup conversation, not by a command.
+    # Prompt 959 (a conscious change of this pin, was: only the hub's intents and the cloud-brain commands): the guide also tells the user to ask the
+    # app about itself («چه کارهایی بلدی؟»); those questions are answered by the app's self-knowledge classifier, so it is checked too.
+    return bool(HI.classify(phrase, norm, toks, named_pack=True) or BC.classify(phrase, norm, toks) or BC.is_halt(toks) or BC.is_resume(toks)
+                or BC.is_clarify(toks) or hub_self.classify(norm, toks))
 
 
 def section(text, number):

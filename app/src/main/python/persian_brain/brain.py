@@ -32,6 +32,7 @@ a plain library Core.
 """
 
 import threading
+import time
 import weakref
 
 from self_builder import fa_text, matcher, policy, request_parser, units
@@ -79,7 +80,7 @@ class _Turn:
 class PersianBrain:
     def __init__(self, memory, clock=None):
         self.memory = memory
-        self._clock = clock
+        self._clock = clock or time.time     # Prompt 959: the application builds the brain without a clock; code that calls it must not get None
         self._lock = threading.RLock()
         self.last_trace = None   # inspection only: {"intent", "scope", "claimed"}
 

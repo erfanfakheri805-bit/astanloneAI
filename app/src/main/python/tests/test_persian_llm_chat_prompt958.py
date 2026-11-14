@@ -27,6 +27,7 @@ from model_runtime import MediaPipeLlmRuntime, NgramRuntime
 from persian_brain import hub_state
 from tests import brain_hub_fixtures_prompt957 as F
 from tests.llm_support_prompt958 import LLM_CLASS, with_llm_engine
+from tests.nobody_answered_prompt959 import nobody_answered
 from tests.native_support_prompt958 import FakeJava
 from tests.persian_hub_case_prompt957 import HubChatCase
 
@@ -184,7 +185,7 @@ class ImportAnswer(LlmChatCase):
         self.assertNotIn("قابل استفاده است", reply)
         (model,) = self.hub.list_models()
         self.assertEqual((model.state, model.usable), ("verified", False))
-        self.assertIsNone(self.say(POEM))                                   # no model -> nothing answers, as before
+        self.assertTrue(nobody_answered(self.say(POEM)))                    # no model -> nothing answers, as before  # Prompt 959 (a conscious change of this pin, was assertIsNone): see tests/nobody_answered_prompt959.py
 
     def test_a_taken_id_is_refused_with_the_way_out(self):
         self.import_model()
@@ -217,7 +218,7 @@ class ImportAnswer(LlmChatCase):
 
 class LanguageModelAnswers(LlmChatCase):
     def test_without_a_model_nothing_changes(self):
-        self.assertIsNone(self.say(POEM))
+        self.assertTrue(nobody_answered(self.say(POEM)))  # Prompt 959 (a conscious change of this pin, was assertIsNone): see tests/nobody_answered_prompt959.py
         self.assertEqual(self.hub.served_count("llm.local"), 0)
 
     def test_a_sentence_nothing_else_answers_goes_to_the_model(self):
@@ -318,7 +319,7 @@ class LanguageModelAnswers(LlmChatCase):
         self.say("مدل gemma-test را پاک کن")
         self.say("بله")
         base = self.prompts()
-        self.assertIsNone(self.say(POEM))
+        self.assertTrue(nobody_answered(self.say(POEM)))  # Prompt 959 (a conscious change of this pin, was assertIsNone): see tests/nobody_answered_prompt959.py
         self.assertEqual(self.prompts(), base)
 
 

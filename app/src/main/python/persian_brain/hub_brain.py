@@ -20,6 +20,8 @@ is pinned by tests and must not be widened. It is still ONE open question at a t
 dialogue's, and any message that does not answer it withdraws it (nothing is saved by a withdrawn question).
 """
 
+import time
+
 from self_builder import fa_text
 
 from brain_v2 import get_brain, privacy, providers
@@ -53,6 +55,12 @@ def service(brain):
 
 
 # ================================================================== the one open question (own key, own validation)
+def _now(clock):
+    """Seconds now. `clock` may be None: the real application builds its brain as `PersianBrain(memory)` WITHOUT a clock (only tests
+    inject one), and calling None here made the whole setup fail silently on the phone (Prompt 959, found on a real phone)."""
+    return float((clock or time.time)())
+
+
 def _valid(ptype, data):
     if ptype not in TYPES or not isinstance(data, dict):
         return False
@@ -75,7 +83,7 @@ def _load(memory, clock):
     if not isinstance(raw, dict) or set(raw) != {"type", "ts", "data"}:
         return None
     ts = raw["ts"]
-    if isinstance(ts, bool) or not isinstance(ts, (int, float)) or not 0 <= clock() - ts <= PENDING_TTL_SECONDS:
+    if isinstance(ts, bool) or not isinstance(ts, (int, float)) or not 0 <= _now(clock) - ts <= PENDING_TTL_SECONDS:
         return None
     return (raw["type"], raw["data"]) if _valid(raw["type"], raw["data"]) else None
 
@@ -93,7 +101,7 @@ def _arm(brain, ptype, data, turn=None):
     if not _valid(ptype, data):
         return False
     try:
-        brain.memory.set_state(PENDING_KEY, {"type": ptype, "ts": float(brain._clock()), "data": dict(data)})
+        brain.memory.set_state(PENDING_KEY, {"type": ptype, "ts": _now(brain._clock), "data": dict(data)})
     except Exception:
         return False
     try:
@@ -116,19 +124,40 @@ def _arm(brain, ptype, data, turn=None):
 def _touch(brain, ptype, data):
     """Keep the same question open for another try (a mistyped URL or key) without clearing anything else."""
     try:
-        brain.memory.set_state(PENDING_KEY, {"type": ptype, "ts": float(brain._clock()), "data": dict(data)})
+        brain.memory.set_state(PENDING_KEY, {"type": ptype, "ts": _now(brain._clock), "data": dict(data)})
     except Exception:
         pass
 
 
 # ================================================================== keeping a pasted key out of the chat history
+def _secure_delete(memory, value):
+    """Set SQLite's `secure_delete` for this connection and return the PREVIOUS setting (an int), or None when it cannot be read or set.
+    With it ON the bytes of a deleted row are overwritten with zeros instead of staying in the file's free space. Prompt 959: found by a
+    test - a SQLite built without that default (the phone's may be) kept the pasted key in `memory.db` after its row was deleted."""
+    try:
+        conn = memory._conn
+        row = conn.execute("PRAGMA secure_delete").fetchone()
+        conn.execute("PRAGMA secure_delete = %d" % int(value))
+        return int(row[0]) if row else None
+    except Exception:
+        return None
+
+
 def scrub_log(memory, secret):
-    """Delete the chat-log rows that contain `secret` (the pasted key). Returns how many rows were removed; never raises."""
+    """Delete the chat-log rows that contain `secret` (the pasted key) and overwrite their bytes in the database file.
+    Returns how many rows were removed; never raises."""
     if not privacy.contains_text(secret, secret):          # shorter than 8 characters: not something to search for
         return 0
     like = "%" + secret.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+    previous = None
     try:
-        cur = memory._run("DELETE FROM conversation_log WHERE content LIKE ? ESCAPE '\\'", (like,))
+        with memory._lock:                                  # the connection lock is re-entrant: _run takes it again
+            previous = _secure_delete(memory, 1)
+            try:
+                cur = memory._run("DELETE FROM conversation_log WHERE content LIKE ? ESCAPE '\\'", (like,))
+            finally:
+                if previous is not None:
+                    _secure_delete(memory, previous)
         return max(0, int(getattr(cur, "rowcount", 0) or 0))
     except Exception:
         return 0
@@ -181,12 +210,32 @@ def _early(brain, text):
     ptype, data = state
     word = I.answer_word(toks) if toks else None
     cancel = word in ("deny", "cancel")
+    if word is None and BC.is_clarify(toks):                    # «چرا؟» / «یعنی چی؟» / «از کجا بگیرم؟»: explain THIS step; the question stays open
+        _touch(brain, ptype, data)
+        return "brain_clarify:" + ptype, _clarify(brain, svc, ptype, data)
     step = _STEPS[ptype]
     reply = step(brain, svc, data, text, toks, word, cancel)
     if reply is _WITHDRAW:
         _clear(brain.memory)                                    # any other message withdraws the open question; nothing was saved
         return None
     return "brain_answer:" + ptype, reply
+
+
+def _clarify(brain, svc, ptype, data):
+    """The explanation of the open question's step, ending with the question itself again."""
+    if ptype == "provider":
+        return BM.clarify_provider()
+    if ptype == "url":
+        return BM.clarify_url()
+    if ptype == "consent":
+        provider = providers.get(data["provider"])
+        host = providers.host_of(providers.endpoint(data["provider"], data["base_url"]))
+        return BM.clarify_consent(provider, host)
+    if ptype == "key":
+        return BM.clarify_key(providers.get(svc.status()["provider"]) or providers.get(providers.ORDER[0]))
+    if ptype == "private":
+        return BM.clarify_private()
+    return BM.ask_forget()
 
 
 _WITHDRAW = object()
@@ -198,9 +247,12 @@ def _step_provider(brain, svc, data, text, toks, word, cancel):
         return BM.setup_cancelled()
     pid = providers.parse_provider_word(text)
     if pid is None:
+        if word == "confirm":                                    # «بله» does not choose a service: say so and keep asking
+            _touch(brain, "provider", data)
+            return BM.provider_again()
         return _WITHDRAW
     if pid == providers.CUSTOM:
-        return BM.ask_custom_url() if _arm(brain, "url", {}) else BM.setup_cancelled()
+        return BM.ask_custom_url() if _arm(brain, "url", {}) else BM.setup_failed()
     return _ask_consent(brain, pid, "")
 
 
@@ -214,6 +266,9 @@ def _step_url(brain, svc, data, text, toks, word, cancel):
     if "." in text or "http" in text.lower():                   # an attempt at a URL: say what is wrong and keep asking
         _touch(brain, "url", {})
         return BM.bad_custom_url(why)
+    if word == "confirm":
+        _touch(brain, "url", {})
+        return BM.ask_custom_url()
     return _WITHDRAW
 
 
@@ -222,7 +277,7 @@ def _ask_consent(brain, provider_id, base_url):
     host = providers.host_of(providers.endpoint(provider_id, base_url))
     if provider is None or not host or not _arm(brain, "consent", {"provider": provider_id, "base_url": base_url}):
         _clear(brain.memory)
-        return BM.setup_cancelled()
+        return BM.setup_failed()
     return BM.consent_card(provider, host)
 
 
@@ -246,14 +301,14 @@ def _step_consent(brain, svc, data, text, toks, word, cancel):
         svc.choose_provider(data["provider"], data["base_url"])
     except ValueError:
         _clear(brain.memory)
-        return BM.setup_cancelled()
+        return BM.setup_failed()
     provider = providers.get(data["provider"])
     if not svc.give_consent():
         _clear(brain.memory)
-        return BM.setup_cancelled()
+        return BM.setup_failed()
     _grant_network(brain)
     if not _arm(brain, "key", {"changing": False}):
-        return BM.setup_cancelled()
+        return BM.setup_failed()
     return BM.ask_key(provider)
 
 
@@ -344,10 +399,10 @@ def _wrong(svc, turn):
     return "brain_wrong", BM.wrong_dropped() if outcome == "dropped" else BM.wrong_not_kept()
 
 
-def _start_setup(brain, turn):
+def _start_setup(brain, turn, how=False):
     if not _arm(brain, "provider", {}, turn):
-        return BM.setup_cancelled()
-    return BM.setup_intro()
+        return BM.setup_failed()                               # never worded like the user's own «no» (that wording hid a real bug on the phone)
+    return (BM.setup_how_lead() if how else "") + BM.setup_intro()
 
 
 def _run(brain, svc, turn, cmd):
@@ -362,7 +417,7 @@ def _run(brain, svc, turn, cmd):
                 svc.set_mode("auto")
             _grant_network(brain)
             return BM.turned_on(svc.status())
-        return _start_setup(brain, turn)
+        return _start_setup(brain, turn, bool(cmd.slots.get("how")))
     if kind == BC.OFF:
         if st["mode"] == "off" and not st["provider"]:
             return BM.status(st)
@@ -402,12 +457,12 @@ def _run(brain, svc, turn, cmd):
     if kind == BC.FORGET_KEY:
         if not st["key"]:
             return BM.no_key_to_forget()
-        return BM.ask_forget() if _arm(brain, "forget", {}, turn) else BM.setup_cancelled()
+        return BM.ask_forget() if _arm(brain, "forget", {}, turn) else BM.setup_failed()
     if kind == BC.CHANGE_KEY:
         if not (st["provider"] and st["consent"]):
             return BM.need_key_first()
         provider = providers.get(st["provider"])
-        return BM.ask_key(provider, changing=True) if _arm(brain, "key", {"changing": True}, turn) else BM.setup_cancelled()
+        return BM.ask_key(provider, changing=True) if _arm(brain, "key", {"changing": True}, turn) else BM.setup_failed()
     return BM.status(st)
 
 
@@ -428,6 +483,16 @@ def reply(brain, turn, intent=None):
     except Exception as exc:
         brain._log_error(exc, "")
         return None
+
+
+def is_on(brain):
+    """True when the user has switched his cloud brain on (mode «auto»): a sentence nothing else answered was already offered to it, so the
+    app's «I do not know» replies must not tell him to switch it on. Never raises."""
+    try:
+        svc = service(brain)
+        return bool(svc is not None and svc.status()["mode"] == "auto")
+    except Exception:
+        return False
 
 
 def _render(svc, r):
@@ -451,4 +516,4 @@ def _render(svc, r):
     return None
 
 
-__all__ = ["early", "command", "reply", "service", "scrub_log", "PENDING_KEY", "TYPES"]
+__all__ = ["early", "command", "reply", "service", "scrub_log", "is_on", "PENDING_KEY", "TYPES"]

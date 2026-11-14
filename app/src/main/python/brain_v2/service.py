@@ -73,6 +73,7 @@ class BrainV2:
         self.vault = KeyVault(os.path.join(self.root, "key.dat"))
         self.history = History(os.path.join(self.root, "history.json"), clock)
         self.learned = learned.LearnedReplies(os.path.join(self.root, learned.FILE_NAME), clock)
+        self._last = None             # the outcome of the last REAL request to the service: (reached, code, reason_fa); in memory only
         self._turn_answer = None      # what the brain answered in THIS turn (for «این جواب غلط بود»)
         self._prev_answer = None      # ... and in the previous turn
         self._calls = deque()
@@ -144,7 +145,9 @@ class BrainV2:
         s = self.settings.get()
         ok, why = self.ready()
         provider = self._provider(s)
-        return {"ready": ok, "why": why, "mode": s["mode"], "provider": s["provider"], "provider_title": provider.title_fa if provider else "",
+        last = self._last
+        return {"last_ok": (last[0] if last else None), "last_reason": (last[2] if last else ""),
+                "ready": ok, "why": why, "mode": s["mode"], "provider": s["provider"], "provider_title": provider.title_fa if provider else "",
                 "host": self.host(s), "model": self.model(s), "model_is_default": not s["model"], "key": self.vault.masked(),
                 "consent": self._consent_ok(s), "network": self._network_on(), "halted": s["halted"],
                 "share_private": s["share_private"], "history": self.history.count(), "calls_last_hour": self._calls_in_hour(),
@@ -305,6 +308,10 @@ class BrainV2:
         with self._busy:
             result = cloud.ask(self._post_slow if raw else self._post, provider, s["base_url"], self.model(s), key, system, messages,
                                max_tokens=max_tokens, temperature=temperature, clock=self._mono, raw=raw)
+        # Prompt 959 (corrective release): remember how the last real request went, so that «وضعیت مغز ابری» does not say "ready ✅" while every
+        # request fails (a service that answered, even with an empty text, was reached)
+        reached = bool(result.ok or result.code == "empty")
+        self._last = (reached, result.code, "" if reached else result.reason_fa)
         self.note(what, result.host or host, ok=result.ok, code=result.code, status=result.status, chars_in=result.in_chars,
                   chars_out=result.out_chars, ms=int(result.elapsed_s * 1000))
         return result

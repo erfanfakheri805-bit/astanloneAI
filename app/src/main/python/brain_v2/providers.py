@@ -64,10 +64,10 @@ PRESETS = {
 ORDER = ("gemini", "openai", "openrouter", "anthropic", CUSTOM)
 
 _NAMES = {
-    "gemini": ("gemini", "جمینای", "جیمینای", "جمنای", "گوگل", "google", "1"),
-    "openai": ("openai", "اوپنایآی", "اوپنای", "chatgpt", "gpt", "چتجیپیتی", "چت", "2"),
-    "openrouter": ("openrouter", "اوپنراوتر", "راوتر", "3"),
-    "anthropic": ("claude", "کلود", "anthropic", "آنتروپیک", "انتروپیک", "4"),
+    "gemini": ("gemini", "جمینای", "جیمینای", "جمنای", "جمینی", "جیمینی", "جمنی", "جیمنی", "گوگل", "google", "1"),
+    "openai": ("openai", "اوپنایآی", "اوپنای", "اپنایآی", "chatgpt", "gpt", "چتجیپیتی", "جیپیتی", "چت", "2"),
+    "openrouter": ("openrouter", "اوپنراوتر", "اپنراوتر", "اوپنروتر", "اپنروتر", "راوتر", "3"),
+    "anthropic": ("claude", "کلود", "کلاد", "anthropic", "آنتروپیک", "انتروپیک", "4"),
     CUSTOM: ("دلخواه", "custom", "آدرس", "5"),
 }
 

@@ -16,6 +16,7 @@ from brain_hub import pack_prompt
 from pack_system import boot, limits
 from pack_system.registry import REGISTRY
 from tests import pack_support_prompt958 as S
+from tests.nobody_answered_prompt959 import nobody_answered
 from tests.persian_hub_case_prompt957 import HubChatCase
 
 PACK_IDS = ("demo_greeter", "demo_other", "demo_tool", "demo_bad", "demo_native", "daily_quote")
@@ -179,10 +180,10 @@ class RiskyPackTests(PackChatCase):
 
 class CodePackBehaviourTests(PackChatCase):
     def test_a_fallback_handler_answers_what_nothing_else_answers(self):
-        self.assertIsNone(self.say("قیمت دلار چنده"))
+        self.assertTrue(nobody_answered(self.say("قیمت دلار چنده")))  # Prompt 959 (a conscious change of this pin, was assertIsNone / assertIsNotNone): see tests/nobody_answered_prompt959.py
         self.install_pack(self.code(1))
         self.assertIn("نسخهٔ 1 جواب داد", self.say("قیمت دلار چنده"))
-        self.assertIsNone(self.say("قیمت سکه چنده"))
+        self.assertTrue(nobody_answered(self.say("قیمت سکه چنده")))  # Prompt 959 (a conscious change of this pin, was assertIsNone / assertIsNotNone): see tests/nobody_answered_prompt959.py
 
     def test_an_early_handler_runs_before_the_brain(self):
         self.install_pack(S.text_pack(pid="demo_other", source=EARLY))
@@ -237,16 +238,16 @@ class CommandTests(PackChatCase):
         self.assertIn("نصب شد", history)
 
     def test_disable_enable_remove_each_ask_first(self):
-        self.assertIsNotNone(self.say("قیمت دلار چنده"))
+        self.assertFalse(nobody_answered(self.say("قیمت دلار چنده")))  # Prompt 959 (a conscious change of this pin, was assertIsNone / assertIsNotNone): see tests/nobody_answered_prompt959.py
         ask = self.say("بستهٔ سلام‌کنندهٔ آزمایشی را خاموش کن")
         self.assertIn("خاموش کنم", ask)
         self.assertEqual(self.pm().get("demo_greeter")["state"], "active")        # asking changes nothing
         self.assertIn("خاموش شد", self.say("بله"))
-        self.assertIsNone(self.say("قیمت دلار چنده"))
+        self.assertTrue(nobody_answered(self.say("قیمت دلار چنده")))  # Prompt 959 (a conscious change of this pin, was assertIsNone / assertIsNotNone): see tests/nobody_answered_prompt959.py
         self.assertIn("همین حالا هم فعال نیست", self.say("بستهٔ سلام‌کنندهٔ آزمایشی را خاموش کن"))
         self.assertIn("روشن کنم", self.say("بستهٔ سلام‌کنندهٔ آزمایشی را روشن کن"))
         self.assertIn("دوباره روشن شد", self.say("بله"))
-        self.assertIsNotNone(self.say("قیمت دلار چنده"))
+        self.assertFalse(nobody_answered(self.say("قیمت دلار چنده")))  # Prompt 959 (a conscious change of this pin, was assertIsNone / assertIsNotNone): see tests/nobody_answered_prompt959.py
         self.assertIn("کاملاً حذف کنم", self.say("بستهٔ سلام‌کنندهٔ آزمایشی را حذف کن"))
         self.assertIn("حذف شد", self.say("بله"))
         self.assertIsNone(self.pm().get("demo_greeter"))

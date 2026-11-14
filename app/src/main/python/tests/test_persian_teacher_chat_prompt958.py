@@ -23,6 +23,7 @@ from persian_brain import hub_state
 from teacher import service as teacher_service
 from tests import pack_support_prompt958 as S
 from tests.native_support_prompt958 import FakeJava
+from tests.nobody_answered_prompt959 import nobody_answered
 from tests.test_pack_chat_prompt958 import PackChatCase
 from tests.test_teacher_prompt958 import install_chat_script
 
@@ -222,7 +223,7 @@ class AnswerTests(TeacherChatCase):
         self.assertEqual(self.latest()["state"], "failed")
 
     def test_an_arrival_with_no_open_mission_is_just_an_ordinary_sentence(self):
-        self.assertIsNone(self.say("جواب آمد"))
+        self.assertTrue(nobody_answered(self.say("جواب آمد")))  # Prompt 959 (a conscious change of this pin, was assertIsNone): see tests/nobody_answered_prompt959.py
         self.assertNotEqual(self.trace_kind()[0], "HUB")
         self.assertIsNone(self.svc().store.latest(only_open=False))
         # Updated in Prompt 958 on purpose: with no open mission «خودت انجام بده» is still not a command (nothing starts, nothing is asked), but the
@@ -268,7 +269,7 @@ class StatusCancelListTests(TeacherChatCase):
         self.assertEqual(self.latest()["state"], "cancelled")
         self.assertIn("ماموریت بازی نبود", self.say("ماموریت را لغو کن"))
         self.jvm.clipboard = S.lang_pack(pid="fa_late")
-        self.assertIsNone(self.say("جواب آمد"))                              # after the cancel the arrival is no command any more
+        self.assertTrue(nobody_answered(self.say("جواب آمد")))               # after the cancel the arrival is no command any more  # Prompt 959 (a conscious change of this pin, was assertIsNone): see tests/nobody_answered_prompt959.py
         self.assertEqual(self.pm().list(), [])
 
     def test_the_list_of_assistants_says_which_ones_the_phone_shows(self):

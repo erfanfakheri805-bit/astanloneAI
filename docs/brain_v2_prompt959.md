@@ -47,7 +47,9 @@ Files on disk (`<hub root>/brain_v2/`, written atomically, set aside and restart
 `«مغز ابری را فعال کن»` -> which service? -> the consent card (the exact host, what is sent, what never is, cost, VPN note) -> «بله» ->
 paste the key (the chat-log row that held it is deleted; it never stays in the history) -> a tiny test request -> (if it works) «may personal
 details go too?» (default no) -> done. The open question lives in its own key (`persian_brain.brain_pending.v1`); the dialogue module's closed set
-of pending types is pinned by earlier tests and is not widened. Any message that does not answer the question withdraws it.
+of pending types is pinned by earlier tests and is not widened. A short question about the question itself («چرا؟», «یعنی چی؟», «از کجا بگیرم؟»,
+«نمی‌فهمم») is answered with an explanation of THAT step and the same question stays open (`hub_brain_commands.is_clarify`); a bare «بله» to
+«which service?» shows the list again; any other message that does not answer the question withdraws it (nothing was saved).
 
 Commands (all deterministic, no model involved): switch off/on, status, test, change the model, change/forget the key, allow/forbid personal
 details, clear the short history, and the four commands about the kept answers (on / off / clear / how many).
@@ -104,11 +106,59 @@ network failure, a cut-off or a rejected pack each produce a plain Persian sente
 
 The seven files pinned by earlier prompts stay byte-identical (`android_entry.py`, `core/core.py`, `ael/interpreter.py`,
 `runtime_integration/bridge.py`, `interface/server.py`, `runtime_integration/runtime_core.py`, `runtime_growth/runtime_growth_cycle.py`). The
-hub's pinned pending types, the pinned `HUB_PERMISSIONS`, the manifest and the assistant list are unchanged; frozen tests were not edited.
+hub's pinned pending types, the pinned `HUB_PERMISSIONS`, the manifest and the assistant list are unchanged; the frozen tests of earlier prompts
+were not edited (the only test touched in the corrective release is this stage's own documentation test, see section 10).
 
 ## 9. Tests
 
 `tests/test_net_tools_post_prompt959.py` (the POST layer), `tests/test_brain_v2_core_prompt959.py` (settings, key vault, privacy, history,
 requests, failure reasons), `tests/test_brain_v2_chat_prompt959.py` (the whole setup and the commands through the real Persian brain),
 `tests/test_brain_v2_learned_prompt959.py` and `tests/test_brain_v2_memory_chat_prompt959.py` (the kept answers), and
-`tests/test_brain_v2_teacher_prompt959.py` (the own-brain teacher: nothing before the yes, one request, the second yes, every failure path).
+`tests/test_brain_v2_teacher_prompt959.py` (the own-brain teacher: nothing before the yes, one request, the second yes, every failure path), and
+`tests/test_real_runtime_path_prompt959.py` (the corrective release: the real front door, section 10).
+
+## 10. Corrective release - what the first real phone showed
+
+The first test on a real phone failed on the very first sentence: «مغز ابری را فعال کن» answered «باشد، چیزی راه‌اندازی نشد…» every time.
+**Cause:** the application builds its Persian brain as `PersianBrain(memory)` **without a clock** (only tests pass one) and the setup read that missing
+clock; the failure was swallowed and looked like the user's own «no». All earlier tests of the cloud brain gave the brain a fake clock and called
+`brain.respond` directly, so none of them could see it. **Fixes and rules:**
+
+* `PersianBrain` always owns a clock (`clock or time.time`) and `hub_brain._now(clock)` accepts `None`. A failure to open the setup question now
+  says so (`setup_failed`: «نتوانستم این سؤال را باز کنم …») and is never worded like the user's own «نه» (`setup_cancelled`).
+* **Test rule:** a test of a chat feature must also go through the real front door - HTTP `POST /api/message` -> `RuntimeCore.process_input` -> `Core` ->
+  skills -> Persian brain with NO injected clock - see `tests/test_real_runtime_path_prompt959.py` (41 tests; with the old defect put back - checked by hand, nothing
+  committed - 38 checks of it fail).
+* The classifier understands what people really type: possessive forms («مغز ابریت», «مغز ابری‌ات», «مغز ابریمو», «هوش مصنوعیِ ابری»), questions
+  («چجوری … فعال کنم» = the guided setup, prefixed by one line), «می‌خوام / نمی‌خوام», «مغز ابری را خاموش نکن» (= status, not switch-off), questions
+  about it («چیه؟», «امنه؟», «چطور کار می‌کنه؟»). Requests TO the brain («از مغز ابری‌ات می‌خوام یه بسته بنویسه») still go to the teacher. These are rules,
+  not understanding: a sentence no rule covers is understood only when the cloud brain is on.
+* More spoken names of the services are accepted («جمینی», «چت جی پی تی», «اپن ای آی», «کلاد», «اپن روتر»).
+* **The pasted key:** after its chat-log row is deleted, `scrub_log` turns SQLite's `secure_delete` on for that one statement (a SQLite build without
+  that default kept the key's bytes in `memory.db`; found by a test) and restores the setting. Where the key remains: its vault file `key.dat`
+  (mode 0600, not yet encrypted by the Android Keystore) and, until the app is closed or the turn is pushed out, the in-memory `Core.context` ring of the
+  last turns (RAM only; `core/core.py` is a pinned file and cannot be asked to forget it).
+* The documentation test of this stage (`tests/test_docs_prompt959.py`) now also accepts the clarification phrases the guide tells the user to say.
+* **The app's own «I do not know» replies** (what a user sees when no rule, no taught fact, no pack and no model answers):
+  * a Persian sentence that is neither a question nor a request («من امروز خیلی خسته‌ام») used to fall through to the core's English line about AEL;
+    `hub_hooks.unknown_reply` now also takes intents `STATEMENT` / `UNKNOWN` that hold at least one Persian letter (`_is_persian`; digits, symbols and
+    English stay with the core) and answers in Persian - honestly: no free understanding, what it can do («چه کارهایی بلدی؟», «یاد بگیر که …»). Same
+    first-long / then-short logic as the question reply (`hub_self.unknown(..., statement=True)`, one note per 15 quiet minutes).
+  * the replies name the way to the cloud brain («مغز ابری را فعال کن») only while it is off: `hub_brain.is_on(brain)` (never raises) feeds
+    `snap["cloud_on"]` of `hub_hooks._self_snapshot`; `grow_ways`, `upgrade`, `unknown_first/short` and the statement replies read it. Switched on
+    (`mode == "auto"`), nothing points to it - a free sentence is already offered to it first (`hub_brain.reply`: any sentence with at least two letters
+    that is not a bare yes/no, not a number or symbol, up to 2000 characters, with two or more words or a question mark).
+  * the pinned core is untouched: this is only the Persian brain's own fallback; the English fallback stays for English input.
+* **Frozen pins of Prompt 958 changed on purpose (found by the full run, not by the targeted tests).** Ten assertions in `test_pack_chat_prompt958`,
+  `test_persian_llm_chat_prompt958` and `test_persian_teacher_chat_prompt958` used `assertIsNone(self.say(sentence))` as the signal «no pack, no model, no
+  mission, no command answered this Persian sentence» (the core's English fallback then answered). The brain now answers such a sentence itself, so the
+  signal is `tests/nobody_answered_prompt959.nobody_answered(reply)`: `None` or an EXACT match of the brain's two generic «I do not understand this sentence»
+  texts - a real answer is still told apart from it. The positive checks («the pack DID answer») became `assertFalse(nobody_answered(...))`, otherwise they
+  would pass vacuously now that an unanswered sentence also gets a reply. Every changed line carries a `# Prompt 959 (a conscious change of this pin …)` note; two
+  tests of the new real-path module check the helper and that a fallback pack still outranks the generic reply.
+* **«وضعیت مغز ابری» no longer says "ready ✅" after a failed connection.** Found by booting the app exactly like the phone (`android_entry.start`, real
+  hub, real transport; only the sockets below the transport cut): the settings were complete, so the status said ready although the service had never been
+  reached. `BrainV2._call` now remembers the outcome of the last REAL request (`_last = (reached, code, reason_fa)`, memory only - a restart forgets it;
+  a service that answered, even with an empty text, counts as reached); `status()` carries `last_ok` / `last_reason`; the status text has the line
+  «آخرین تلاش برای وصل‌شدن» (✅ / ❌ with the fixed Persian reason / not tried since the app was opened) and, when the last try failed, says
+  «تنظیمات کامل است، ولی آخرین تلاش … ناموفق بود ❌» instead of «آماده است ✅». The provider's own error text is never shown there (it may echo the key).

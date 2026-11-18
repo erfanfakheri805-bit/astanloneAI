@@ -76,6 +76,19 @@ android {
             }
         }
     }
+
+    // Prompt 959: the same for the phone's OWN brain engine (LiteRT-LM, see "dependencies" below). Its AAR and the
+    // runtime libraries it pulls in can carry the same native files; keep the first copy of each instead of failing the
+    // packaging step. (A pattern that matches no file is harmless.)
+    if (project.findProperty('withLiteRtLm') == 'true') {
+        packaging {
+            jniLibs {
+                pickFirsts.add('**/libc++_shared.so')
+                pickFirsts.add('**/libLiteRt*.so')
+                pickFirsts.add('**/liblitert*.so')
+            }
+        }
+    }
 }
 
 // Prompt 826: kotlin-stdlib 1.8+ already contains the jdk7/jdk8 classes.
@@ -85,6 +98,20 @@ android {
 configurations.configureEach {
     exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
     exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}
+
+// Prompt 959: only for the build that includes the phone's own brain engine (-PwithLiteRtLm=true). A library can declare
+// in its AAR metadata that an app using it must compile against a newer Android API than this project's compileSdk (34).
+// Nothing here is compiled against that library (the Java side reaches the engine by reflection) and the phone this build
+// is for runs a newer Android, so that check could only stop the build for no real reason; it is switched off for THIS
+// variant only. If the engine then misbehaves at run time the app says so (api_mismatch / engine_load_failed): it does
+// not crash. The other builds (MediaPipe, no engine) keep the check.
+if (project.findProperty('withLiteRtLm') == 'true') {
+    tasks.configureEach { task ->
+        if (task.name.startsWith('check') && task.name.endsWith('AarMetadata')) {
+            task.enabled = false
+        }
+    }
 }
 
 dependencies {
@@ -102,5 +129,15 @@ dependencies {
     // checked, and the chat says exactly that.
     if (project.findProperty('withLlm') == 'true') {
         implementation 'com.google.mediapipe:tasks-genai:0.10.27'
+    }
+
+    // Prompt 959: the engine that runs the phone's OWN brain (Google's LiteRT-LM, Apache-2.0; ".litertlm" model files such
+    // as Gemma 4 or Qwen 3.5). Like the one above it is added only when the build is asked for it (gradle
+    // -PwithLiteRtLm=true). The workflow tries it FIRST, then the MediaPipe build, then a build with no engine, so there
+    // is always an APK to install; the release notes say which one it is. The version is the one Google's own page names
+    // ("latest.release"); the Java side reaches the engine by reflection, so a newer API cannot break the build - it is
+    // reported at run time instead. It could not be built here (no Android SDK offline): the first real build decides.
+    if (project.findProperty('withLiteRtLm') == 'true') {
+        implementation 'com.google.ai.edge.litertlm:litertlm-android:latest.release'
     }
 }

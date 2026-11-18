@@ -34,6 +34,8 @@ from . import normalization as nz
 
 PENDING_KEY = "persian_brain.brain_pending.v1"
 PENDING_TTL_SECONDS = 30 * 60
+NOTE_KEY = "persian_brain.brain_withdrawn.v1"    # «a question of mine was dropped by your last sentence» - told once, with the next reply that needs it
+NOTE_SECONDS = 120
 MAX_ANSWER_CHARS = 400            # an answer to the cloud brain's question is short (a key is the longest)
 MAX_ASK_CHARS = 2000
 TYPES = ("provider", "url", "consent", "key", "private", "forget")
@@ -119,6 +121,29 @@ def _arm(brain, ptype, data, turn=None):
     except Exception:
         pass
     return True
+
+
+def _note_withdrawn(brain):
+    try:
+        brain.memory.set_state(NOTE_KEY, {"ts": _now(brain._clock)})
+    except Exception:
+        pass
+
+
+def withdrawn_note(brain):
+    """One line saying that the cloud brain's open question was dropped by the sentence just typed, or '' (shown once, within two minutes).
+    Prompt 959 (a real phone): the app used to drop the key question silently and then say «I did not understand»."""
+    try:
+        raw = brain.memory.get_state(NOTE_KEY, None)
+        if raw is None:
+            return ""
+        brain.memory.set_state(NOTE_KEY, None)
+        ts = raw.get("ts") if isinstance(raw, dict) else None
+        if isinstance(ts, bool) or not isinstance(ts, (int, float)) or not 0 <= _now(brain._clock) - ts <= NOTE_SECONDS:
+            return ""
+        return BM.withdrawn_note()
+    except Exception:
+        return ""
 
 
 def _touch(brain, ptype, data):
@@ -217,6 +242,8 @@ def _early(brain, text):
     reply = step(brain, svc, data, text, toks, word, cancel)
     if reply is _WITHDRAW:
         _clear(brain.memory)                                    # any other message withdraws the open question; nothing was saved
+        if ptype == "key":
+            _note_withdrawn(brain)
         return None
     return "brain_answer:" + ptype, reply
 
@@ -318,7 +345,10 @@ def _step_key(brain, svc, data, text, toks, word, cancel):
         return BM.setup_cancelled()
     key = _key_candidate(text)
     if not key:
-        if len(text) > 60 or len(toks) > 4:                      # a normal sentence, not a failed paste: the question is withdrawn
+        # Prompt 959 (a conscious change, was: more than 4 words): a key is ONE piece without spaces, so a sentence of three or more words
+        # is never a failed paste - it is a new topic («مغز خودت را بگیر» used to be swallowed by this question). The question is withdrawn and
+        # the next «I did not understand» reply says so (`withdrawn_note`).
+        if len(text) > 60 or len(toks) > 2:
             return _WITHDRAW
         _touch(brain, "key", data)
         return BM.key_not_a_key()

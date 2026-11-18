@@ -281,9 +281,12 @@ class PortraitConfigTests(unittest.TestCase):
     def test_gradle_dependencies_unchanged_except_the_optional_engine(self):
         # Prompt 958 (a conscious change of this pin): the on-device language-model engine, declared only inside the
         # `withLlm` condition (see tests/test_android_files_prompt958.py).
+        # Prompt 959 (a conscious change of this pin, was "appcompat + the MediaPipe engine"): the phone's own brain engine (Google's
+        # LiteRT-LM), declared only inside the `withLiteRtLm` condition in the same way.
         gradle = read(PROJECT_ROOT, "app", "build.gradle")
         deps = re.findall(r"^\s*(?:implementation|api|compileOnly|runtimeOnly)\s+['\"]([^'\"]+)", gradle, re.M)
-        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27"])
+        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27",
+                                "com.google.ai.edge.litertlm:litertlm-android:latest.release"])
 
     def test_theme_resources_exist_and_resolve(self):
         styles = read(MAIN, "res", "values", "styles.xml")

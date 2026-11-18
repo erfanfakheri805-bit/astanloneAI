@@ -24,6 +24,7 @@ optional `audit(kind, subject, detail)` callback.
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import os
 import shutil
@@ -91,8 +92,16 @@ _CODE_TEXT = {
     "bad_arguments": ("ورودی نامعتبر است.", "The input is not valid."),
     "download_failed": ("دانلود ناموفق بود.", "The download failed."),
     "io_error": ("نوشتن یا خواندن فایل ناموفق بود.", "Reading or writing the file failed."),
+    "crashed_before": ("دفعهٔ قبل بیدارکردنِ این مغز نیمه‌کاره ماند (برنامه بسته شد، احتمالاً به‌خاطر کمبود رم)؛ خودکار دوباره امتحان نمی‌شود.",
+                       "The last attempt to wake this brain never finished (the app was closed, probably for lack of memory); it is not retried by itself."),
+    "out_of_memory": ("حافظهٔ گوشی برای این مغز کافی نبود.", "The phone did not have enough memory for this brain."),
+    "api_mismatch": ("موتورِ داخل برنامه با چیزی که انتظار می‌رفت نمی‌خواند.", "The engine inside the app does not match what was expected."),
+    "native_missing": ("بخش بومیِ موتور در برنامه پیدا نشد.", "The engine's native part was not found in the app."),
+    "cancelled": ("پاسخ‌دادن متوقف شد.", "Answering was stopped."),
+    "generate_failed": ("موتور هنگام ساختن پاسخ خطا داد.", "The engine failed while making the answer."),
     "ok": ("انجام شد.", "Done."),
 }
+_GENERATE_REFUSALS = {"not_loaded": "smoke_failed", "bad_arguments": "bad_arguments", "cancelled": "cancelled", "out_of_memory": "out_of_memory"}
 
 
 def transition_allowed(old: str, new: str) -> bool:
@@ -178,7 +187,11 @@ class ModelManager:
                 self._runtimes.setdefault(fmt, runtime)
         self._gate, self._audit, self._clock, self._free = gate, audit, clock, free_space_fn
         self._downloader = downloader if downloader is not None else default_downloader(gate)
+        # Two locks (Prompt 959). `_lock` is SHORT: it guards the registry and the state of the models and is never held across an engine call or a
+        # hash of a file, so listing / status commands answer at once even while a model loads or answers. `_op_lock` is LONG: one verify / load /
+        # test / answer at a time, and every operation that changes a model waits for it. Order: `_op_lock` first, then `_lock`.
         self._lock = threading.RLock()
+        self._op_lock = threading.RLock()
         self._models: Optional[Dict[str, dict]] = None
         self._recovery: Optional[dict] = None
         self._loaded: Dict[str, LoadedModel] = {}
@@ -259,10 +272,22 @@ class ModelManager:
         self._save()
         self._note("transition", model_id, {"from": old, "to": new_state, "stage": stage, "reasons": list(reasons)})
 
+    def _drop(self, model_id: str) -> bool:
+        """Forget a loaded model AND let its engine free the memory it holds. True when something was loaded. Never raises."""
+        loaded = self._loaded.pop(model_id, None)
+        self._trusted.discard(model_id)
+        if loaded is not None:
+            for runtime in set(self._runtimes.values()):
+                if runtime.name == loaded.runtime:
+                    try:
+                        runtime.unload(loaded)
+                    except Exception:
+                        pass
+        return loaded is not None
+
     def _fail(self, model_id: str, stage: str, code: str) -> ModelStatus:
         entry = self._ensure()[model_id]
-        self._loaded.pop(model_id, None)
-        self._trusted.discard(model_id)
+        self._drop(model_id)
         if entry["state"] != "failed":
             self._move(model_id, "failed", stage=stage, reasons=[code])
         else:
@@ -287,7 +312,7 @@ class ModelManager:
     # ---- registry operations ------------------------------------------------
 
     def register(self, card_dict: dict, *, origin: str = "user", license_ack: bool = False) -> ModelStatus:
-        with self._lock:
+        with self._op_lock, self._lock:
             models = self._ensure()
             try:
                 card = parse_card(card_dict)
@@ -316,7 +341,7 @@ class ModelManager:
 
     def acknowledge_license(self, model_id: str) -> ModelStatus:
         """The user's explicit acknowledgement for a licence that needs review (never for restricted/unknown ones)."""
-        with self._lock:
+        with self._op_lock, self._lock:
             entry = self._ensure().get(model_id)
             if entry is None:
                 return self._status(model_id, False, "unknown_model")
@@ -351,13 +376,12 @@ class ModelManager:
             return [self._status(mid, True, "ok") for mid in sorted(self._ensure())]
 
     def remove(self, model_id: str) -> ModelStatus:
-        with self._lock:
+        with self._op_lock, self._lock:
             entry = self._ensure().get(model_id)
             if entry is None:
                 return self._status(model_id, False, "unknown_model")
             card = self._card(entry)
-            self._loaded.pop(model_id, None)
-            self._trusted.discard(model_id)
+            self._drop(model_id)                                     # the engine gives its memory back before the file goes
             directory = self._store.model_dir(card.model_id, card.version)
             shutil.rmtree(directory, ignore_errors=True)
             del self._ensure()[model_id]
@@ -374,7 +398,7 @@ class ModelManager:
         return free >= card.size_bytes * 1.1 + card.min_free_mb * _MIB
 
     def download(self, model_id: str, *, approved: bool) -> ModelStatus:
-        with self._lock:
+        with self._op_lock, self._lock:
             entry = self._ensure().get(model_id)
             if entry is None:
                 return self._status(model_id, False, "unknown_model")
@@ -423,7 +447,7 @@ class ModelManager:
                 pass
 
     def import_local_file(self, model_id: str, src_path: str) -> ModelStatus:
-        with self._lock:
+        with self._op_lock, self._lock:
             entry = self._ensure().get(model_id)
             if entry is None:
                 return self._status(model_id, False, "unknown_model")
@@ -463,37 +487,77 @@ class ModelManager:
             self._move(model_id, "downloaded", stage="import")
             return self._status(model_id, True, "ok", stage="import")
 
-    # ---- the verification pipeline -----------------------------------------------
+    def adopt_file(self, model_id: str, src_path: str) -> ModelStatus:
+        """Take a file that is ALREADY complete and checked by the downloader (its SHA-256 equalled the pin) into the store by MOVING it.
 
-    def verify(self, model_id: str) -> ModelStatus:
-        with self._lock:
+        Same state rules and size check as `import_local_file`, but a multi-gigabyte model is renamed (atomic, instant, no second copy) when
+        the source lies on the same disk; only when it does not is it copied. Nothing is trusted because of this: `prepare()` still re-verifies the
+        hash, compatibility, loading and the real inference test before the model is usable."""
+        with self._op_lock, self._lock:
             entry = self._ensure().get(model_id)
             if entry is None:
                 return self._status(model_id, False, "unknown_model")
-            if entry["state"] not in ("downloaded", "verified", "compatible", "usable"):
-                return self._refuse(model_id, "illegal_state", "verify_refused", [entry["state"]])
-            card, path = self._card(entry), self._file_path(entry)
+            if entry["state"] not in ("registered", "failed"):
+                return self._refuse(model_id, "illegal_state", "adopt_refused", [entry["state"]])
+            card = self._card(entry)
+            try:
+                if not isinstance(src_path, str) or os.path.islink(src_path) or not os.path.isfile(src_path):
+                    return self._refuse(model_id, "model_file_invalid", "adopt_refused", ["not_a_regular_file"])
+                if os.path.getsize(src_path) != card.size_bytes:
+                    return self._refuse(model_id, "size_mismatch", "adopt_refused")
+            except OSError:
+                return self._refuse(model_id, "model_file_unreadable", "adopt_refused")
+            target = self._file_path(entry)
+            try:
+                os.makedirs(os.path.dirname(target), exist_ok=True)
+                os.replace(src_path, target)
+            except OSError as err:
+                if err.errno != errno.EXDEV:
+                    return self._refuse(model_id, "io_error", "adopt_failed")
+                copied = self.import_local_file(model_id, src_path)       # another disk: a real copy (with its own space check)
+                if copied.ok:
+                    try:
+                        os.unlink(src_path)
+                    except OSError:
+                        pass
+                return copied
+            self._record_file(entry)
+            self._move(model_id, "downloaded", stage="adopt")
+            return self._status(model_id, True, "ok", stage="adopt")
+
+    # ---- the verification pipeline -----------------------------------------------
+
+    def verify(self, model_id: str) -> ModelStatus:
+        with self._op_lock:
+            with self._lock:
+                entry = self._ensure().get(model_id)
+                if entry is None:
+                    return self._status(model_id, False, "unknown_model")
+                if entry["state"] not in ("downloaded", "verified", "compatible", "usable"):
+                    return self._refuse(model_id, "illegal_state", "verify_refused", [entry["state"]])
+                card, path = self._card(entry), self._file_path(entry)
             digest, size = hashlib.sha256(), 0
             try:
-                with open(path, "rb") as handle:
+                with open(path, "rb") as handle:                              # the long part: no short lock is held while the file is read
                     for chunk in iter(lambda: handle.read(_COPY_CHUNK), b""):
                         digest.update(chunk)
                         size += len(chunk)
             except OSError:
-                return self._fail(model_id, "verify", "file_missing")
-            if size != card.size_bytes or digest.hexdigest() != card.sha256:
-                code = "size_mismatch" if size != card.size_bytes else "hash_mismatch"
-                self._quarantine(card, path)
-                entry["file"] = None
-                return self._fail(model_id, "verify", code)
-            self._record_file(entry)
-            if entry["state"] != "verified":
-                self._move(model_id, "verified", stage="verify")
-            else:
-                self._save()
-            self._loaded.pop(model_id, None)
-            self._trusted.discard(model_id)
-            return self._status(model_id, True, "ok", stage="verify")
+                with self._lock:
+                    return self._fail(model_id, "verify", "file_missing")
+            with self._lock:
+                if size != card.size_bytes or digest.hexdigest() != card.sha256:
+                    code = "size_mismatch" if size != card.size_bytes else "hash_mismatch"
+                    self._quarantine(card, path)
+                    entry["file"] = None
+                    return self._fail(model_id, "verify", code)
+                self._record_file(entry)
+                if entry["state"] != "verified":
+                    self._move(model_id, "verified", stage="verify")
+                else:
+                    self._save()
+                self._drop(model_id)
+                return self._status(model_id, True, "ok", stage="verify")
 
     def _quarantine(self, card: ModelCard, path: str) -> None:
         try:
@@ -505,7 +569,7 @@ class ModelManager:
             self._discard_file(path)
 
     def check_compatibility(self, model_id: str) -> ModelStatus:
-        with self._lock:
+        with self._op_lock, self._lock:
             entry = self._ensure().get(model_id)
             if entry is None:
                 return self._status(model_id, False, "unknown_model")
@@ -537,49 +601,64 @@ class ModelManager:
             return self._status(model_id, True, "ok", stage="compatibility")
 
     def load(self, model_id: str) -> ModelStatus:
-        with self._lock:
-            entry = self._ensure().get(model_id)
-            if entry is None:
-                return self._status(model_id, False, "unknown_model")
-            if entry["state"] not in ("compatible", "usable"):
-                return self._refuse(model_id, "illegal_state", "load_refused", [entry["state"]])
-            card = self._card(entry)
-            runtime = self._runtimes[card.format]
+        with self._op_lock:
+            with self._lock:
+                entry = self._ensure().get(model_id)
+                if entry is None:
+                    return self._status(model_id, False, "unknown_model")
+                if entry["state"] not in ("compatible", "usable"):
+                    return self._refuse(model_id, "illegal_state", "load_refused", [entry["state"]])
+                card = self._card(entry)
+                runtime = self._runtimes[card.format]
+                path = self._file_path(entry)
             try:
-                self._loaded[model_id] = runtime.load(self._file_path(entry), card)
+                loaded = runtime.load(path, card)                              # the long part (a model of 1-3 GB): no short lock is held
             except RuntimeLoadError as err:
-                return self._fail(model_id, "load", err.code)
+                with self._lock:
+                    return self._fail(model_id, "load", err.code)
             except Exception:
-                return self._fail(model_id, "load", "engine_load_failed")
-            return self._status(model_id, True, "ok", stage="load")
+                with self._lock:
+                    return self._fail(model_id, "load", "engine_load_failed")
+            with self._lock:
+                self._loaded[model_id] = loaded
+                return self._status(model_id, True, "ok", stage="load")
 
     def smoke_test(self, model_id: str) -> ModelStatus:
-        with self._lock:
-            entry = self._ensure().get(model_id)
-            if entry is None:
-                return self._status(model_id, False, "unknown_model")
-            if entry["state"] not in ("compatible", "usable"):
-                return self._refuse(model_id, "illegal_state", "smoke_refused", [entry["state"]])
-            if model_id not in self._loaded:
+        with self._op_lock:
+            with self._lock:
+                entry = self._ensure().get(model_id)
+                if entry is None:
+                    return self._status(model_id, False, "unknown_model")
+                if entry["state"] not in ("compatible", "usable"):
+                    return self._refuse(model_id, "illegal_state", "smoke_refused", [entry["state"]])
+                needs_load = model_id not in self._loaded
+                card = self._card(entry)
+                runtime = self._runtimes[card.format]
+            if needs_load:
                 loaded_status = self.load(model_id)
                 if not loaded_status.ok:
                     return loaded_status
-            card = self._card(entry)
-            runtime = self._runtimes[card.format]
+            with self._lock:
+                handle = self._loaded.get(model_id)
+            if handle is None:
+                with self._lock:
+                    return self._fail(model_id, "smoke", "smoke_failed")
             try:
-                report = runtime.smoke_test(self._loaded[model_id])
+                report = runtime.smoke_test(handle)                            # the real question to the real engine: no short lock is held
             except Exception:
-                return self._fail(model_id, "smoke", "smoke_failed")
-            entry["smoke"] = {"ok": bool(report.ok), "details": str(report.details)[:200], "excerpt": str(report.output_excerpt)[:200],
-                              "at": float(self._clock()), "runtime": runtime.name}
-            if not report.ok:
-                return self._fail(model_id, "smoke", "smoke_failed")
-            if entry["state"] != "usable":
-                self._move(model_id, "usable", stage="smoke")
-            else:
-                self._save()
-            self._trusted.add(model_id)
-            return self._status(model_id, True, "ok", stage="smoke")
+                with self._lock:
+                    return self._fail(model_id, "smoke", "smoke_failed")
+            with self._lock:
+                entry["smoke"] = {"ok": bool(report.ok), "details": str(report.details)[:200], "excerpt": str(report.output_excerpt)[:200],
+                                  "at": float(self._clock()), "runtime": runtime.name}
+                if not report.ok:
+                    return self._fail(model_id, "smoke", "smoke_failed")
+                if entry["state"] != "usable":
+                    self._move(model_id, "usable", stage="smoke")
+                else:
+                    self._save()
+                self._trusted.add(model_id)
+                return self._status(model_id, True, "ok", stage="smoke")
 
     def prepare(self, model_id: str) -> PipelineReport:
         """verify -> compatibility -> load -> smoke test, stopping at the first stage that does not pass."""
@@ -595,38 +674,55 @@ class ModelManager:
 
     # ---- use ---------------------------------------------------------------------
 
-    def generate(self, model_id: str, prompt: str, *, max_tokens: int = 64, seed: int = 0) -> GenerationResult:
+    def generate(self, model_id: str, prompt: str, *, max_tokens: int = 64, seed: int = 0,
+                 chat: Optional[dict] = None) -> GenerationResult:
+        """`chat` (optional) is `{"system": str, "turns": [(user, assistant), ...], "user": str}`: an engine that understands structured chat
+        (`supports_chat`) is given those three parts separately (it applies the model's own chat template); any other engine just gets `prompt`."""
         started = time.monotonic()
 
         def refuse(code: str, runtime: str = "") -> GenerationResult:
             fa, en = _text(code)
             return GenerationResult(False, code, "", model_id, runtime, fa, en, round(time.monotonic() - started, 4))
-        with self._lock:
-            entry = self._ensure().get(model_id)
-            if entry is None:
-                return refuse("unknown_model")
-            if entry["state"] != "usable":
-                return refuse("model_not_usable")
-            if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > _MAX_PROMPT_CHARS \
-                    or isinstance(max_tokens, bool) or not isinstance(max_tokens, int) or not 1 <= max_tokens <= 512 \
-                    or isinstance(seed, bool) or not isinstance(seed, int):
-                return refuse("bad_arguments")
-            card = self._card(entry)
-            runtime = self._runtimes.get(card.format)
-            if runtime is None:
-                return refuse("no_runtime_for_format")
-            if model_id not in self._trusted:
-                self._revalidate(model_id)
+        with self._op_lock:
+            with self._lock:
+                entry = self._ensure().get(model_id)
+                if entry is None:
+                    return refuse("unknown_model")
                 if entry["state"] != "usable":
-                    return refuse("model_not_usable", runtime.name)
+                    return refuse("model_not_usable")
+                if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > _MAX_PROMPT_CHARS \
+                        or isinstance(max_tokens, bool) or not isinstance(max_tokens, int) or not 1 <= max_tokens <= 512 \
+                        or isinstance(seed, bool) or not isinstance(seed, int):
+                    return refuse("bad_arguments")
+                if chat is not None and not (isinstance(chat, dict) and isinstance(chat.get("system", ""), str) and isinstance(chat.get("user"), str)
+                                             and isinstance(chat.get("turns", ()), (list, tuple))):
+                    return refuse("bad_arguments")
+                card = self._card(entry)
+                runtime = self._runtimes.get(card.format)
+                if runtime is None:
+                    return refuse("no_runtime_for_format")
+                redo_needed = model_id not in self._trusted
+                if redo_needed:
+                    self._revalidate(model_id)
+                    if entry["state"] != "usable":
+                        return refuse("model_not_usable", runtime.name)
+            if redo_needed:
                 redo = self.smoke_test(model_id)  # loads the model and re-runs the real inference test once per process
                 if not redo.ok:
                     return refuse("model_not_usable", runtime.name)
-            try:
-                text = runtime.generate(self._loaded[model_id], prompt, max_tokens=max_tokens, seed=seed)
+            with self._lock:
+                handle = self._loaded.get(model_id)
+            if handle is None:
+                return refuse("model_not_usable", runtime.name)
+            try:                                                                # the long part (an answer): no short lock is held
+                if chat is not None and getattr(runtime, "supports_chat", False):
+                    text = runtime.chat(handle, chat.get("system", ""), list(chat.get("turns", ())), chat["user"], max_tokens=max_tokens)
+                else:
+                    text = runtime.generate(handle, prompt, max_tokens=max_tokens, seed=seed)
             except RuntimeGenerateError as err:
-                self._note("generate_failed", model_id, {"code": err.code})
-                return refuse("smoke_failed" if err.code == "not_loaded" else "bad_arguments", runtime.name)
+                with self._lock:
+                    self._note("generate_failed", model_id, {"code": err.code})
+                return refuse(_GENERATE_REFUSALS.get(err.code, "generate_failed"), runtime.name)
             fa, en = _text("ok")
             return GenerationResult(True, "ok", text, model_id, runtime.name, fa, en, round(time.monotonic() - started, 4))
 
@@ -639,6 +735,53 @@ class ModelManager:
         if info is None or stat.st_size != info["size"] or stat.st_mtime_ns != info["mtime_ns"]:
             return "file_changed"
         return ""
+
+    def cancel_all(self) -> int:
+        """Ask every loaded engine that can be interrupted to stop the answer it is making. NO lock is taken: the thread that is answering
+        holds it, and the stop must not wait for it. Returns how many engines were asked. Never raises."""
+        asked = 0
+        try:
+            names = {loaded.runtime for loaded in list(self._loaded.values())}
+            for runtime in set(self._runtimes.values()):
+                if runtime.name in names and callable(getattr(runtime, "cancel", None)):
+                    runtime.cancel()
+                    asked += 1
+        except Exception:
+            pass
+        return asked
+
+    def unload(self, model_id: str, *, wait: bool = False) -> bool:
+        """Free the memory a loaded model holds (its weights live in the engine). The model stays registered and usable: the next answer loads
+        it again and re-runs the real test once. A model that is answering right now is left alone (`wait=False`). True when something was freed."""
+        if not self._op_lock.acquire(blocking=bool(wait)):
+            return False
+        try:
+            with self._lock:
+                freed = self._drop(model_id)
+                if freed:
+                    self._note("unloaded", model_id, {})
+                return freed
+        finally:
+            self._op_lock.release()
+
+    def reopen(self, model_id: str) -> ModelStatus:
+        """A model that FAILED after its file was stored (the engine could not load it, the test answer failed, the app died while loading it)
+        may go through the pipeline again: failed -> downloaded. Nothing is trusted because of this: `prepare()` hashes the file again."""
+        with self._op_lock, self._lock:
+            entry = self._ensure().get(model_id)
+            if entry is None:
+                return self._status(model_id, False, "unknown_model")
+            if entry["state"] != "failed":
+                return self._refuse(model_id, "illegal_state", "reopen_refused", [entry["state"]])
+            card, path = self._card(entry), self._file_path(entry)
+            try:
+                if os.path.islink(path) or not os.path.isfile(path) or os.path.getsize(path) != card.size_bytes:
+                    return self._refuse(model_id, "file_missing", "reopen_refused")
+            except OSError:
+                return self._refuse(model_id, "model_file_unreadable", "reopen_refused")
+            self._drop(model_id)
+            self._move(model_id, "downloaded", stage="reopen")
+            return self._status(model_id, True, "ok", stage="reopen")
 
     def is_usable(self, model_id: str) -> bool:
         with self._lock:
@@ -654,7 +797,7 @@ class ModelManager:
 
     def recover(self) -> dict:
         """Run once at start-up: interrupted downloads go back to `registered`, partial/temporary files are removed."""
-        with self._lock:
+        with self._op_lock, self._lock:
             report = {"interrupted": [], "missing_files": [], "removed_files": []}
             for model_id, entry in sorted(self._ensure().items()):
                 card = self._card(entry)

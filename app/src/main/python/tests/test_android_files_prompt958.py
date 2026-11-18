@@ -370,8 +370,17 @@ class GradleAndWorkflowTests(unittest.TestCase):
         self.assertIsNotNone(block)
         unconditional = [d for d in re.findall(r"^    (?:implementation|api)\s+['\"]([^'\"]+)", gradle, re.M)]
         self.assertEqual(unconditional, ["androidx.appcompat:appcompat:1.7.0"])
-        self.assertEqual(len(re.findall(r"pickFirsts", gradle)), 1)
+        # Prompt 959 (a conscious change of this pin, was "exactly one pickFirsts"): the phone's own brain engine (LiteRT-LM) has its own
+        # `withLiteRtLm` condition with its own packaging block (its native files may collide with the C++ runtime and the LiteRT runtime
+        # that other libraries ship); each engine's block sits inside its own condition, so an ordinary build has no packaging rule at all.
+        self.assertEqual(len(re.findall(r"pickFirsts\.add", gradle)), 4)
+        self.assertEqual(len(re.findall(r"\bpackaging \{", gradle)), 2)
         self.assertRegex(gradle, r"if \(project\.findProperty\('withLlm'\) == 'true'\) \{\s*packaging \{")
+        self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*packaging \{")
+        self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*implementation 'com\.google\.ai\.edge\.litertlm:litertlm-android:latest\.release'\s*\}")
+        # ... and the AAR-metadata check is switched off only in that variant
+        self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*tasks\.configureEach \{ task ->\s*if \(task\.name\.startsWith\('check'\) && task\.name\.endsWith\('AarMetadata'\)\) \{\s*task\.enabled = false")
+        self.assertEqual(gradle.count("task.enabled = false"), 1)
 
     def test_the_identity_and_the_abi_are_unchanged(self):
         self.assertIn('applicationId "com.erfan.standaloneai"', self.gradle)
@@ -380,21 +389,31 @@ class GradleAndWorkflowTests(unittest.TestCase):
         self.assertGreaterEqual(int(re.search(r"versionCode (\d+)", self.gradle).group(1)), 2)
 
     def test_the_workflow_tries_the_engine_first_and_always_ends_with_an_apk(self):
+        # Prompt 959 (a conscious change of this pin, was "one engine build, then the plain build"): a LADDER of three builds - the phone's
+        # own brain engine (LiteRT-LM), then the MediaPipe engine of Prompt 958, then no engine - so that there is always an APK; the
+        # release notes say which rung it is, and the log of every failed rung is kept.
         text = self.no_comments(self.workflow, "#")
-        first = text.index("-PwithLlm=true")
-        fallback = text.index("gradle --no-daemon :app:assembleDebug\n", first)
-        self.assertLess(first, fallback)
-        self.assertIn("id: with_engine", text)
-        self.assertEqual(text[:first].count("continue-on-error: true"), 1)
-        self.assertIn("if: steps.with_engine.outcome != 'success'", text)
-        self.assertIn("if: steps.with_engine.outcome == 'failure'", text)
-        self.assertIn("engine-build.log", text)
-        self.assertIn("ENGINE_NOTE", text)
+        first = text.index("-PwithLiteRtLm=true")
+        second = text.index("-PwithLlm=true", first)
+        plain = text.index("gradle --no-daemon :app:assembleDebug\n", second)
+        self.assertLess(first, second)
+        self.assertLess(second, plain)
+        self.assertEqual(text[:first].count("continue-on-error: true"), 1)            # the first rung may fail ...
+        self.assertGreaterEqual(text[first:second].count("continue-on-error: true"), 1)   # ... and so may the second
+        last_rung = text[text.rindex("      - name: ", 0, plain):plain]                       # the step that runs the plain build
+        self.assertNotIn("continue-on-error", last_rung, "the last rung must be allowed to fail the job: no APK, no success")
+        for needle in ("id: with_litertlm", "id: with_engine",
+                       "if: steps.with_litertlm.outcome != 'success'",
+                       "if: steps.with_litertlm.outcome != 'success' && steps.with_engine.outcome != 'success'",
+                       "if: steps.with_litertlm.outcome == 'failure'", "if: steps.with_engine.outcome == 'failure'",
+                       "litertlm-build.log", "engine-build.log", "ENGINE_NOTE"):
+            self.assertIn(needle, text)
         self.assertIn("if-no-files-found: error", text)                       # no APK, no success
-        # the release notes say whether the engine is in the APK
+        # the release notes say which engine is in the APK
         self.assertIn("INCLUDED.", text)
         self.assertIn("NOT included", text)
         self.assertIn("$ENGINE_NOTE", text)
+        self.assertEqual(text.count("shell: bash\n        run: gradle --no-daemon :app:assembleDebug -P"), 2)   # `shell: bash` = pipefail: a failed gradle fails the step
 
     def test_the_workflow_keeps_every_earlier_rule(self):
         text = self.no_comments(self.workflow, "#")

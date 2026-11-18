@@ -19,7 +19,7 @@ from typing import Mapping, Tuple
 
 __all__ = ["KNOWN_FORMATS", "LOCAL_IMPORT", "ModelCard", "CardError", "parse_card", "license_policy"]
 
-KNOWN_FORMATS: Tuple[str, ...] = ("ngram-json", "gguf", "onnx", "tflite", "task")
+KNOWN_FORMATS: Tuple[str, ...] = ("ngram-json", "gguf", "onnx", "tflite", "task", "litertlm")
 LOCAL_IMPORT = "local-import"
 MAX_SIZE_BYTES = 8 * 2 ** 30
 

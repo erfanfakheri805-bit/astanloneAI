@@ -13,6 +13,10 @@ What a model's answer is - and is not:
   to «از ChatGPT بخواه …» for those, which is the teacher (`persian_brain.hub_teacher`).
 
 Only `model_runtime` engines that are real language models count (`LLM_FORMATS`); the always-available n-gram model is NOT one.
+
+The phone's own brain (`ownbrain`, a `.litertlm` model) is a chat engine: it is given the instruction, the last few turns and the new
+message SEPARATELY (the engine applies the model's own chat template), it may need a minute for the first answer (the model is loaded then),
+so it gets a longer deadline, and an answer that overruns it is cancelled in the engine instead of being left to run for ever.
 """
 
 import re
@@ -21,10 +25,12 @@ import time
 from dataclasses import dataclass
 from typing import Optional
 
-__all__ = ["LlmBrain", "LlmReply", "get_llm", "LLM_FORMATS", "SYSTEM_FA", "build_prompt", "family_of", "clean_answer"]
+__all__ = ["LlmBrain", "LlmReply", "get_llm", "LLM_FORMATS", "CHAT_FORMATS", "CHAT_DEADLINE_SECONDS", "SYSTEM_FA", "build_prompt", "family_of", "clean_answer"]
 
-LLM_FORMATS = ("task", "gguf")
+LLM_FORMATS = ("task", "gguf", "litertlm")
+CHAT_FORMATS = ("litertlm",)           # engines that take the instruction / turns / message as separate parts
 DEADLINE_SECONDS = 100.0
+CHAT_DEADLINE_SECONDS = 170.0          # a 1-3 GB model is loaded at the first answer after the app started
 MAX_TOKENS = 256
 MEMORY_TURNS = 3
 MAX_TURN_CHARS = 400
@@ -44,6 +50,8 @@ _FAMILY_WORDS = (("gemma", "gemma"), ("qwen", "chatml"), ("smollm", "chatml"), (
 _STRAY_TOKENS = re.compile(r"<\|?/?(?:start_of_turn|end_of_turn|im_start|im_end|eot_id|start_header_id|end_header_id|begin_of_text|endoftext|end|"
                            r"system|user|assistant|model)\|?>|<bos>|<eos>|</s>|<s>", re.I)
 _ROLE_OPEN = re.compile(r"<\|?(?:start_of_turn|im_start|start_header_id)\|?>\s*(?:model|assistant|user|system)\s*(?:<\|?end_header_id\|?>)?\s*", re.I)
+_THINK_BLOCK = re.compile(r"<think>.*?</think>", re.S | re.I)
+_THINK_OPEN = re.compile(r"<think>.*\Z", re.S | re.I)           # a thought that never closed (the answer ran out of tokens while thinking)
 _CONTROL = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u202a-\u202e\u2066-\u2069]")      # control characters and bidi overrides / isolates
 _NEWLINES = re.compile(r"\n{3,}")
 
@@ -101,7 +109,11 @@ def build_prompt(family, system, turns, user):
 
 def clean_answer(text):
     """A model's raw output -> text safe to show: no chat-format tokens, no control or bidi-override characters, bounded."""
-    text = _STRAY_TOKENS.sub("", _ROLE_OPEN.sub("", str(text or "")))
+    text = str(text or "")
+    if "</think>" in text.lower() and "<think>" not in text.lower():             # the chat template already opened the thought: only the end shows
+        text = re.split(r"</think>", text, flags=re.I)[-1]
+    text = _THINK_OPEN.sub("", _THINK_BLOCK.sub("", text))
+    text = _STRAY_TOKENS.sub("", _ROLE_OPEN.sub("", text))
     text = _CONTROL.sub("", text).replace("\r", "")
     text = _NEWLINES.sub("\n\n", text).strip()
     if len(text) > MAX_ANSWER_CHARS:
@@ -118,6 +130,7 @@ class LlmReply:
     code: str = ""
     model_id: str = ""
     seconds: float = 0.0
+    cancelled: bool = False        # a timed-out answer that the engine was told to stop
 
 
 class LlmBrain:
@@ -169,12 +182,16 @@ class LlmBrain:
         return {"state": "no_model", "model_id": "", "title": "", "reason_fa": ""}
 
     # ---- one answer -------------------------------------------------------------------------------------------------------
-    def reply(self, text):
+    def _named(self, model_id):
+        return next((m for m in self.models() if m.model_id == model_id), None)
+
+    def reply(self, text, *, model_id=None, remember=True):
         """One answer: `LlmReply(ok=True, text=...)`, or `ok=False` with a stable code (`no_model`, `bad_question`, `busy`, `timeout`,
-        `empty`, or the model manager's own code such as `model_not_usable`). Blocks at most `deadline_seconds`; never raises."""
+        `empty`, or the model manager's own code such as `model_not_usable`). Blocks at most the deadline; never raises.
+        `model_id` asks one particular usable model (the test of the own brain); `remember=False` keeps the exchange out of the short memory."""
         if self._busy.is_set():                               # an earlier answer is still being made (a timed-out one keeps running)
             return LlmReply(False, code="busy", model_id=self._model_id)
-        model = self.current()
+        model = self.current() if model_id is None else self._named(model_id)
         if model is None:
             return LlmReply(False, code="no_model")
         text = str(text or "").strip()
@@ -184,15 +201,25 @@ class LlmBrain:
             if self._busy.is_set():
                 return LlmReply(False, code="busy", model_id=model.model_id)
             self._busy.set()
-            if model.model_id != self._model_id:
+            if model.model_id != self._model_id and remember:
                 self._model_id, self._turns = model.model_id, []
-            turns = list(self._turns)
-        prompt = build_prompt(family_of(model.model_id, (model.card or {}).get("title", "")), SYSTEM_FA, turns, text)
+            turns = list(self._turns) if remember else []
+        card = model.card or {}
+        chat_engine = card.get("format") in CHAT_FORMATS
+        if chat_engine:                                        # the engine applies the model's own chat template to the three parts
+            prompt = text
+            kwargs = {"max_tokens": self._max_tokens, "chat": {"system": SYSTEM_FA, "turns": [(_clip(u, MAX_TURN_CHARS), _clip(a, MAX_TURN_CHARS))
+                                                                                                   for u, a in turns], "user": text}}
+            deadline = max(self._deadline, CHAT_DEADLINE_SECONDS)
+        else:
+            prompt = build_prompt(family_of(model.model_id, card.get("title", "")), SYSTEM_FA, turns, text)
+            kwargs = {"max_tokens": self._max_tokens}
+            deadline = self._deadline
         box = {}
 
         def work():
             try:
-                box["result"] = self._hub.ask_model(model.model_id, prompt, max_tokens=self._max_tokens)
+                box["result"] = self._hub.ask_model(model.model_id, prompt, **kwargs)
             except Exception as exc:                          # a model can never take the conversation down
                 box["error"] = type(exc).__name__
             finally:
@@ -205,24 +232,41 @@ class LlmBrain:
         except RuntimeError:                                   # no thread could be started: never stay "busy" for ever
             self._busy.clear()
             return LlmReply(False, code="no_thread", model_id=model.model_id)
-        worker.join(self._deadline)
+        worker.join(deadline)
         seconds = round(self._monotonic() - started, 2)
-        if worker.is_alive():                                  # it keeps running (an engine cannot be interrupted); `busy` says so
-            return LlmReply(False, code="timeout", model_id=model.model_id, seconds=seconds)
+        if worker.is_alive():                                  # still running: a chat engine is told to stop, the others keep running (`busy` says so)
+            stopped = False
+            if chat_engine:
+                try:
+                    stopped = bool(self._hub.cancel_model_generation())
+                except Exception:
+                    stopped = False
+            return LlmReply(False, code="timeout", model_id=model.model_id, seconds=seconds, cancelled=stopped)
         result = box.get("result")
         if result is None or not getattr(result, "ok", False):
             return LlmReply(False, code=str(getattr(result, "code", "") or box.get("error") or "failed")[:40], model_id=model.model_id, seconds=seconds)
         answer = clean_answer(result.text)
         if not answer:
             return LlmReply(False, code="empty", model_id=model.model_id, seconds=seconds)
-        with self._lock:
-            self._turns = (self._turns + [(text, answer)])[-MEMORY_TURNS:]
-            self._used += 1
+        if remember:
+            with self._lock:
+                self._turns = (self._turns + [(text, answer)])[-MEMORY_TURNS:]
+                self._used += 1
+        self._after_answer(model.model_id, chat_engine)
+        return LlmReply(True, text=answer, model_id=model.model_id, seconds=seconds)
+
+    def _after_answer(self, model_id, chat_engine):
         try:
             self._hub.note_served("llm.local")
         except Exception:
             pass
-        return LlmReply(True, text=answer, model_id=model.model_id, seconds=seconds)
+        if chat_engine:                                        # the own brain was used: its idle timer (which gives the memory back) restarts
+            try:
+                own = getattr(self._hub, "_own_brain", None)
+                if own is not None and own.model_id() == model_id:
+                    own.touch()
+            except Exception:
+                pass
 
     def used_count(self):
         return self._used

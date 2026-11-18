@@ -18,8 +18,21 @@ The snapshot is a dict:
     wish        str, the last thing the user asked that nothing here could answer (24 hours at most), '' when none
 """
 
+from . import hub_messages_ownbrain as BO
+
 MODEL_BUTTON = "📦 فایل مدل"
 VOICE_BUTTON = "🎤 گفتار"
+_OWN_PHASES = ("downloading", "installing", "paused", "failed", "ready")
+
+
+def own_phase(snap):
+    """`(phase, percent)` of the own brain («مغز خودکار»): none | downloading | installing | paused | failed | ready. A snapshot WITHOUT an `own_brain`
+    entry means «none» (the older tests build snapshots by hand and must keep getting the same replies)."""
+    own = snap.get("own_brain")
+    if not isinstance(own, dict) or own.get("phase") not in _OWN_PHASES:
+        return "none", 0
+    pct = own.get("percent")
+    return own["phase"], (int(pct) if isinstance(pct, (int, float)) and not isinstance(pct, bool) else 0)
 
 
 def _fa(n):
@@ -55,12 +68,15 @@ def grow_ways(snap):
     """The three honest ways to make the assistant smarter, as lines. Used by «brain», «upgrade» and the fallback."""
     model = (snap.get("model") or {}).get("state")
     lines = []
+    phase, pct = own_phase(snap)
+    if phase != "ready":                                   # Prompt 959 (stage B): the way that needs no key, no cost and no other service comes first
+        lines.append(BO.lead_line(phase, pct))
     if model == "usable":
         lines.append("۱) مدل زبانی: هست و کار می‌کند؛ مدل بزرگ‌تر یا بهتری هم بخواهی، با دکمهٔ «%s» وارد کن." % MODEL_BUTTON)
     elif model == "imported":
         lines.append("۱) مدل زبانی: فایلش وارد شده ولی اجرا نمی‌شود؛ بگو «وضعیت مدل‌ها» تا علتش را دقیق بگویم (اغلب این نسخهٔ برنامه موتور اجرای آن قالب را ندارد).")
     else:
-        lines.append("۱) مدل زبانی: یک فایل مدل (قالب «.task» مثل Gemma، یا «.gguf») را از منبعِ مطمئن روی گوشی بگیر و با دکمهٔ «%s» وارد کن؛ بگو «چطور مدل وارد کنم؟» تا قدم‌به‌قدم بگویم." % MODEL_BUTTON)
+        lines.append("۱) مدل زبانی (دستی، اگر خودت فایلش را داری): یک فایل مدل (قالب «.task» مثل Gemma، «.litertlm» یا «.gguf») را روی گوشی داشته باش و با دکمهٔ «%s» وارد کن؛ بگو «چطور مدل وارد کنم؟» تا قدم‌به‌قدم بگویم." % MODEL_BUTTON)
     lines.append("۲) بسته (قابلیت یا دانشِ تازه بدون ساختن نسخهٔ جدید): بگو «پرامپت بسته برای …» و آنچه می‌خواهی؛ متنی می‌دهم که به ChatGPT یا Claude می‌دهی. جوابش را همین‌جا بچسبان یا از آن برنامه به این برنامه «اشتراک‌گذاری» کن؛ من بررسی و در محیطِ ایزوله آزمایش می‌کنم و فقط با «بله»ی تو نصب می‌شود (نسخه‌بندی و بازگشت دارد).")
     titles = _titles(snap)
     asker = ("«%s»" % "» یا «".join(titles)) if titles else "ChatGPT یا Claude"
@@ -75,6 +91,7 @@ def help_more():
     """The lines the full app adds under «راهنما»: the older list only knows what the Self-Builder does; these are the ways the assistant itself grows.
     Every sentence in quotes here is a real command (a test says each one is understood)."""
     return "\n".join(["و برای بزرگ‌ترکردنِ خودم (هر کدام فقط با «بله»ی تو):",
+                      "• «مغز خودت را بگیر» (مغزِ زبانیِ مخصوصِ خودم، بدون کلید و هزینه) و «وضعیت مغز»",
                       "• «چه کارهایی بلدی؟» / «مغز فارسی داری؟» / «چطور باهوش‌ترت کنم؟»",
                       "• «بسته چیست؟» و «پرامپت بسته برای …» (قابلیت یا دانشِ تازه بدون نسخهٔ تازهٔ برنامه)",
                       "• «از ChatGPT بخواه …» (یا Claude؛ فقط بعد از «بله»ی تو فرستاده می‌شود)",
@@ -117,6 +134,7 @@ def about(snap, registry=None):
     lines.append("چیزهایی که هنوز نمی‌توانم:")
     if model != "usable":
         lines.append("• جواب آزاد به هر پرسشی (مدل زبانی ندارم).")
+        lines.append("• " + BO.about_line(*own_phase(snap)))
     lines.append("• ساخت عکس، ویدیو و آهنگ (موتورش را ندارم؛ می‌توانم از ChatGPT یا Claude بخواهم راهش را برایم بسازند).")
     lines.append("• گوش‌دادنِ همیشگی و صدا زدنِ «جارویس»، و حرف‌زدن با صدا.")
     lines.append("فهرست دقیق: «نقشهٔ قابلیت‌ها». برای بزرگ‌ترکردنِ من: «چطور باهوش‌ترت کنم؟».")
@@ -136,7 +154,11 @@ def brain(snap):
 
 # ======================================================================================= upgrade
 def upgrade(snap):
+    phase, pct = own_phase(snap)
     lines = ["می‌توانم خودم را بزرگ‌تر کنم، ولی فقط از راه‌هایی که امن و برگشت‌پذیرند:",
+             "• مغزِ خودکار (بدون کلید و هزینه): " + (BO.about_line(phase, pct) if phase != "none" else
+                                                     "بگو «%s»؛ خودم یک مدلِ زبانیِ آزاد را از اینترنت می‌گیرم، درستی‌اش را چک می‌کنم و روی همین گوشی اجرا می‌کنم "
+                                                     "(فقط با «بله»ی تو؛ هر وقت خواستی پاکش می‌کنم)." % BO.START),
              "• «بسته» (بستهٔ کد و بستهٔ زبان): قابلیت یا دانشِ تازه‌ای که ChatGPT یا Claude می‌نویسد. من فقط بررسی، در محیطِ ایزوله آزمایش و پیشنهاد می‌کنم؛ فقط با «بله»ی تو نصب می‌شود، نسخه‌بندی دارد، با یک دستور برمی‌گردد و اگر خراب شود برنامه خودش به حالتِ سالم برمی‌گردد.",
              "• مدل زبانی: با فایلِ مدل و دکمهٔ «%s»." % MODEL_BUTTON,
              "• فایل‌های اصلیِ برنامه و بخشِ اندروید را بی‌صدا و خودسرانه عوض نمی‌کنم؛ آن‌ها فقط با ساختنِ نسخهٔ تازه در GitHub و نصبِ آن عوض می‌شوند (آن کارِ تو است).",
@@ -191,6 +213,7 @@ def unknown_first(snap, remembered=True):
 def unknown_short(snap, remembered=True):
     """The same, shorter, when it was said a moment ago."""
     hint = (" " + CLOUD_SHORT) if snap.get("cloud_on") is False else ""
+    hint = " " + BO.lead_short(*own_phase(snap)) + hint        # Prompt 959 (stage B): the own brain's way first
     if remembered:
         return ("این را هم نمی‌دانم. بگو «از ChatGPT بخواه» تا همین پرسش را برایش آماده کنم (فقط با «بله»ی تو فرستاده می‌شود)، "
                 "یا فایل مدل را با دکمهٔ «%s» وارد کن.%s" % (MODEL_BUTTON, hint))
@@ -201,6 +224,7 @@ def unknown_statement_first(snap):
     """A Persian sentence that is neither a question nor a request and that no rule understands (e.g. «من امروز خیلی خسته‌ام»). Before the
     corrective release of Prompt 959 the core answered such a sentence with an English line about AEL."""
     lines = ["حرفت را خواندم، ولی این جمله را با قاعده‌هایی که دارم نمی‌فهمم — من هنوز «فهمِ آزاد» ندارم، فقط چند قاعدهٔ فارسیِ ساده.",
+             "• " + BO.lead_line(*own_phase(snap)),              # Prompt 959 (stage B): the own brain's way first (no key, no cost, no other service)
              "• ببین چه می‌فهمم: «چه کارهایی بلدی؟»",
              "• چیزی را می‌خواهی یادم بدهی: «یاد بگیر که …»"]
     if snap.get("cloud_on") is False:
@@ -210,10 +234,11 @@ def unknown_statement_first(snap):
 
 
 def unknown_statement_short(snap):
+    own = " " + BO.lead_short(*own_phase(snap))                 # Prompt 959 (stage B): the own brain's way first
     if snap.get("cloud_on") is False:
-        return "این جمله را هم نفهمیدم. «چه کارهایی بلدی؟» را بگو، یا «مغز ابری را فعال کن» تا جمله‌های آزاد را هم بفهمم."
-    return "این جمله را هم نفهمیدم. «چه کارهایی بلدی؟» را بگو تا ببینی چه می‌فهمم."
+        return "این جمله را هم نفهمیدم. «چه کارهایی بلدی؟» را بگو، یا «مغز ابری را فعال کن» تا جمله‌های آزاد را هم بفهمم." + own
+    return "این جمله را هم نفهمیدم. «چه کارهایی بلدی؟» را بگو تا ببینی چه می‌فهمم." + own
 
 
 __all__ = ["about", "brain", "upgrade", "voice", "outside", "unknown_first", "unknown_short", "unknown_statement_first", "unknown_statement_short",
-           "model_line", "grow_ways", "help_more", "CLOUD_WAY", "CLOUD_SHORT", "MODEL_BUTTON", "VOICE_BUTTON"]
+           "model_line", "grow_ways", "help_more", "own_phase", "CLOUD_WAY", "CLOUD_SHORT", "MODEL_BUTTON", "VOICE_BUTTON"]

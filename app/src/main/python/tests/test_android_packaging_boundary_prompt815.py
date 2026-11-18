@@ -72,10 +72,15 @@ class GradleConfigTests(unittest.TestCase):
         # Prompt 958 (a conscious change of this pin): the one other library is the on-device language-model engine (Google's
         # MediaPipe LLM Inference, Apache-2.0). It is declared INSIDE `if (project.findProperty('withLlm') == 'true')`, so an ordinary
         # build still has appcompat as its only dependency; the workflow tries the engine first and falls back to the plain build.
+        # Prompt 959 (a conscious change of this pin, was "appcompat + the MediaPipe engine"): a second optional engine, Google's
+        # LiteRT-LM (Apache-2.0; the phone's own brain), declared INSIDE `if (project.findProperty('withLiteRtLm') == 'true')` in the same
+        # way. An ordinary build still has appcompat as its only dependency; the workflow now tries LiteRT-LM, then MediaPipe, then no engine.
         app = _read("app", "build.gradle")
         deps = re.findall(r"^\s*(?:implementation|api|compileOnly|runtimeOnly)\s+['\"]([^'\"]+)", app, re.M)
-        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27"])
+        self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27",
+                                "com.google.ai.edge.litertlm:litertlm-android:latest.release"])
         self.assertRegex(_code(app, "//"), r"if \(project\.findProperty\('withLlm'\) == 'true'\) \{\s*implementation 'com\.google\.mediapipe:tasks-genai:0\.10\.27'\s*\}")
+        self.assertRegex(_code(app, "//"), r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*implementation 'com\.google\.ai\.edge\.litertlm:litertlm-android:latest\.release'\s*\}")
 
     def test_gitignore_blocks_bytecode_and_build_output(self):
         gi = _read(".gitignore")
@@ -98,7 +103,10 @@ class ManifestAndJavaTests(unittest.TestCase):
         self.assertEqual(manifest.count("<activity"), 1)
         self.assertIn("android.intent.category.LAUNCHER", manifest)
 
-    def test_java_layer_is_two_thin_files(self):
+    def test_java_layer_is_three_thin_files(self):
+        # Prompt 959 (a conscious change of this pin, was "two thin files"): the phone's own brain needs one narrow door to Google's
+        # LiteRT-LM engine, LiteRtLmBridge.java. Like the other helper it never calls Python (Python calls its static methods) and it does
+        # not import the engine either: the engine is reached by reflection, so an APK made without the engine still compiles and runs.
         # Prompt 958 (a conscious change of this pin, was "one thin file"): Android requires an accessibility service to be a class
         # of its own, so there is a second file, PyAccessibilityService.java. It never calls Python (Python calls its static methods).
         # MainActivity may now name two Python modules: android_entry (the app) and platform_boot (a tiny never-raising module
@@ -106,11 +114,14 @@ class ManifestAndJavaTests(unittest.TestCase):
         # name, argument count and key between the Java files and Python.
         java_root = os.path.join(_APP, "src", "main", "java")
         files = sorted(os.path.join(r, f) for r, _, fs in os.walk(java_root) for f in fs)
-        self.assertEqual([os.path.basename(f) for f in files], ["MainActivity.java", "PyAccessibilityService.java"])
-        main = _read_abs(files[0])
+        self.assertEqual([os.path.basename(f) for f in files], ["LiteRtLmBridge.java", "MainActivity.java", "PyAccessibilityService.java"])
+        bridge = _read_abs(files[0])
+        for forbidden in ("getModule", "callAttr", "com.chaquo", "import com.google", "http://", "https://"):
+            self.assertNotIn(forbidden, bridge, forbidden)
+        main = _read_abs(files[1])
         self.assertEqual(sorted(re.findall(r'getModule\("([^"]+)"\)', main)), ["android_entry", "platform_boot", "platform_boot"])
         self.assertEqual(sorted(re.findall(r'callAttr\("([^"]+)"', main)), ["inbox_dir", "on_shared_text", "prepare", "start"])
-        service = _read_abs(files[1])
+        service = _read_abs(files[2])
         self.assertNotIn("getModule", service)
         self.assertNotIn("callAttr", service)
         self.assertNotIn("com.chaquo", service)

@@ -13,6 +13,8 @@ exist today (the third lives in `mediapipe_runtime.py`):
 
 * `MediaPipeLlmRuntime` ("task") - a real language model (Gemma and the like) through MediaPipe's
   LLM Inference Java API; available ONLY inside an APK that was built with that engine.
+* `LiteRtLmRuntime` ("litertlm") - the phone's own language model (Gemma 4, Qwen 3.5 ...) through Google's
+  LiteRT-LM engine; available ONLY inside an APK that was built with that engine (Prompt 959, «مغز خودکار»).
 
 Formats without a runtime here ("onnx", "tflite") stay unsupported; the
 manager reports `no_runtime_for_format` instead of pretending.
@@ -217,5 +219,6 @@ class LlamaCppRuntime(InferenceRuntime):
 
 
 def default_runtimes() -> Sequence[InferenceRuntime]:
-    from .mediapipe_runtime import MediaPipeLlmRuntime     # lazy: that module imports this one
-    return (NgramRuntime(), LlamaCppRuntime(), MediaPipeLlmRuntime())
+    from .litertlm_runtime import LiteRtLmRuntime          # lazy: these modules import this one
+    from .mediapipe_runtime import MediaPipeLlmRuntime
+    return (NgramRuntime(), LlamaCppRuntime(), MediaPipeLlmRuntime(), LiteRtLmRuntime())

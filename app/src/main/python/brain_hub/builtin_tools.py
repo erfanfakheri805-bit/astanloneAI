@@ -263,12 +263,48 @@ class ToolsMixin:
         except Exception:
             return _model_failure(model_id)
 
-    def ask_model(self, model_id, prompt, *, max_tokens=64):
-        """Generate with a USABLE model only. A statistical n-gram model is not an LLM and only continues text."""
+    def ask_model(self, model_id, prompt, *, max_tokens=64, chat=None):
+        """Generate with a USABLE model only. A statistical n-gram model is not an LLM and only continues text. `chat` (optional) is
+        `{"system", "turns", "user"}`: an engine that understands structured chat is given the three parts separately."""
         try:
-            return self._model_manager().generate(model_id, prompt, max_tokens=max_tokens)
+            return self._model_manager().generate(model_id, prompt, max_tokens=max_tokens, chat=chat)
         except Exception:
             return GenerationResult(False, "unexpected_error", "", str(model_id)[:64], "", _UNEXPECTED[0], _UNEXPECTED[1])
+
+    def cancel_model_generation(self):
+        """Ask the engine to stop the answer it is making (takes no lock, so it works while another thread is waiting for that answer). Never raises."""
+        try:
+            return self._model_manager().cancel_all()
+        except Exception:
+            return 0
+
+    def unload_model(self, model_id):
+        """Give the memory of a loaded model back (it loads again at the next answer). False when nothing was loaded or it is answering now."""
+        try:
+            return bool(self._model_manager().unload(model_id))
+        except Exception:
+            return False
+
+    def model_file_path(self, model_id):
+        """Where the stored file of a registered model is ('' when unknown)."""
+        try:
+            return str(self._model_manager().model_path(model_id))
+        except Exception:
+            return ""
+
+    def adopt_model_file(self, model_id, path):
+        """Take a file the downloader already verified (SHA-256 = the pin) into the model store by MOVING it; the pipeline still re-verifies it."""
+        try:
+            return self._model_manager().adopt_file(model_id, path)
+        except Exception:
+            return _model_failure(model_id)
+
+    def reopen_model(self, model_id):
+        """Let a model that failed after its file was stored go through the pipeline again (failed -> downloaded)."""
+        try:
+            return self._model_manager().reopen(model_id)
+        except Exception:
+            return _model_failure(model_id)
 
     def model_runtimes_info(self):
         """Which inference engines this build can really run: one row per engine, with its exact availability."""

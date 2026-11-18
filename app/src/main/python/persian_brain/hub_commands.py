@@ -234,7 +234,9 @@ def h_net_on(ctx, cmd):
 def h_net_off(ctx, cmd):
     change = ctx.hub.revoke_permission("network")
     if change.ok:
-        return HM.net_off_done()
+        from . import hub_ownbrain                  # (a local import: the own brain's conversation imports the hub's modules)
+        note = hub_ownbrain.after_net_off(ctx.brain)  # Prompt 959 (stage B): a running own-brain download stops with the switch
+        return HM.net_off_done() + ("\n\n" + note if note else "")
     return HM.net_change_failed(change.code)
 
 

@@ -22,6 +22,13 @@ needs (`content-type: application/json`, `authorization`, `x-api-key`, `x-goog-a
 holds for it (public addresses only, certificate checks, one wall-clock deadline, identity encoding, size limits, no redirects); an answer that
 is not 2xx may carry a SMALL body (`read_error_body`) so the caller can say why (bad key, quota) - it is never read for a GET.
 
+Prompt 959 (stage B) adds `abort_all()`: the emergency stop cuts every request in flight at the socket (connect done, TLS, send or waiting
+for the answer), so a thread blocked on a slow cloud answer is released within a moment instead of at its deadline. Nothing else changes.
+
+Prompt 959 (stage B, «مغز خودکار») adds ONE request header for a GET: `Range: bytes=<start>-` (digits only, validated), so a large download
+that was cut (a phone on a shaky network) can continue from the byte it reached instead of starting again. The answer is still read under the
+same limits (`206` is an ordinary 2xx); every other guarantee above is unchanged, and a POST can never carry it.
+
 Failures raise `TransportError(code, detail)`; `detail` is a short fixed token,
 never exception text. A fake transport (any callable taking a
 `TransportRequest`) can replace this class in tests; downloads additionally use
@@ -34,6 +41,7 @@ import errno
 import http.client
 import io
 import ipaddress
+import re
 import socket
 import ssl
 import threading
@@ -45,7 +53,7 @@ from .policy import FetchPolicy, classify_ip
 
 __all__ = [
     "TRANSPORT_CODES", "TransportError", "TransportRequest", "TransportResponse",
-    "StreamResponse", "HttpClientTransport", "make_ssl_context", "MAX_POST_BYTES", "MAX_ERROR_BODY_BYTES",
+    "StreamResponse", "HttpClientTransport", "make_ssl_context", "MAX_POST_BYTES", "MAX_ERROR_BODY_BYTES", "abort_all", "in_flight",
 ]
 
 TRANSPORT_CODES = (
@@ -53,6 +61,8 @@ TRANSPORT_CODES = (
     "too_large", "protocol_error", "unsupported_encoding", "unknown_error",
 )
 _ALLOWED_REQUEST_HEADERS = ("accept", "accept-language")
+_GET_ONLY_HEADERS = ("range",)          # only a GET may carry it (resuming a download); the value must look like `bytes=123-` or `bytes=123-456`
+_RANGE_VALUE = re.compile(r"^bytes=[0-9]{1,13}-[0-9]{0,13}$")
 _POST_HEADERS = ("content-type", "authorization", "x-api-key", "x-goog-api-key", "anthropic-version")
 MAX_POST_BYTES = 262144
 MAX_ERROR_BODY_BYTES = 16384
@@ -61,6 +71,54 @@ _CHUNK = 65536
 _MAX_HEADER_VALUE = 8192
 _MAX_CANDIDATES = 4
 _OFFLINE_ERRNOS = {errno.ENETUNREACH, errno.EHOSTUNREACH, errno.ENETDOWN}
+
+# --------------------------------------------------------------------------- requests in flight (the emergency stop)
+_ACTIVE: Dict[object, socket.socket] = {}
+_ACTIVE_LOCK = threading.Lock()
+
+
+def _track(sock) -> object:
+    """Remember the socket of a request in flight, so that `abort_all` can cut it. Returns the token for `_retrack` / `_untrack`."""
+    token = object()
+    with _ACTIVE_LOCK:
+        _ACTIVE[token] = sock
+    return token
+
+
+def _retrack(token, sock) -> None:
+    with _ACTIVE_LOCK:
+        if token in _ACTIVE:
+            _ACTIVE[token] = sock
+
+
+def _untrack(token) -> None:
+    if token is None:
+        return
+    with _ACTIVE_LOCK:
+        _ACTIVE.pop(token, None)
+
+
+def in_flight() -> int:
+    """How many requests have an open socket right now."""
+    with _ACTIVE_LOCK:
+        return len(_ACTIVE)
+
+
+def abort_all() -> int:
+    """The emergency stop for the network: shut down every socket of a request in flight. The thread waiting on each one gets an ordinary
+    `TransportError` within a moment. Returns how many sockets were cut. Never raises. (The BASE class's `shutdown` is used on purpose: the
+    TLS socket's own `shutdown` drops the TLS object under the reader's feet.)"""
+    with _ACTIVE_LOCK:
+        socks = list(_ACTIVE.values())
+    cut = 0
+    for sock in socks:
+        try:
+            socket.socket.shutdown(sock, socket.SHUT_RDWR)
+            cut += 1
+        except Exception:
+            pass
+    return cut
+
 
 
 class TransportError(Exception):
@@ -205,10 +263,11 @@ class _SockShim:
 
 
 class _Connection:
-    def __init__(self, sock: socket.socket, response: http.client.HTTPResponse, peer_ip: str) -> None:
-        self.sock, self.response, self.peer_ip = sock, response, peer_ip
+    def __init__(self, sock: socket.socket, response: http.client.HTTPResponse, peer_ip: str, token=None) -> None:
+        self.sock, self.response, self.peer_ip, self.token = sock, response, peer_ip, token
 
     def close(self) -> None:
+        _untrack(self.token)
         for closer in (self.response.close, self.sock.close):
             try:
                 closer()
@@ -294,9 +353,11 @@ class HttpClientTransport:
         idle = float(req.timeout_s)
         candidates = self._candidates(req, deadline, idle)
         sock, peer_ip = self._connect(candidates, deadline, idle)
+        token = _track(sock)
         try:
             if req.scheme == "https":
                 sock = self._handshake(sock, req.host, deadline, idle)
+                _retrack(token, sock)
             self._send(sock, req, deadline, idle)
             reader = _DeadlineReader(sock, deadline, idle, self._clock)
             resp = http.client.HTTPResponse(_SockShim(reader), method=req.method)
@@ -305,8 +366,9 @@ class HttpClientTransport:
             except Exception:
                 resp.close()
                 raise
-            return _Connection(sock, resp, peer_ip), deadline
+            return _Connection(sock, resp, peer_ip, token), deadline
         except Exception as exc:
+            _untrack(token)
             try:
                 sock.close()
             except Exception:
@@ -332,9 +394,11 @@ class HttpClientTransport:
             raise TransportError("protocol_error", "bad_host")
         if req.timeout_s <= 0 or req.max_bytes <= 0:
             raise TransportError("protocol_error", "bad_limits")
-        allowed = _ALLOWED_REQUEST_HEADERS + (_POST_HEADERS if post else ())
+        allowed = _ALLOWED_REQUEST_HEADERS + (_POST_HEADERS if post else _GET_ONLY_HEADERS)
         for name, value in dict(req.headers or {}).items():
             if name.lower() not in allowed or any(c in str(value) for c in "\r\n\x00") or len(str(value)) > _MAX_HEADER_VALUE:
+                raise TransportError("protocol_error", "bad_request_header")
+            if name.lower() == "range" and not _RANGE_VALUE.match(str(value)):
                 raise TransportError("protocol_error", "bad_request_header")
         if post:
             kind = str(dict((k.lower(), v) for k, v in dict(req.headers or {}).items()).get("content-type", "")).split(";", 1)[0].strip().lower()
@@ -455,6 +519,8 @@ class HttpClientTransport:
         ]
         if "accept-language" in extra:
             lines.append("Accept-Language: %s" % extra["accept-language"])
+        if not post and "range" in extra:                      # validated in `_validate`: a GET only, `bytes=<digits>-<digits>`
+            lines.append("Range: %s" % extra["range"])
         if post:
             for name in _POST_HEADERS:
                 if name in extra:

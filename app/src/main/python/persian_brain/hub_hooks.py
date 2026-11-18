@@ -26,10 +26,12 @@ from . import hub_commands as HC
 from . import hub_intents as HI
 from . import hub_messages as HM
 from . import hub_messages_llm as HL
+from . import hub_messages_ownbrain as HO
 from . import hub_messages_packs as HP
 from . import hub_messages_self as HSM
 from . import hub_messages_teacher as HTc
 from . import hub_messages_tools as HT
+from . import hub_ownbrain
 from . import hub_self
 from . import hub_state
 from . import hub_teacher as HTe
@@ -107,7 +109,10 @@ def early(brain, text):
     _bind(brain)
     mine = hub_brain.early(brain, text)                   # Prompt 959: the emergency words and the cloud brain's own open question
     if mine is not None:
-        return mine
+        return hub_ownbrain.after_emergency(brain, mine)  # Prompt 959: «ایست» / «ادامه» also stop / continue the own brain's download
+    own = hub_ownbrain.early(brain, text)                 # Prompt 959 (stage B): the own brain's open question (consent, delete) and its tick
+    if own is not None:
+        return own
     state = hub_state.load(memory, clock)
     toks = fa_text.words(nz.normalize(text)) if len(text) <= MAX_ANSWER_CHARS else []
     word = I.answer_word(toks) if toks else None
@@ -503,6 +508,9 @@ def command(brain, turn):
     mine = hub_brain.command(brain, turn)                  # Prompt 959: «مغز ابری را فعال کن», «وضعیت مغز ابری», «کلید را فراموش کن» ...
     if mine is not None:
         return mine
+    own = hub_ownbrain.command(brain, turn)                # Prompt 959 (stage B): «مغز خودت را بگیر», «وضعیت مغز», «مغز را پاک کن» ...
+    if own is not None:
+        return own
     hub = get_hub(brain)
     named = False
     if hub is not None:
@@ -543,6 +551,7 @@ def _self_snapshot(brain):
     snap = hub_self.snapshot(hub, packs(brain), HTe.service(brain, hub) if hub is not None else None,
                              hub_state.load_wish(brain.memory, brain._clock))
     snap["cloud_on"] = hub_brain.is_on(brain)              # Prompt 959: the «I do not know» replies point to the cloud brain only while it is off
+    snap["own_brain"] = hub_ownbrain.snapshot_part(brain)  # Prompt 959 (stage B): ... and lead with the own brain's way (a snapshot without it means «none»)
     return snap
 
 
@@ -604,13 +613,17 @@ def unknown_reply(brain, turn, intent):
     try:
         if intent is None or len(turn.toks) < 2 or len(turn.text) > MAX_LLM_CHARS:
             return None
+        text = None
         if intent.kind in (I.QUESTION, I.REQUEST):
             remembered = hub_state.save_wish(brain.memory, turn.text, brain._clock)
-            return hub_self.unknown(brain.memory, brain._clock, _self_snapshot(brain), remembered)
-        if intent.kind in (I.STATEMENT, I.UNKNOWN) and _is_persian(turn.text):
+            text = hub_self.unknown(brain.memory, brain._clock, _self_snapshot(brain), remembered)
+        elif intent.kind in (I.STATEMENT, I.UNKNOWN) and _is_persian(turn.text):
             # Prompt 959 (corrective release): a Persian sentence that is not a question either used to fall to the core's English line about AEL
-            return hub_self.unknown(brain.memory, brain._clock, _self_snapshot(brain), False, statement=True)
-        return None
+            text = hub_self.unknown(brain.memory, brain._clock, _self_snapshot(brain), False, statement=True)
+        if text is None:
+            return None
+        note = hub_brain.withdrawn_note(brain)             # Prompt 959: a question the last sentence dropped is named, never a mystery
+        return text + "\n\n" + note if note else text
     except Exception as exc:
         brain._log_error(exc, turn.text)
         return None
@@ -653,19 +666,27 @@ def llm_reply(brain, turn):
         if llm is None:
             return None
         result = llm.reply(text)
+        own = bool(result.model_id) and result.model_id == hub_ownbrain.own_model_id(brain)   # Prompt 959 (stage B): the phone's own brain speaks for itself
         if result.ok:
             note = ""
             if not hub_state.llm_note_shown(brain.memory, result.model_id) and hub_state.mark_llm_note(brain.memory, result.model_id):
-                title = (hub.model_status(result.model_id).card or {}).get("title") or result.model_id
-                note = "\n\n" + HL.first_answer_note(title)
+                card = hub.model_status(result.model_id).card or {}
+                if own:
+                    ob = hub_ownbrain.service(brain)
+                    choice = ob.choice(ob.status()["choice"]) if ob is not None else None
+                    note = "\n\n" + HO.first_answer_note(choice.short_fa if choice is not None else (card.get("title") or result.model_id))
+                else:
+                    note = "\n\n" + HL.first_answer_note(card.get("title") or result.model_id)
             return result.text + note
         if result.code in ("no_model", "bad_question"):
             return None
         if result.code == "busy":
             return HL.llm_busy()
         if result.code == "timeout":
-            return HL.llm_timeout(result.seconds)
-        return HL.llm_failed(result.code)
+            return HO.llm_timeout(result.seconds, result.cancelled) if own else HL.llm_timeout(result.seconds)
+        if own and result.code == "model_not_usable":
+            return hub_ownbrain.unusable_reply(brain)             # the real reason (e.g. a load that never finished) and what to say
+        return HO.llm_failed(result.code) if own else HL.llm_failed(result.code)
     except Exception as exc:
         brain._log_error(exc, turn.text)
         return None

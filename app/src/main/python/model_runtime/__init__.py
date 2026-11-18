@@ -11,12 +11,14 @@ service, API or key is involved anywhere.
     NgramRuntime  - a small statistical n-gram model (NOT an LLM), always available
     LlamaCppRuntime - GGUF through the `llama_cpp` package, only when really installed
     MediaPipeLlmRuntime - `.task` language models (Gemma ...) through MediaPipe, only in an APK built with that engine
+    LiteRtLmRuntime - `.litertlm` language models (Gemma 4, Qwen 3.5 ...) through LiteRT-LM, only in an APK built with that engine
 
 `model_runtime.bridge` (imported explicitly, because it needs `language_intelligence`)
 adapts a managed model to the existing `LocalModelRuntime` contract.
 """
 
 from .card import CardError, ModelCard, license_policy, parse_card
+from .litertlm_runtime import LiteRtLmRuntime
 from .mediapipe_runtime import MediaPipeLlmRuntime
 from .manager import (GenerationResult, ModelManager, ModelStatus, PipelineReport, StageReport, TRANSITIONS,
                       default_downloader, transition_allowed)
@@ -30,5 +32,5 @@ __all__ = [
     "PipelineReport", "StageReport", "TRANSITIONS", "default_downloader", "transition_allowed", "NgramModel",
     "NgramModelError", "load_ngram_model", "tokenize", "train_ngram_model", "InferenceRuntime", "LlamaCppRuntime",
     "LoadedModel", "NgramRuntime", "RuntimeAvailability", "SmokeReport", "default_runtimes", "STATES", "ModelStore",
-    "MediaPipeLlmRuntime",
+    "MediaPipeLlmRuntime", "LiteRtLmRuntime",
 ]

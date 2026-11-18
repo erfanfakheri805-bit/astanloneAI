@@ -174,7 +174,7 @@ def _tool_nodes(hub):
     return out
 
 
-_LLM_FORMATS = frozenset({"task", "gguf"})            # the formats of real language models (the bundled n-gram file is not one)
+_LLM_FORMATS = frozenset({"task", "gguf", "litertlm"})            # the formats of real language models (the bundled n-gram file is not one)
 
 
 def _local_model_node(hub):
@@ -182,22 +182,22 @@ def _local_model_node(hub):
     engines = hub.model_runtimes_info()
     usable = [m for m in models if m.usable]
     common = dict(node_id="tool.local_model", kind="tool", title_fa="مدل زبانی محلی", title_en="Local language model",
-                  entry="پیام ← hub.ask_model ← model_runtime ← (n-gram؛ MediaPipe برای «.task»؛ llama.cpp برای «.gguf»)", actions=("generate",),
+                  entry="پیام ← hub.ask_model ← model_runtime ← (n-gram؛ LiteRT-LM برای «.litertlm»؛ MediaPipe برای «.task»؛ llama.cpp برای «.gguf»)", actions=("generate",),
                   summary_fa="مدلی که روی خود گوشی بارگذاری و با یک آزمون استنتاج واقعی تأیید شده باشد. مدل n-gram همراه برنامه فقط ادامهٔ متن می‌سازد و یک مدل زبانی بزرگ (LLM) نیست.",
                   summary_en="A model that was loaded on this phone and confirmed by a real inference test. The bundled n-gram model only continues text and is not an LLM.")
     if usable:
         return CapabilityNode(state="active", tested=True, evidence=_clip(("%s: آزمون استنتاج گذشت" % m.model_id for m in usable), 3), **common)
     blockers = []
     if not models:
-        blockers.append(_bk("model", "هیچ مدلی ثبت نشده؛ فایل یک مدل («.task» مثل Gemma، یا «.gguf») را از منبعِ مطمئن روی گوشی بگیر و با دکمهٔ «📦 فایل مدل» وارد کن (یا کارتِ مدل را همین‌جا بچسبان).",
-                            "No model is registered; get a model file ('.task' such as Gemma, or '.gguf') from a source you trust and import it with the model-file button (or paste a model card here)."))
+        blockers.append(_bk("model", "هیچ مدلی ثبت نشده؛ بگو «مغز خودت را بگیر» تا خودم یک مدلِ آزاد را بگیرم و نصب کنم (بدون کلید و هزینه)، یا فایل یک مدل («.litertlm»، «.task» مثل Gemma، یا «.gguf») را از منبعِ مطمئن روی گوشی بگیر و با دکمهٔ «📦 فایل مدل» وارد کن (یا کارتِ مدل را همین‌جا بچسبان).",
+                            "No model is registered; say «get your own brain» and the app fetches and installs a free model by itself (no key, no cost), or get a model file ('.litertlm', '.task' such as Gemma, or '.gguf') from a source you trust and import it with the model-file button (or paste a model card here)."))
     else:
         blockers.append(_bk("model", "مدل‌های ثبت‌شده هنوز همهٔ مراحل تأیید (هش، سازگاری، بارگذاری، آزمون واقعی) را نگذرانده‌اند.",
                             "The registered models have not passed every stage yet (hash, compatibility, load, real test)."))
     if not any(e["available"] and set(e["formats"]) & _LLM_FORMATS for e in engines):
-        blockers.append(_bk("native_code", "هیچ موتورِ مدل زبانی روی این دستگاه فعال نیست: فایلِ «.task» موتور MediaPipe می‌خواهد که باید همراهِ APK ساخته شده باشد (و فقط روی خودِ گوشی کار می‌کند)؛ "
+        blockers.append(_bk("native_code", "هیچ موتورِ مدل زبانی روی این دستگاه فعال نیست: فایلِ «.litertlm» (مغزِ خودکار) موتور LiteRT-LM می‌خواهد و فایلِ «.task» موتور MediaPipe؛ هر دو باید همراهِ APK ساخته شده باشند (و فقط روی خودِ گوشی کار می‌کنند)؛ "
                                            "فایلِ «.gguf» بستهٔ llama.cpp می‌خواهد که در این APK نیست.",
-                            "No language-model engine is active on this device: a '.task' file needs the MediaPipe engine, which has to be built into the APK (and runs only on the phone itself); "
+                            "No language-model engine is active on this device: a '.litertlm' file (the own brain) needs the LiteRT-LM engine and a '.task' file the MediaPipe engine; both have to be built into the APK (and run only on the phone itself); "
                             "a '.gguf' file needs the llama.cpp package, which this APK does not include."))
     return CapabilityNode(state="registered" if models else "dependency_blocked", blockers=tuple(blockers),
                           evidence=("مدل‌های ثبت‌شده: %d" % len(models),), **common)

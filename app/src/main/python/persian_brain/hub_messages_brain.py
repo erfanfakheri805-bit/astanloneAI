@@ -143,6 +143,12 @@ def setup_cancelled():
     return "باشد، چیزی راه‌اندازی نشد و چیزی هم جایی نرفت."
 
 
+def withdrawn_note():
+    """Said after the reply that followed a SENTENCE typed while the cloud brain was waiting for an answer (Prompt 959: a real phone showed the
+    app dropping the open key question silently and then answering «I did not understand»): the dropped question is named, so it is never a mystery."""
+    return "(پرسشِ نیمه‌کارهٔ «مغز ابری» را کنار گذاشتم؛ چیزی ذخیره نشد. اگر خواستی بگو «مغز ابری را فعال کن».)"
+
+
 def stray_key():
     return ("این پیام شبیه یک کلید API بود. برای امنیتت آن را ذخیره نکردم و از تاریخچهٔ برنامه پاکش کردم. "
             "اگر می‌خواهی مغز ابری را وصل کنم بگو «مغز ابری را فعال کن»؛ کلید را فقط وقتی بخواهم می‌پذیرم.")
@@ -429,5 +435,5 @@ __all__ = ["setup_intro", "provider_question", "setup_how_lead", "setup_failed",
            "forgotten", "forget_cancelled", "no_key_to_forget", "need_key_first", "halted", "halt_done", "resume_done", "help_text",
            "blocked", "failed", "rate_limited", "too_long", "cut_note", "fixable_not_ready", "memory_footer", "kept_first_note", "memory_status",
            "memory_on_done", "memory_off_done", "memory_cleared", "wrong_dropped", "wrong_not_kept", "MODE_FA", "WHY_FA",
-           "teacher_need_wish", "teacher_not_ready", "teacher_ask_send", "teacher_answer_cut", "teacher_request_too_long", "teacher_failed",
+           "withdrawn_note", "teacher_need_wish", "teacher_not_ready", "teacher_ask_send", "teacher_answer_cut", "teacher_request_too_long", "teacher_failed",
            "teacher_no_pack"]

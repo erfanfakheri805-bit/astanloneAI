@@ -83,31 +83,56 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
-      # Prompt 958: first try the build that includes the on-device language-model engine. If that one fails (for
-      # example a dependency cannot be resolved), build the same app without the engine so that there is always an
-      # APK to install; the release notes say which of the two this is, and the log of the failed try is kept.
-      - name: Assemble debug APK (with the on-device language-model engine)
+      # Prompt 959: a ladder of three builds, so that there is ALWAYS an APK to install. The first one includes the
+      # engine that runs the phone's OWN brain (Google's LiteRT-LM: ".litertlm" model files that the app downloads by
+      # itself). If it cannot be built (for example the library cannot be resolved or does not fit this project), the
+      # second one is the build of Prompt 958 with the older MediaPipe engine (".task" files only); if that fails
+      # too, the third one has no engine at all. The release notes say which of the three this APK is, and the log of
+      # every failed try is kept as an artifact.
+      - name: Assemble debug APK (1 of 3 - with the phone's own brain engine, LiteRT-LM)
+        id: with_litertlm
+        continue-on-error: true
+        shell: bash
+        run: gradle --no-daemon :app:assembleDebug -PwithLiteRtLm=true 2>&1 | tee litertlm-build.log
+      - name: Keep the log of the LiteRT-LM build when it failed
+        if: steps.with_litertlm.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: litertlm-build-log
+          path: litertlm-build.log
+          if-no-files-found: warn
+      - name: Note which LiteRT-LM version was built in (never blocks the build)
+        if: steps.with_litertlm.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          V=$(gradle --no-daemon -q :app:dependencyInsight --dependency litertlm-android --configuration debugRuntimeClasspath -PwithLiteRtLm=true 2>/dev/null | grep -m1 -oE 'litertlm-android:[0-9][^ ]*' || true)
+          echo "LITERTLM_VERSION=${V:-unknown}" >> "$GITHUB_ENV"
+      - name: Assemble debug APK (2 of 3 - with the older MediaPipe engine - only when the first build failed)
         id: with_engine
+        if: steps.with_litertlm.outcome != 'success'
         continue-on-error: true
         shell: bash
         run: gradle --no-daemon :app:assembleDebug -PwithLlm=true 2>&1 | tee engine-build.log
-      - name: Keep the log of the engine build when it failed
+      - name: Keep the log of the MediaPipe build when it failed
         if: steps.with_engine.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: engine-build-log
           path: engine-build.log
           if-no-files-found: warn
-      - name: Assemble debug APK (without the engine - only when the first build failed)
-        if: steps.with_engine.outcome != 'success'
+      - name: Assemble debug APK (3 of 3 - without any engine - only when both builds failed)
+        if: steps.with_litertlm.outcome != 'success' && steps.with_engine.outcome != 'success'
         run: gradle --no-daemon :app:assembleDebug
-      - name: Note whether the engine is in this APK
+      - name: Note which engine is in this APK
         shell: bash
         run: |
-          if [ "${{ steps.with_engine.outcome }}" = "success" ]; then
-            echo "ENGINE_NOTE=Language-model engine (MediaPipe): INCLUDED." >> "$GITHUB_ENV"
+          if [ "${{ steps.with_litertlm.outcome }}" = "success" ]; then
+            echo "ENGINE_NOTE=Brain engine: LiteRT-LM (${LITERTLM_VERSION:-version unknown}) INCLUDED. The phone's own brain can be downloaded and run." >> "$GITHUB_ENV"
+          elif [ "${{ steps.with_engine.outcome }}" = "success" ]; then
+            echo "ENGINE_NOTE=Brain engine: LiteRT-LM NOT included in this build (the build that includes it failed; its log is in the litertlm-build-log artifact). The older MediaPipe engine is INCLUDED, so only .task model files can run; the app cannot run the downloaded own brain." >> "$GITHUB_ENV"
           else
-            echo "ENGINE_NOTE=Language-model engine (MediaPipe): NOT included in this build (the build that includes it failed; its log is in the engine-build-log artifact)." >> "$GITHUB_ENV"
+            echo "ENGINE_NOTE=Brain engine: NOT included in this build (both builds that include an engine failed; their logs are in the litertlm-build-log and engine-build-log artifacts). The app starts and chats, but it cannot run a language-model file." >> "$GITHUB_ENV"
           fi
       - uses: actions/upload-artifact@v4
         with:

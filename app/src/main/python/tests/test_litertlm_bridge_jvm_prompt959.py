@@ -19,6 +19,12 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 PYTHON_ROOT = os.path.dirname(HERE)
 STUB = os.path.join(HERE, "jvm_stub_litertlm")
+# The two stub folders are FLAT on purpose (files directly inside `ok/` and `drift/`; javac takes the files by name, the `package` line decides
+# where the classes land): a deep `com/google/ai/...` tree was once lost in a GitHub web upload, and every other test then failed with an
+# opaque javac error. `StubFilesPresentTests` below names the missing file instead.
+STUB_FILES = {"": ("AbsentMain.java", "OkMain.java"), "drift": ("EngineConfig.java",),
+              "ok": ("Backend.java", "Content.java", "Contents.java", "Conversation.java", "ConversationConfig.java", "Engine.java",
+                     "EngineConfig.java", "Message.java", "Placeholders.java", "SamplerConfig.java", "StubControl.java", "ThinkingConfig.java")}
 BRIDGE = os.path.normpath(os.path.join(PYTHON_ROOT, "..", "java", "com", "erfan", "standaloneai", "LiteRtLmBridge.java"))
 HAVE_JDK = bool(shutil.which("javac") and shutil.which("java"))
 
@@ -37,6 +43,35 @@ def compile_and_run(case, sources, main, *args):
         case.assertEqual(built.returncode, 0, "javac failed:\n" + built.stdout + built.stderr)
         ran = subprocess.run(["java", "-cp", out, main] + list(args), capture_output=True, text=True, timeout=120, encoding="utf-8")
         return ran.returncode, ran.stdout, ran.stderr
+
+
+class StubFilesPresentTests(unittest.TestCase):
+    """Runs even without a JDK: a partly uploaded repository must say WHICH stand-in file is missing (and where it belongs)."""
+
+    def test_every_stand_in_file_is_there_and_nothing_else(self):
+        missing, extra = [], []
+        for folder, names in STUB_FILES.items():
+            where = os.path.join(STUB, folder) if folder else STUB
+            have = sorted(n for n in os.listdir(where) if n.endswith(".java")) if os.path.isdir(where) else []
+            missing += ["tests/jvm_stub_litertlm/" + (folder + "/" if folder else "") + n for n in names if n not in have]
+            extra += ["tests/jvm_stub_litertlm/" + (folder + "/" if folder else "") + n for n in have if n not in names]
+        self.assertEqual(missing, [], "stand-in files missing - upload them to the repository at exactly these paths (the CI cannot compile the bridge without them): "
+                         + ", ".join(missing))
+        self.assertEqual(extra, [], "unexpected stand-in files (list them in STUB_FILES on purpose): " + ", ".join(extra))
+
+    def test_the_folders_hold_their_files_directly(self):
+        for folder in ("ok", "drift"):
+            where = os.path.join(STUB, folder)
+            self.assertTrue(os.path.isdir(where), where)
+            self.assertEqual([n for n in os.listdir(where) if os.path.isdir(os.path.join(where, n))], [], folder + " must stay flat")
+
+    def test_every_stand_in_declares_the_engine_package(self):
+        for folder, names in STUB_FILES.items():
+            if not folder:
+                continue
+            for name in names:
+                with open(os.path.join(STUB, folder, name), encoding="utf-8") as fh:
+                    self.assertTrue(fh.read().lstrip().startswith("package com.google.ai.edge.litertlm;"), folder + "/" + name)
 
 
 class BridgeSourceTests(unittest.TestCase):

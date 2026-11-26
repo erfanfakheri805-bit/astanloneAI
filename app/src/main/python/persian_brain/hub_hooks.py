@@ -21,6 +21,7 @@ import re
 
 from self_builder import fa_text
 
+from . import hub_body
 from . import hub_brain
 from . import hub_commands as HC
 from . import hub_intents as HI
@@ -104,12 +105,36 @@ def _guard(brain, text, fn):
 
 
 # ================================================================== early
+MAX_EMERGENCY_CHARS = 60
+
+
+def emergency_while_busy(brain, text):
+    """`(sub, reply)` for the emergency word while ANOTHER turn of this brain is still running, else None (the normal path then answers).
+    Prompt 959 (stage B): a local model's answer can take minutes (the deadline is 170 s) and a turn holds the brain's lock all that time, so
+    without this the word «ایست» would wait behind the very answer it is meant to stop. It is only the exact emergency words, only while
+    the lock is taken by someone else, and only what needs no lock (`hub_body.stop_while_busy`). Never raises."""
+    try:
+        if not isinstance(text, str) or len(text) > MAX_EMERGENCY_CHARS:
+            return None
+        if brain._lock.acquire(blocking=False):                # nobody is busy: the normal path (it takes the lock itself) answers
+            brain._lock.release()
+            return None
+        if not hub_brain.BC.is_halt(fa_text.words(nz.normalize(text))):
+            return None
+        return hub_body.stop_while_busy(brain)
+    except Exception as exc:
+        brain._log_error(exc, "")
+        return None
+
+
 def early(brain, text):
     memory, clock = brain.memory, brain._clock
     _bind(brain)
+    hub_body.tick(brain)                                  # Prompt 959 (stage B): a one-time code shown earlier is masked in the stored chat history
     mine = hub_brain.early(brain, text)                   # Prompt 959: the emergency words and the cloud brain's own open question
     if mine is not None:
-        return hub_ownbrain.after_emergency(brain, mine)  # Prompt 959: «ایست» / «ادامه» also stop / continue the own brain's download
+        mine = hub_ownbrain.after_emergency(brain, mine)  # Prompt 959: «ایست» / «ادامه» also stop / continue the own brain's download
+        return hub_body.after_emergency(brain, mine)      # Prompt 959 (stage B): «ایست» also stops a local answer and lets the background service go
     own = hub_ownbrain.early(brain, text)                 # Prompt 959 (stage B): the own brain's open question (consent, delete) and its tick
     if own is not None:
         return own
@@ -508,6 +533,9 @@ def command(brain, turn):
     mine = hub_brain.command(brain, turn)                  # Prompt 959: «مغز ابری را فعال کن», «وضعیت مغز ابری», «کلید را فراموش کن» ...
     if mine is not None:
         return mine
+    body = hub_body.command(brain, turn)                   # Prompt 959 (stage B): «گزارش آزمایشی», «چک‌لیست دسترسی‌ها», «کد پیامک را بخوان» ... (before the
+    if body is not None:                                   # own brain's: «چرا دانلود قطع می‌شود؟» is a question about the body, not an order to stop)
+        return body
     own = hub_ownbrain.command(brain, turn)                # Prompt 959 (stage B): «مغز خودت را بگیر», «وضعیت مغز», «مغز را پاک کن» ...
     if own is not None:
         return own

@@ -116,8 +116,10 @@ class GatedCdn(OwnCdn):
 class FakeBridge:
     """The static API of `LiteRtLmBridge`. Answers are scripted; every call is recorded."""
 
-    def __init__(self, present=True, answers=("سلام! من مغزِ آزمایشی هستم.",), load_result="OK\nloaded", chat_error=None):
+    def __init__(self, present=True, answers=("سلام! من مغزِ آزمایشی هستم.",), load_result="OK\nloaded", chat_error=None, probe_result="OK\nready",
+                 api_text="Engine: <init>(EngineConfig); initialize();"):
         self.present, self.answers, self.load_result, self.chat_error = present, list(answers), load_result, chat_error
+        self.probe_result, self.api_text, self.probes = probe_result, api_text, 0
         self.loaded, self.loads, self.chats, self.unloads, self.cancels = False, [], [], 0, 0
         self.gate, self.raise_on_load = None, None
 
@@ -129,6 +131,13 @@ class FakeBridge:
 
     def describe(self):
         return "fake bridge present=%s loaded=%s" % (self.present, self.loaded)
+
+    def probe(self):
+        self.probes += 1
+        return self.probe_result
+
+    def api(self):
+        return self.api_text
 
     def load(self, path, tokens):
         self.loads.append((path, tokens))

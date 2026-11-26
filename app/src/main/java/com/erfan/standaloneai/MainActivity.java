@@ -54,9 +54,11 @@ public class MainActivity extends AppCompatActivity {
      * Prompt 958: voice_input (the system's speech dialog), accessibility (PyAccessibilityService),
      * share_target (text shared INTO this app), file_pick (the document picker that copies the
      * chosen file into the app's inbox without loading it into memory).
+     *
+     * Prompt 959 (stage B, the body): body_service (BodyService: the foreground service of long jobs, with the notification's stop button).
      */
     public static final String[] NATIVE_FEATURES = {
-            "file_chooser", "permission_request", "voice_input", "accessibility", "share_target", "file_pick"};
+            "file_chooser", "permission_request", "voice_input", "accessibility", "share_target", "file_pick", "body_service"};
 
     private static final int REQUEST_FILE_CHOOSER = 9571;
     private static final int REQUEST_PERMISSIONS = 9572;

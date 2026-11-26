@@ -79,6 +79,27 @@ class StartRefusalTests(OwnBrainApp):
         self.assertTrue(result.detail, "the technical reason travels with the refusal")
         self.nothing_was_fetched()
 
+    def test_an_engine_in_the_apk_that_is_shaped_differently_is_refused_before_anything_is_fetched(self):
+        self.bridge.probe_result = "ERR\napi_mismatch\nEngineConfig(String, Backend)"
+        self.start_app()
+        self.assertEqual(self.ob.start("light", consent=True), StartResult(False, "engine_missing", "api_mismatch"))
+        self.assertEqual(self.bridge.loads, [])
+        self.nothing_was_fetched()
+        facts = self.ob.facts()
+        self.assertEqual((facts["engine_ok"], facts["engine_code"]), (False, "api_mismatch"))
+        self.assertIn("EngineConfig(String, Backend)", facts["engine_reason_fa"])
+        self.assertEqual(facts["engine_api"], "Engine: <init>(EngineConfig); initialize();")          # the engine's real API travels with the refusal
+        self.bridge.api_text = "x" * 5000
+        self.assertEqual(len(self.ob.facts()["engine_api"]), 1500)
+
+    def test_the_engine_api_listing_is_attached_only_when_the_engine_does_not_match(self):
+        self.assertNotIn("engine_api", self.ob.facts())
+        self.engine_available = False
+        self.start_app()
+        self.assertNotIn("engine_api", self.ob.facts())
+        rows = [r for r in self.hub.model_runtimes_info() if "litertlm" in r["formats"]]
+        self.assertTrue(rows and "api" not in rows[0])
+
     def test_a_second_start_and_the_other_brain_are_refused_once_one_is_ready(self):
         self.assertEqual(self.ob.start("light", consent=True), StartResult(True, "started"))
         self.assertEqual(self.ob.status()["phase"], "ready")

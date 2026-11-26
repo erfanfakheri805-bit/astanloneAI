@@ -95,6 +95,10 @@ class PersianBrain:
             scope = activation.scope_for(self.memory)
         if scope == activation.SCOPE_OFF:
             return None
+        if scope == activation.SCOPE_FULL:
+            quick = hub_hooks.emergency_while_busy(self, text)   # Prompt 959 (stage B): «ایست» must not wait behind a long answer of a local model
+            if quick is not None:
+                return quick[1]
         with self._lock:
             try:
                 return self._respond(text, scope)

@@ -87,6 +87,21 @@ android {
                 pickFirsts.add('**/libLiteRt*.so')
                 pickFirsts.add('**/liblitert*.so')
             }
+            // Prompt 959 (stage B): the libraries the engine pulls in can each ship the same licence / notice file; keep the first copy
+            // of those (never a class, never a service registration) instead of failing the "merge Java resources" step.
+            resources {
+                pickFirsts.addAll(['META-INF/LICENSE*', 'META-INF/NOTICE*', 'META-INF/DEPENDENCIES', 'META-INF/INDEX.LIST'])
+            }
+        }
+    }
+
+    // Prompt 959 (stage B): the engine's own code (LiteRT-LM 0.19.1, found in the first real build log) uses Java features that Android can
+    // only run from Android 8.0 (API 26) on; with minSdk 24 the dex tool stops with "Invoke-customs are only supported starting with Android
+    // O (--min-api 26)" and no engine gets into the APK. So THIS variant - and only this one - is built for Android 8.0+; the plain and the
+    // MediaPipe builds keep minSdk 24. (The default value above stays the literal 24 on purpose: the later assignment wins.)
+    if (project.findProperty('withLiteRtLm') == 'true') {
+        defaultConfig {
+            minSdk 26
         }
     }
 }
@@ -134,10 +149,12 @@ dependencies {
     // Prompt 959: the engine that runs the phone's OWN brain (Google's LiteRT-LM, Apache-2.0; ".litertlm" model files such
     // as Gemma 4 or Qwen 3.5). Like the one above it is added only when the build is asked for it (gradle
     // -PwithLiteRtLm=true). The workflow tries it FIRST, then the MediaPipe build, then a build with no engine, so there
-    // is always an APK to install; the release notes say which one it is. The version is the one Google's own page names
-    // ("latest.release"); the Java side reaches the engine by reflection, so a newer API cannot break the build - it is
-    // reported at run time instead. It could not be built here (no Android SDK offline): the first real build decides.
+    // is always an APK to install; the release notes say which one it is. The version is PINNED to 0.19.1: the one the first real
+    // build resolved from "latest.release" (build 19), so every build is the same build and a newer release with another API
+    // cannot change it unnoticed. The Java side reaches the engine by reflection, so a different API cannot break the build - it
+    // is reported at run time (api_mismatch, with the engine's own listing) instead. Moving to a newer version is a deliberate
+    // edit of this one line. It could not be built here (no Android SDK offline): the first real build decides.
     if (project.findProperty('withLiteRtLm') == 'true') {
-        implementation 'com.google.ai.edge.litertlm:litertlm-android:latest.release'
+        implementation 'com.google.ai.edge.litertlm:litertlm-android:0.19.1'
     }
 }

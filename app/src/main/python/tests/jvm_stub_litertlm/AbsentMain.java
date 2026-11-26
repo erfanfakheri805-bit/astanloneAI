@@ -19,6 +19,9 @@ public final class AbsentMain {
         File model = File.createTempFile("brain", ".litertlm");
         model.deleteOnExit();
         check("not_present", !LiteRtLmBridge.isPresent() && LiteRtLmBridge.describe().contains("present=false"), LiteRtLmBridge.describe());
+        check("probe_says_dependency_missing", LiteRtLmBridge.probe().equals("ERR\ndependency_missing\nengine"), LiteRtLmBridge.probe());
+        String listing = LiteRtLmBridge.api();
+        check("api_listing_never_throws_without_an_engine", listing.contains("Engine: -") && listing.contains("Message: -"), listing);
         String r = LiteRtLmBridge.load(model.getAbsolutePath(), 2048);
         check("load_says_dependency_missing", r.startsWith("ERR\ndependency_missing\n") && !LiteRtLmBridge.isLoaded(), r);
         r = LiteRtLmBridge.chat("", "", "سلام", 8);

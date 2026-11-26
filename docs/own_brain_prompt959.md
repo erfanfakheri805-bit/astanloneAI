@@ -18,7 +18,7 @@ engine bridge, a stand-in JVM engine for the Java side and a loopback file serve
 | # | condition | where it is enforced |
 | --- | --- | --- |
 | 1 | nothing is downloaded before an explicit «بله» to a consent card that states the size, the source, the cost and the honest limits | `OwnBrain.start(key, consent=True)` - the argument must be exactly `True`; the chat asks first |
-| 2 | the APK must contain the engine, otherwise the download is pointless and is **refused before it starts** | `engine_missing` (a build without `-PwithLiteRtLm=true`) |
+| 2 | the APK must contain the engine AND the engine must have the API the bridge calls, otherwise the download is pointless and is **refused before it starts** | `engine_missing` (a build without `-PwithLiteRtLm=true`; detail `dependency_missing`) or `engine_missing` with detail `api_mismatch` (`LiteRtLmBridge.probe()` found a piece of the engine's API missing, named in the refusal) |
 | 3 | the phone must have the RAM and the free space; a fact that cannot be read is never guessed | `ownbrain_catalog.fits`, `ram_unknown`, `not_enough_space` |
 | 4 | the phone must be online | `offline` |
 | 5 | only the pinned file is accepted: https, the catalogue's hosts only, the exact SHA-256, an announced size near the pinned size | `net_tools.resumable.download_resumable` |
@@ -34,7 +34,7 @@ Everything the model writes is shown as TEXT. It is never run, never taken as a 
 | `brain_hub/` | `ownbrain.py`, `ownbrain_catalog.py`, `ownbrain_state.py` | the service (`OwnBrain`: start / resume / retry / cancel / halt / delete / tick / test, one worker thread), the two-entry catalogue, the phone facts (RAM from `/proc/meminfo`, free space) and the small atomic state file |
 | `net_tools/` | `resumable.py` | the resumable, verified download of one big file (partial file, `Range`, checks before the first byte is stored, SHA-256 at the end) and `abort_all()` in `transport.py` (cuts the sockets in flight) |
 | `model_runtime/` | `litertlm_runtime.py` (+ the two-lock refactor of `manager.py`) | the `.litertlm` engine runtime with the crash guard; the manager's short registry lock and long operation lock |
-| Java | `LiteRtLmBridge.java` | the one small reflection door to the engine library (the Java layer is now three thin files) |
+| Java | `LiteRtLmBridge.java` | the one small reflection door to the engine library (the Java layer was three thin files here; stage B, the body, made it five: see `body_prompt959.md`) |
 | `persian_brain/` | `hub_ownbrain.py`, `hub_ownbrain_commands.py`, `hub_messages_ownbrain.py` | the chat side: the open question, the commands, every Persian sentence |
 | existing (small changes) | `brain_hub/llm.py`, `brain_hub/invoker.py`, `persian_brain/hub_hooks.py`, `hub_commands.py`, `hub_messages_self.py`, `hub_messages_llm.py`, `hub_messages_tools.py` | the chat engine path and the deadline, the capability texts, the hooks, the self-knowledge answers; `hub_commands.h_net_off` also stops a running own-brain download (section 4) |
 | build | `app/build.gradle`, `.github/workflows/android-debug-apk.yml` | the optional engine flag and the three-rung build ladder (section 7) |
@@ -122,23 +122,53 @@ is asked BEFORE any cloud service, and a sentence reaches the cloud only when no
 **3** turns and the new message as separate parts (it applies the model's own chat template); the answer is limited to **256** tokens, under a
 **170-second** deadline for the own brain (**100 seconds** for the other engines - the first answer after the app starts has to load the model), cleaned
 of stray template tokens and thinking blocks, and shown as text. A busy engine, a timeout and a failure are said plainly; the idle timer restarts after
-each answer. «ایست» cancels the download; it does **not** yet cancel an answer that is being generated (the central stop switch is a later piece of
-stage B).
+each answer. «ایست» cancels the download and also ASKS the local engine to drop an answer that is being generated (stage B, the body: `body_prompt959.md`; a
+request, not a command: see the honest limits; never during the install step, which cannot be interrupted).
 
 ## 7. The build: engine in or out
 
 The engine is native code built INTO the APK; it cannot be added from a running app. `-PwithLiteRtLm=true` adds
-`com.google.ai.edge.litertlm:litertlm-android:latest.release`, three `pickFirst` packaging rules and disables the AAR-metadata check **only in that
-variant** (the engine library may declare a newer compileSdk than the project's 34). The GitHub workflow tries three rungs in this order and keeps the
-first that builds:
+`com.google.ai.edge.litertlm:litertlm-android:0.19.1` (pinned: the version the first real build resolved from `latest.release`, so every build is the same build), three `pickFirst` packaging rules for native files plus a `resources { pickFirsts }` rule
+for duplicate licence and notice files, **raises `minSdk` from 24 to 26** and disables the AAR-metadata check **only in that variant** (the engine library
+may declare a newer compileSdk than the project's 34). The minSdk rise comes from the first real build log (build 19, LiteRT-LM 0.19.1): the dex tool
+stopped with `Invoke-customs are only supported starting with Android O (--min-api 26)`, so the engine's code needs Android 8.0 or newer; the plain and the
+MediaPipe builds keep minSdk 24. The GitHub workflow tries three rungs in this order and keeps the first that builds:
 
 1. with the LiteRT-LM engine (`with_litertlm`, `continue-on-error`, its log is the `litertlm-build-log` artifact when it fails),
 2. with the older MediaPipe engine (`-PwithLlm=true`: only `.task` files can run),
 3. plain (the app chats; it cannot run a language-model file).
 
 The release notes state which engine this APK has. **An APK without the LiteRT-LM engine cannot use the downloaded model - and the chat says so BEFORE
-downloading** (`engine_missing`). Whether rung 1 really builds with AGP 8.5.2 / compileSdk 34 could not be tried offline; the ladder exists so that a
-failure of rung 1 costs the engine, not the build. `LITERTLM_VERSION` is printed in the release notes so the real version is known.
+downloading** (`engine_missing`). Rung 1 FAILED in the first real build (the `minSdk` message above; everything before the dex step had passed) and
+the APK of that build had no engine; the minSdk rise is the fix, and whether rung 1 now builds is known only from the next real build. The ladder exists so
+that a failure of rung 1 costs the engine, not the build. `LITERTLM_VERSION` is printed in the release notes so the real version is known.
+
+**The debug signing key.** A debug APK is signed with the key Android's tools create on the runner; a fresh runner makes a fresh key every time, so Android
+refused to install a build over the previous one and the user had to uninstall it - which deletes the chats and the downloaded brain (gigabytes). The
+workflow therefore restores `~/.android/debug.keystore` from the Actions cache (`actions/cache@v4`, key `debug-keystore-v1`, no `restore-keys`) before the
+first rung; the cache action saves the file at the end of a successful job when none was restored. It is Android's own DEBUG key (public by convention),
+no secret is read, and the release notes say `Signing key: the SAVED debug key` (install over the old app) or `a NEW debug key` (uninstall once). GitHub may
+drop an unused cache after about a week; then one more uninstall is needed. Whether `~/.android` is where the runner's Gradle puts the key was not
+verifiable offline: if it is elsewhere, the note says the key could NOT be saved and nothing else changes.
+
+**The pre-download probe.** The bridge reaches the engine by reflection, so an engine whose API differs from what the bridge expects would only show at
+load time - after a download of gigabytes. `LiteRtLmBridge.probe()` therefore checks WITHOUT any model file that every piece `load()` and `chat()` call
+exists (classes, constructors, methods) and answers `OK\nready` or `ERR\napi_mismatch\n<the first missing piece>`; `LiteRtLmRuntime.availability()` turns
+that into `api_mismatch` and the own brain refuses to start (nothing fetched), naming the piece. A probe that cannot be asked never blocks (`load()` then
+reports the real failure). `LiteRtLmBridge.api()` lists the engine's real public classes and signatures (class names only, at most 6000 characters) so
+that a mismatch can be read off the self-test report instead of guessed. The probe mirrors what the bridge does; it does not prove that the real engine
+loads a real model - only a phone can.
+
+**The shape of `EngineConfig`, from the engine's own source.** The engine's `Config.kt` declares `data class EngineConfig(modelPath, backend = Backend.CPU(),
+visionBackend = null, audioBackend = null, maxNumTokens = null, maxNumImages = null, cacheDir = null)` WITHOUT `@JvmOverloads` (only `ConversationConfig`,
+`ThinkingConfig` and two small sampler classes have it). Java therefore sees ONE public constructor with all seven parameters, plus Kotlin's synthetic
+"default values" constructor (an extra `int` mask and a marker). The bridge builds the WIDEST public constructor that starts `(String, Backend)` and has only
+object types after that (so the synthetic one is never taken): the path, the CPU back-end, `null` for every optional piece, and the token limit in the first
+`Integer` slot (`maxNumTokens`). An older or newer version with fewer or more optional parameters works the same way. The probe goes one step further than
+"a constructor exists": it BUILDS that configuration once as a dry run (it is plain data, no model is touched), so an engine that refuses the call is caught
+before any download, and the probe names the exception (`EngineConfig(String, Backend): IllegalArgumentException`). `cacheDir` is left `null`: by the
+engine's own documentation it then uses the directory of the model file and may put cache files there, which the first run on a phone has to measure.
+This reading is of the engine's `main` branch; the pinned release (0.19.1) could differ, which is exactly what the probe and the listing are for.
 
 ## 8. Honest limits
 
@@ -146,9 +176,11 @@ failure of rung 1 costs the engine, not the build. `LITERTLM_VERSION` is printed
   load is slow; a 2.6 GB model on a phone with 6 GB of RAM may be killed by Android (the crash guard stops a loop; it cannot catch a native crash).
 * **The strong brain's hash could not be re-verified** in this session (see section 3); the light brain's was.
 * **Hugging Face may need a VPN in Iran.** Python's HTTPS on the phone (the CA store under Chaquopy) was not verified in the field.
-* **The download only progresses while the app is open.** A foreground service with a notification (and an emergency-stop button) is a later piece of
-  stage B and needs a new APK; if Android closes the app the download continues from the partial next time.
-* **The install and first test cannot be interrupted**, and «ایست» does not yet cancel a running answer.
+* **The download is kept alive by the background service of the body** (stage B, the body: `body_prompt959.md`), which was not run on a phone either: Android may
+  refuse to start it from the background (Android 12+). Without the service the download only progresses while the app is open; if Android closes the
+  app the download continues from the partial next time.
+* **The install and first test cannot be interrupted.** «ایست» now also asks the engine to drop a running answer (stage B, the body); that is a request - the
+  engine may finish its current step first - and it was only exercised against a stand-in engine.
 * A small model makes mistakes, and its Persian is weaker than a big cloud assistant's; it must not be relied on for medical, legal or financial decisions.
 * Storage: 1-2.6 GB. Deleting it («مغز را پاک کن») gives the space back.
 
@@ -156,7 +188,7 @@ failure of rung 1 costs the engine, not the build. `LITERTLM_VERSION` is printed
 
 The seven production files that earlier stages pinned are byte-identical (`android_entry.py`, `core/core.py`, `ael/interpreter.py`,
 `runtime_integration/bridge.py`, `interface/server.py`, `runtime_integration/runtime_core.py`, `runtime_growth/runtime_growth_cycle.py`). The Android manifest
-is unchanged (no new permission, no new service in this piece), `versionCode 2` / `versionName "0.2.0"` stay, the Java layer stays thin (three files),
+is unchanged (no new permission, no new service in this piece), `versionCode 2` / `versionName "0.2.0"` stay, the Java layer stays thin (three files in this piece; five after the body, stage B),
 and the dependencies stay minimal (appcompat, the Kotlin BOM, and - only with the flags - the two engine libraries). Older tests were changed only
 consciously, each with the reason written in the test (`# Prompt 959 (a conscious change of this pin, was ...)`).
 

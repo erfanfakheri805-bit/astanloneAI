@@ -5,7 +5,7 @@ import java.util.Map;
 /** TEST STAND-IN for the engine's Conversation (constructed only by Engine.createConversation). */
 public final class Conversation implements AutoCloseable {
     private final ConversationConfig config;
-    private boolean closed;
+    private volatile boolean closed;
 
     Conversation(ConversationConfig config) {
         this.config = config;
@@ -51,8 +51,27 @@ public final class Conversation implements AutoCloseable {
     }
 
     public void cancelProcess() {
+        int call;
+        synchronized (StubControl.class) {
+            call = ++StubControl.cancelCalls;
+        }
         StubControl.LOG.add("cancelProcess");
-        StubControl.cancelRequested = true;
+        if (closed) {
+            StubControl.cancelAfterClose++;
+        }
+        if (call > StubControl.ignoreCancels) {
+            StubControl.cancelRequested = true;
+        }
+        if (StubControl.cancelSlowMs > 0) {
+            try {
+                Thread.sleep(StubControl.cancelSlowMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            if (closed) {
+                StubControl.closedWhileCancelling = true;
+            }
+        }
     }
 
     @Override

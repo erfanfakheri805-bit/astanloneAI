@@ -109,7 +109,10 @@ class GuideTests(unittest.TestCase):
                         "آزموده‌شده با دوبله", "آزموده نشده", "موفقیت نهایی", "هی جارویس", "به سرویس نرسیدم", "اینترنتِ برنامه", "وصل شد",
                         "نامعتبر", "اطلاعاتِ شخصی (ایمیل، تلفن، کدِ ملی) هم برود؟", "بسته", "هنوز چیزی نصب یا فعال نشده", "بررسی", "لطفاً",
                         "فهمیدنِ فارسی", "جوابِ مغز ابری به‌خاطرِ محدودیتِ طول نصفه ماند", "مدل نامعتبر", "حالت امن", "ChatGPT",
-                        "از ChatGPT بخواه", "از مغزت بخواه برایم X بسازد", "مغز ابری"}
+                        "از ChatGPT بخواه", "از مغزت بخواه برایم X بسازد", "مغز ابری",
+                        "بدنه"}         # Prompt 959 (stage B; a conscious change of this pin, was: the set ended with "مغز ابری"): «بدنه» is the NAME of the
+        #                                 piece that holds the notification and its stop button; the guide now says where the button lives ("در «بدنه» (APK
+        #                                 تازه)") and that is not a sentence to say (the body's own sentences are tested in test_docs_body_prompt959)
         checked = 0
         for phrase in quoted(self.text):
             if phrase in not_commands:

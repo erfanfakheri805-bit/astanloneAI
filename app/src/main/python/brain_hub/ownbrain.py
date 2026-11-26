@@ -108,6 +108,16 @@ class OwnBrain:
             pass
         return False, "no_runtime_for_format", ""
 
+    def _engine_api(self):
+        """The engine's real class and signature listing (only present when the engine does not match the app: see `model_runtimes_info`)."""
+        try:
+            for row in self._hub.model_runtimes_info():
+                if "litertlm" in (row.get("formats") or ()):
+                    return str(row.get("api") or "")[:1500]
+        except Exception:
+            pass
+        return ""
+
     def _online(self):
         try:
             return str(self._hub.network_status().state)
@@ -140,10 +150,13 @@ class OwnBrain:
         return partial_size(self._dir, choice.rel_dest)
 
     def facts(self):
-        """What this phone has: `{ram, free, engine_ok, engine_code, engine_reason_fa, online}` (a number that cannot be read is 0)."""
+        """What this phone has: `{ram, free, engine_ok, engine_code, engine_reason_fa, online}` (a number that cannot be read is 0); `engine_api`
+        (the engine's real classes and signatures) is added only when the engine does not match the app (`api_mismatch`)."""
         facts = ST.device_facts(self._dir, self._usage_fn, self._meminfo)
         ok, code, reason = self._engine()
         facts.update(engine_ok=ok, engine_code=code, engine_reason_fa=reason, online=self._online())
+        if code == "api_mismatch":
+            facts["engine_api"] = self._engine_api()
         return facts
 
     def plan(self):
@@ -171,15 +184,21 @@ class OwnBrain:
             self._last_save = self._mono()
         self._notify(force=True)
 
+    def set_notifier(self, notifier):
+        """Who hears about every change of the job: `notifier(status_dict)` - the body's foreground service (Prompt 959, stage B) - or None for
+        nobody. It is called from the download thread and from the chat thread, so it must be quick; an exception in it is swallowed."""
+        self._notifier = notifier if callable(notifier) else None
+
     def _notify(self, force=False):
-        if self._notifier is None:
+        notifier = self._notifier
+        if notifier is None:
             return
         now = self._mono()
         if not force and now - self._last_notify < PROGRESS_NOTIFY_SECONDS:
             return
         self._last_notify = now
         try:
-            self._notifier(self.status())
+            notifier(self.status())
         except Exception:
             pass
 
@@ -662,8 +681,22 @@ def get_ownbrain(hub, **kwargs):
         brain = getattr(hub, "_own_brain", None)
         if not isinstance(brain, OwnBrain):
             brain = OwnBrain(hub, **kwargs)
+            if kwargs.get("notifier") is None:
+                _attach_body(hub, brain)
             try:
                 hub._own_brain = brain
             except Exception:
                 return brain
         return brain
+
+
+def _attach_body(hub, brain):
+    """The default listener of a job: the hub's `Body`, which keeps the phone's foreground service for as long as the download or the install
+    runs (and does nothing at all outside the Android app: its door then answers "unavailable"). Never raises."""
+    try:
+        from .body import get_body
+        body = get_body(hub)
+        if body is not None:
+            brain.set_notifier(body.on_ownbrain)
+    except Exception:
+        pass

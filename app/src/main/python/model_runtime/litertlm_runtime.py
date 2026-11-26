@@ -150,12 +150,42 @@ class LiteRtLmRuntime(InferenceRuntime):
             return RuntimeAvailability(False, "dependency_missing",
                                        "این نسخهٔ برنامه با موتور مغز (LiteRT-LM) ساخته نشده؛ نسخه‌ای باید نصب شود که با آن ساخته شده.",
                                        "This build of the app was made without the brain engine (LiteRT-LM).", REQUIRES)
+        probed = self._probe(bridge)
+        if probed:                                            # the engine is in the APK but not shaped as this app expects: say so BEFORE a download
+            return RuntimeAvailability(False, "api_mismatch",
+                                       "موتور مغز (LiteRT-LM) داخل برنامه هست ولی شکلش با چیزی که برنامه انتظار دارد نمی‌خواند (قطعهٔ ناسازگار: %s)؛ "
+                                       "دانلودِ مغز بی‌فایده است." % probed,
+                                       "The brain engine (LiteRT-LM) is in the app but its API is not the one this app expects (missing: %s)." % probed,
+                                       REQUIRES)
         return RuntimeAvailability(True, "ok", "موتور مغز (LiteRT-LM) در برنامه هست.", "The brain engine (LiteRT-LM) is in the app.")
+
+    @staticmethod
+    def _probe(bridge) -> str:
+        """`bridge.probe()` (Prompt 959): the first piece of the engine's API that the bridge needs and the engine lacks, or '' when nothing is
+        missing - and also '' when the probe cannot be asked (a bridge without it, a call that fails): `load()` then reports the real failure."""
+        probe = getattr(bridge, "probe", None)
+        if not callable(probe):
+            return ""
+        try:
+            kind, code, detail = parse_result(probe())
+        except Exception:
+            return ""
+        if kind == "OK" or code != "api_mismatch":
+            return ""
+        return (detail or "نامشخص")[:80]
 
     def diagnostics(self) -> str:
         """The bridge's own one-line report (which engine classes exist), or '' when it cannot be asked. Never raises."""
         try:
             return str(self._bridge().describe())[:300]
+        except Exception:
+            return ""
+
+    def api_listing(self) -> str:
+        """The bridge's listing of the engine's real classes and method signatures (for the self-test report), or '' when it cannot be asked.
+        Class names and signatures only. Never raises."""
+        try:
+            return str(self._bridge().api())[:6000]
         except Exception:
             return ""
 

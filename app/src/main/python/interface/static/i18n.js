@@ -22,6 +22,7 @@
     close: "بستن",
     send: "ارسال",
     sending: "در حال ارسال…",
+    stop: "ایست",
     thinking: "در حال پردازش…",
     inputPlaceholder: "پیام خود را بنویسید…",
     inputLabel: "پیام",

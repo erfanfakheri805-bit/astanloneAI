@@ -16,6 +16,12 @@ public final class StubControl {
     public static volatile String lastModelPath = "";
     public static volatile int closedConversations;
     public static volatile int closedEngines;
+    public static volatile int ignoreCancels;              // the first N cancelProcess() calls do nothing (the engine had not started to generate yet)
+    public static volatile int cancelCalls;                // how many times cancelProcess() was called
+    public static volatile long cancelSlowMs;              // every cancelProcess() call takes this long
+    public static volatile boolean closedWhileCancelling;  // a conversation was closed while a cancelProcess() call on it was still running
+    public static volatile int cancelAfterClose;           // cancelProcess() calls that reached a conversation which was already closed
+    public static volatile Runnable duringCreate;          // runs inside Engine.createConversation (a stop that comes while the conversation is made)
 
     private StubControl() {
     }
@@ -31,5 +37,11 @@ public final class StubControl {
         lastModelPath = "";
         closedConversations = 0;
         closedEngines = 0;
+        ignoreCancels = 0;
+        cancelCalls = 0;
+        cancelSlowMs = 0;
+        closedWhileCancelling = false;
+        cancelAfterClose = 0;
+        duringCreate = null;
     }
 }

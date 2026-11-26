@@ -118,6 +118,51 @@ class AvailabilityTests(unittest.TestCase):
         report = self.runtime(FakeBridge()).availability()
         self.assertEqual((report.available, report.code), (True, "ok"))
 
+    def test_an_engine_in_the_apk_that_is_not_shaped_as_expected_is_refused_before_any_download(self):
+        bridge = FakeBridge(probe_result="ERR\napi_mismatch\nEngineConfig(String, Backend)")
+        report = self.runtime(bridge).availability()
+        self.assertEqual((report.available, report.code), (False, "api_mismatch"))
+        self.assertIn("EngineConfig(String, Backend)", report.reason_fa)
+        self.assertIn("EngineConfig(String, Backend)", report.reason_en)
+        self.assertIn("دانلودِ مغز بی‌فایده است", report.reason_fa)
+        self.assertEqual(report.requires, LR.REQUIRES)
+        self.assertEqual(bridge.probes, 1)
+
+    def test_a_probe_that_cannot_be_asked_or_says_something_else_never_blocks(self):
+        class Raising(FakeBridge):
+            def probe(self):
+                raise RuntimeError("no")
+
+        class NoProbe:                                  # an older bridge without the method
+            def isPresent(self):
+                return True
+
+        for bridge in (Raising(), NoProbe(), FakeBridge(probe_result="OK\nready"), FakeBridge(probe_result="garbage"),
+                       FakeBridge(probe_result="ERR\nnative_missing\nx"), FakeBridge(probe_result="ERR\ndependency_missing\nengine")):
+            report = self.runtime(bridge).availability()
+            self.assertEqual((report.available, report.code), (True, "ok"), type(bridge).__name__)
+
+    def test_a_missing_piece_without_a_name_is_still_reported(self):
+        report = self.runtime(FakeBridge(probe_result="ERR\napi_mismatch\n")).availability()
+        self.assertEqual((report.available, report.code), (False, "api_mismatch"))
+        self.assertIn("نامشخص", report.reason_fa)
+
+    def test_the_probe_is_not_asked_when_the_engine_is_absent_or_off_the_phone(self):
+        bridge = FakeBridge(present=False, probe_result="ERR\napi_mismatch\nx")
+        self.assertEqual(self.runtime(bridge).availability().code, "dependency_missing")
+        self.assertEqual(bridge.probes, 0)
+
+    def test_the_real_api_listing_is_passed_on_cut_and_never_raises(self):
+        self.assertEqual(self.runtime(FakeBridge(api_text="Engine: initialize();")).api_listing(), "Engine: initialize();")
+
+        class Raising(FakeBridge):
+            def api(self):
+                raise RuntimeError("no")
+
+        self.assertEqual(len(self.runtime(FakeBridge(api_text="x" * 9000)).api_listing()), 6000)
+        self.assertEqual(self.runtime(Raising()).api_listing(), "")
+        self.assertEqual(self.runtime(available=False).api_listing(), "")
+
     def test_the_bridges_own_report_is_passed_on_and_cut_and_never_raises(self):
         self.assertIn("fake bridge present=True", self.runtime(FakeBridge()).diagnostics())
 

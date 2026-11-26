@@ -258,9 +258,13 @@ def all_texts():
         for code in ("engine_missing", "ram_unknown", "ram_too_small", "not_enough_space", "offline", "already_running", "have_other",
                      "nothing_to_resume", "network_off", "network_failed", "zzz_other"):
             texts.append(BM.blocked(code, "100/200", choice, facts))
+        texts.append(BM.blocked("engine_missing", "api_mismatch", choice, dict(facts, engine_code="api_mismatch", engine_reason_fa="x (قطعهٔ ناسازگار: y)")))
+        texts.append(BM.blocked("engine_missing", "api_mismatch", choice, {}))
+        texts.append(BM.blocked("engine_missing", "api_mismatch", choice, dict(facts, engine_code="api_mismatch", engine_api="Engine: initialize();")))
     for code in ("unavailable_platform", "dependency_missing", "crashed_before", "engine_load_failed", "model_file_invalid", "smoke_test_failed",
                  "hash_mismatch", "size_mismatch", "remote_changed", "host_not_allowed", "offline", "dns_failure", "timeout", "tls_error", "interrupted",
-                 "insufficient_space", "unexpected_error", "zzz_unknown", "empty", "model_not_usable", "engine_generate_failed", "permission_denied"):
+                 "insufficient_space", "unexpected_error", "zzz_unknown", "empty", "model_not_usable", "engine_generate_failed", "permission_denied",
+                 "api_mismatch"):
         texts.append(BM.failure_text(code, "detail"))
         texts.append(BM.llm_failed(code))
     for state in _states():

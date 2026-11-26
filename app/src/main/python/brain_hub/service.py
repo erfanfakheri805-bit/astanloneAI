@@ -33,7 +33,7 @@ from .audit import FILE_NAME as AUDIT_FILE, HubAudit
 from .permissions import PermissionStore
 from .builtin_tools import ToolsMixin
 
-__all__ = ["HubService", "get_hub", "set_hub", "reset_hub", "default_root", "ROOT_DIRNAME", "EXT_DIRNAME"]
+__all__ = ["HubService", "get_hub", "set_hub", "reset_hub", "live_hubs", "default_root", "ROOT_DIRNAME", "EXT_DIRNAME"]
 
 ROOT_DIRNAME = "brain_hub"
 EXT_DIRNAME = "extensions"
@@ -471,3 +471,13 @@ def reset_hub(memory):
         hub = _HUBS.pop(memory, None)
     if hub is not None:
         hub.close()
+
+
+def live_hubs():
+    """The hubs that exist in this process right now, as a new list (Prompt 959, stage B: the notification's emergency stop reaches Python
+    without a chat behind it, so it has to find the hubs itself). Never raises; nothing is created."""
+    try:
+        with _HUBS_LOCK:
+            return list(_HUBS.values())
+    except Exception:
+        return []

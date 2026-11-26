@@ -134,6 +134,13 @@ def setup_failed():
 # ================================================================== a request that cannot start (said BEFORE anything is downloaded)
 def blocked(code, detail="", choice=None, facts=None):
     facts = facts or {}
+    if code == "engine_missing" and (detail == "api_mismatch" or facts.get("engine_code") == "api_mismatch"):
+        # the engine IS in the APK but is not shaped as the app expects (found by `LiteRtLmBridge.probe()` before anything is downloaded)
+        reason = facts.get("engine_reason_fa") or "موتورِ مغز داخلِ برنامه هست ولی با شکلی که برنامه از آن انتظار دارد نمی‌خواند."
+        api = str(facts.get("engine_api") or "").strip()
+        text = ("%s این ایرادِ برنامه است، نه گوشی یا اینترنتِ تو. چیزی دانلود نکردم؛ همین پیام را%s برای سازندهٔ برنامه بفرست "
+                "تا با این موتور هماهنگش کند. (نکتهٔ فنی: api_mismatch)" % (reason, " (همراهِ فهرستِ فنیِ زیر)" if api else ""))
+        return text + ("\n\nفهرستِ فنیِ موتور (فقط نامِ کلاس‌ها و متدها):\n" + api[:1500]) if api else text
     if code == "engine_missing":
         return ("این نسخهٔ برنامه موتورِ اجرای مغزِ زبانی را ندارد (کتابخانهٔ LiteRT-LM داخلش نیست)، پس دانلودش بی‌فایده است و چیزی دانلود نکردم. "
                 "باید نسخه‌ای نصب شود که با موتور ساخته شده باشد؛ بعد از آن دوباره بگو «%s». (نکتهٔ فنی: %s)" % (START, detail or facts.get("engine_code") or "نامشخص"))
@@ -215,6 +222,10 @@ def failure_text(code, detail="", *, next_step=True):
     if code == "crashed_before":
         return ("دفعهٔ قبل هنگام بارگذاریِ مغز برنامه از کار افتاد. برای اینکه گوشی در چرخه نیفتد خودم دوباره امتحان نمی‌کنم. اگر می‌خواهی یک بار دیگر "
                 "امتحان کنم بگو «%s»؛ اگر باز هم از کار افتاد یعنی این مغز با این گوشی نمی‌سازد: «%s» و بعد نسخهٔ سبک را بگیر." % (RETRY, DELETE))
+    if code == "api_mismatch":
+        return ("فایل سالم است و نگه داشته شد، ولی موتورِ داخلِ برنامه با شکلی که انتظار می‌رفت نمی‌خواند؛ این ایرادِ برنامه است، نه گوشی‌ات. "
+                "همین پیام را برای سازندهٔ برنامه بفرست تا هماهنگش کند؛ بعد از نصبِ نسخهٔ درست «%s» را بگو (دانلودِ دوباره لازم نیست). "
+                "(نکتهٔ فنی: api_mismatch%s)" % (RETRY, (" — " + str(detail)[:80]) if detail else ""))
     if code in ("engine_load_failed", "model_file_invalid", "model_file_unreadable", "not_loaded") or code.startswith("engine_"):
         return ("فایل سالم است ولی موتور نتوانست مغز را بارگذاری کند (%s). اغلب حافظهٔ رم کم آمده؛ برنامه‌های دیگر را ببند و «%s» را بگو." % (code, RETRY))
     if code in ("smoke_test_failed", "smoke_failed") or str(detail) == "smoke":
@@ -365,6 +376,8 @@ def llm_failed(code):
         return "این نسخهٔ برنامه موتورِ اجرای مغز را ندارد؛ «%s» را بگو." % STATUS
     if code == "empty":
         return "مغزِ خودم این بار جوابی نساخت؛ یک‌بار دیگر و کمی روشن‌تر بپرس."
+    if code == "cancelled":                                                     # Prompt 959 (stage B): the user's «ایست» (or the notification's button) cut the answer
+        return "جوابِ مغزِ خودم را همان‌طور که خواستی متوقف کردم (ایست)؛ چیزی تغییر نکرد. هر وقت خواستی دوباره بپرس."
     if code == "model_not_usable":
         return "مغزِ خودم الان قابل استفاده نیست؛ «%s» را بگو تا علتش را ببینی." % STATUS
     return "مغزِ خودم این بار نتوانست جواب بدهد (%s). چیزی تغییر نکرد؛ دوباره امتحان کن، و اگر تکرار شد «%s» را بگو." % (code or "نامشخص", STATUS)

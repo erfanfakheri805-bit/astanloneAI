@@ -35,6 +35,10 @@ public final class Engine implements AutoCloseable {
         if (!initialized) {
             throw new IllegalStateException("Engine is not initialized.");
         }
+        Runnable hook = StubControl.duringCreate;
+        if (hook != null) {
+            hook.run();
+        }
         if (StubControl.failCreateWithThinking && conversationConfig.thinkingConfig != null) {
             throw new IllegalArgumentException("stand-in: thinking is not supported by this model");
         }

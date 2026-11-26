@@ -13,6 +13,7 @@
   var formEl = document.getElementById("input-form");
   var inputEl = document.getElementById("input-box");
   var sendBtn = document.getElementById("send-btn");
+  var stopBtn = document.getElementById("stop-btn");
   var hintsEl = document.getElementById("hints");
   var attachBtn = document.getElementById("attach-btn");
   var attachInput = document.getElementById("attach-input");
@@ -28,6 +29,7 @@
   var closeBtn = document.getElementById("info-close");
 
   var busy = false;
+  var stopping = false; // the emergency word of this answer has been sent (once is enough)
   var typingEl = null;
   var MAX_INPUT_PX = 140; // ~5 lines; the textarea scrolls beyond this.
   var MAX_ATTACH_BYTES = 200000; // the same ceiling the assistant applies to one extension package.
@@ -86,6 +88,11 @@
     modelBtn.disabled = value;
     sendBtn.textContent = value ? S.sending : S.send;
     formEl.setAttribute("aria-busy", value ? "true" : "false");
+    stopping = false;
+    if (stopBtn) {
+      stopBtn.hidden = !value;
+      stopBtn.disabled = false;
+    }
   }
 
   function setOnline(online) {
@@ -235,6 +242,30 @@
         flushQueued();
       });
   }
+
+  // Prompt 959 (stage B, the body): the emergency word must not wait behind the answer it is meant to stop. While an answer is being made
+  // the stop button takes the place of the send button and sends «ایست» on a request of its own (the first request stays open until its
+  // answer comes back or is cut short). The reply to it says what was really stopped; nothing is decided here.
+  function requestStop() {
+    if (!busy || stopping) return;
+    stopping = true;
+    stopBtn.disabled = true;
+    fetch("/api/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: S.stop })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && typeof data.reply === "string") addMessage("assistant", T.localizeReply(data.reply), false);
+      })
+      .catch(function () {
+        stopping = false; // the request itself failed: the user may press again
+        if (busy) stopBtn.disabled = false;
+      });
+  }
+
+  if (stopBtn) stopBtn.addEventListener("click", requestStop);
 
   // A failed send must never lose what the user typed.
   function restoreDraft(text) {

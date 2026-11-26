@@ -7,4 +7,10 @@
     <string name="voice_unavailable">تشخیص گفتار در این گوشی در دسترس نیست (برنامهٔ گوگل یا سرویس گفتار لازم است).</string>
     <string name="accessibility_service_label">دستیار هوشمند (کار با صفحهٔ برنامه‌ها)</string>
     <string name="accessibility_service_description">فقط وقتی خودت در چت اجازه بدهی، دستیار می‌تواند در همان برنامه‌ای که انتخاب کرده‌ای متنِ صفحه را بخواند، در آن تایپ کند و دکمه‌ای را بزند؛ آن هم برای مدتی کوتاه. رمزها خوانده نمی‌شوند و تنظیماتِ اندروید، نصبِ برنامه، مجوزها و فروشگاه هرگز لمس نمی‌شوند. هر وقت خواستی همین‌جا خاموشش کن.</string>
+    <string name="body_channel_name">کارهای پس‌زمینهٔ دستیار</string>
+    <string name="body_channel_description">اعلانی که تا وقتی دستیار کاری طولانی انجام می‌دهد (مثلاً گرفتنِ مغزِ خودش) می‌ماند، پیشرفت را نشان می‌دهد و دکمهٔ «ایست» دارد.</string>
+    <string name="body_default_title">دستیار در حال کار است</string>
+    <string name="body_stop">ایست</string>
+    <string name="body_stopping">در حال توقف…</string>
+    <string name="body_stop_failed">ایست انجام نشد؛ برنامه را باز کن و «ایست» را بنویس.</string>
 </resources>

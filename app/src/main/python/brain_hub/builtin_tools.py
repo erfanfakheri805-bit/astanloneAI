@@ -313,10 +313,17 @@ class ToolsMixin:
             runtimes = self._model_runtimes if self._model_runtimes is not None else default_runtimes()
             for runtime in runtimes:
                 avail = runtime.availability()
-                out.append({"name": runtime.name, "formats": list(runtime.formats), "available": bool(avail.available),
-                            "code": str(avail.code)[:60], "reason_fa": str(avail.reason_fa)[:200],
-                            "reason_en": str(avail.reason_en)[:200], "requires": list(avail.requires)[:5],
-                            "description_fa": runtime.description_fa, "description_en": runtime.description_en})
+                row = {"name": runtime.name, "formats": list(runtime.formats), "available": bool(avail.available),
+                       "code": str(avail.code)[:60], "reason_fa": str(avail.reason_fa)[:200],
+                       "reason_en": str(avail.reason_en)[:200], "requires": list(avail.requires)[:5],
+                       "description_fa": runtime.description_fa, "description_en": runtime.description_en}
+                if str(avail.code) == "api_mismatch":
+                    # Prompt 959: an engine that is in the APK but not shaped as the app expects - its REAL public classes and signatures
+                    # (class names only) are attached so that the mismatch can be read off the user's copy of the refusal. Never for any other code.
+                    lister = getattr(runtime, "api_listing", None)
+                    if callable(lister):
+                        row["api"] = str(lister())[:1500]
+                out.append(row)
         except Exception:
             return []
         return out

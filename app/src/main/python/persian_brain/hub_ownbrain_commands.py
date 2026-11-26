@@ -159,11 +159,14 @@ def _self_provision(toks, tset):
 def _bare(toks, tset):
     """The short phrases that have no noun; the caller acts on them only while the own brain has something they could mean."""
     if tset & _DOWNLOAD:
-        if (tset & _STOP or lx.any_phrase(toks, _STOP_PHRASES)) and not tset & _RESUME:
+        # Prompt 959 (stage B, found while writing the body): «چرا دانلود قطع می‌شود؟» asks WHY a download dies - it is not the order «دانلود را قطع کن».
+        # A why-question never stops or continues anything; at most it shows how the download stands.
+        why = "چرا" in tset
+        if not why and (tset & _STOP or lx.any_phrase(toks, _STOP_PHRASES)) and not tset & _RESUME:
             return OwnBrainCommand(PAUSE, {"bare": True})
-        if tset & _RESUME or lx.any_phrase(toks, _RESUME_PHRASES):
+        if not why and (tset & _RESUME or lx.any_phrase(toks, _RESUME_PHRASES)):
             return OwnBrainCommand(RESUME, {"bare": True})
-        if tset & _STATUS or lx.any_phrase(toks, _STATUS_PHRASES):
+        if why or tset & _STATUS or lx.any_phrase(toks, _STATUS_PHRASES):
             return OwnBrainCommand(STATUS, {"bare": True})
     if len(toks) <= 5 and (tset & _AGAIN or lx.any_phrase(toks, _AGAIN_PHRASES)) and tset & lx.word_set("امتحان تلاش") and tset <= _BARE_AGAIN_OK:
         return OwnBrainCommand(RETRY, {"bare": True})
@@ -199,7 +202,8 @@ def classify(text, norm, toks):
     resume = bool(tset & _RESUME) or lx.any_phrase(toks, _RESUME_PHRASES)
     stop = bool(tset & _STOP) or (lx.any_phrase(toks, _STOP_PHRASES) and bool(tset & _DOWNLOAD))
     if stop and not resume:
-        return OwnBrainCommand(PAUSE)
+        # «چرا دانلود مغز متوقف شد؟» is a question (what happened), never the order to stop: it shows the status with its reason
+        return OwnBrainCommand(STATUS if "چرا" in tset else PAUSE)
     if resume:
         return OwnBrainCommand(RESUME)
     again = bool(tset & _AGAIN) or lx.any_phrase(toks, _AGAIN_PHRASES)

@@ -114,7 +114,8 @@ OTHER_COMMANDS = {                     # phrase -> how the rest of the app under
     "اینترنت را خاموش کن": HI.NET_OFF, "اینترنت را روشن کن": HI.NET_ON, "ایست": "halt", "ادامه": "resume", "چرا؟": "clarify",
     "سبک": "light", "قوی": "strong", "بله": "confirm", "نه": "deny",
 }
-LABELS = {"مغزِ خودکار", "مغز", "آزموده‌شده با دوبله", "آزموده نشده", "موفقیت نهایی", "آماده", "موتور", "نگهبانِ کرش", "اینترنتِ برنامه",
+# Prompt 959 (stage B; a conscious change of this pin): «بدنه» is the name of the next piece (the guide points at its own guide) - a name, nothing to type.
+LABELS = {"بدنه", "مغزِ خودکار", "مغز", "آزموده‌شده با دوبله", "آزموده نشده", "موفقیت نهایی", "آماده", "موتور", "نگهبانِ کرش", "اینترنتِ برنامه",
           "زبانِ هوش مصنوعیِ خودش", "مترجمِ جداگانه", "رایگان + بی‌کلید + مخصوصِ خودت"}          # words and names, nothing to type
 APP_SAYS = {"آماده است ✅", "دارم مغز را نصب و برای بار اول آزمایش می‌کنم", "این مرحله را نمی‌شود وسطش قطع کرد"}   # the app's own sentences
 NOT_COMMANDS = {"مغزِ انسان چطور کار می‌کند؟", "مغز ابری", "کلید", "API"}                      # named as what the own brain leaves alone
@@ -213,8 +214,10 @@ class GuideNumbersTests(unittest.TestCase):
             self.assertTrue(any(label in status for label in ("آزموده‌شده با دوبله", "آزموده نشده", "هنوز نیست")), row)
 
     def test_the_guide_says_what_was_not_tested(self):
+        # Prompt 959 (stage B; a conscious change of this pin, was "«ایست» هنوز جوابِ در حالِ ساخته‌شدن را قطع نمی‌کند"): the body made «ایست» ask the engine to drop a
+        # running answer, so the old sentence would now be false; the guide must say what is true - it is only a REQUEST, and never tried with the real engine.
         for needle in ("آزموده نشده", "فیلترشکن", "هنوز هیچ‌وقت اجرا نشده", "اثرانگشتِ مغزِ قوی در این نشست دوباره تطبیق داده نشد",
-                       "فرقِ Wi-Fi و اینترنتِ همراه را برنامه نمی‌داند", "«ایست» هنوز جوابِ در حالِ ساخته‌شدن را قطع نمی‌کند"):
+                       "فرقِ Wi-Fi و اینترنتِ همراه را برنامه نمی‌داند", "جوابِ در حالِ ساخته‌شدن را فقط **درخواست** می‌کند که رها شود"):
             self.assertIn(needle, self.text)
         self.assertIn("موفقیت نهایی", self.text)
 
@@ -226,6 +229,8 @@ class GuideMessagesTests(unittest.TestCase):
         light = catalog.LIGHT_CHOICE
         return (
             ("موتورِ مغز در این نسخه نیست", BM.blocked("engine_missing", "x", light), ("موتورِ اجرای مغزِ زبانی", "چیزی دانلود نکردم")),
+            ("موتورِ مغز هست ولی با شکلی که برنامه انتظار دارد نمی‌خواند",
+             BM.blocked("engine_missing", "api_mismatch", light, {"engine_code": "api_mismatch"}), ("با شکلی که برنامه از آن انتظار دارد نمی‌خواند", "چیزی دانلود نکردم")),
             ("حافظهٔ رمِ گوشی کمتر از حداقل است", BM.blocked("ram_too_small", "2000000000/3000000000", light), ("از حداقلِ لازم", "کمتر است")),
             ("نتوانستم اندازهٔ حافظه را بخوانم", BM.blocked("ram_unknown"), ("نتوانستم اندازهٔ حافظهٔ گوشی را بخوانم", "حدس نمی‌زنم")),
             ("جای آزاد کافی نیست", BM.blocked("not_enough_space", "1000000000/2000000000", light, {}), ("کافی نیست", "جا باز کن")),
@@ -359,19 +364,36 @@ class TechnicalDocumentTests(unittest.TestCase):
             self.assertIn(needle, workflow, needle)
         for needle in ("`with_litertlm`", "`continue-on-error`", "`litertlm-build-log`", "`-PwithLlm=true`", "`LITERTLM_VERSION`", "`-PwithLiteRtLm=true`"):
             self.assertIn(needle, self.text, needle)
-        self.assertIn("com.google.ai.edge.litertlm:litertlm-android:latest.release", gradle)
-        self.assertIn("`com.google.ai.edge.litertlm:litertlm-android:latest.release`", self.text)
+        self.assertIn("com.google.ai.edge.litertlm:litertlm-android:0.19.1", gradle)
+        self.assertEqual(re.findall(r"litertlm-android:([^'\"]+)'", gradle), ["0.19.1"])        # pinned (stage B): every build is the same build
+        self.assertIn("`com.google.ai.edge.litertlm:litertlm-android:0.19.1`", self.text)
         rules = ("'**/libc++_shared.so'", "'**/libLiteRt*.so'", "'**/liblitert*.so'")
         self.assertTrue(all(rule in gradle for rule in rules))
         self.assertIn("three `pickFirst` packaging rules", self.text)
+        # Prompt 959 (stage B): the engine variant is built for Android 8.0+ (minSdk 26), found in the first real build log; and it has a pre-download probe
+        self.assertIn("minSdk 26", gradle)
+        # Prompt 959 (stage B): the stable debug key (cache) - what the workflow does is what both documents say
+        for needle in ("uses: actions/cache@v4", "path: ~/.android/debug.keystore", "key: debug-keystore-v1", "KEY_NOTE=Signing key: the SAVED debug key",
+                       "KEY_NOTE=Signing key: a NEW debug key"):
+            self.assertIn(needle, workflow, needle)
+        for needle in ("`actions/cache@v4`", "`~/.android/debug.keystore`", "`debug-keystore-v1`", "`Signing key: the SAVED debug key`", "`a NEW debug key`"):
+            self.assertIn(needle, self.text + read(GUIDE), needle)
+        self.assertIn("`Signing key: the SAVED debug key`", read(GUIDE))
+        self.assertIn("**raises `minSdk` from 24 to 26**", self.text)
+        self.assertIn("Invoke-customs are only supported starting with Android O (--min-api 26)", self.text)
+        for needle in ("`LiteRtLmBridge.probe()`", "`LiteRtLmBridge.api()`", "`api_mismatch`"):
+            self.assertIn(needle, self.text, needle)
         self.assertIn('versionCode 2', gradle)
         self.assertIn('versionName "0.2.0"', gradle)
 
-    def test_the_java_layer_is_the_three_thin_files_the_document_says(self):
+    def test_the_java_layer_is_the_five_thin_files_the_document_says(self):
+        # Prompt 959 (stage B; a conscious change of this pin, was "the three thin files"): the body added BodyService.java (the foreground service of
+        # long jobs) and StopReceiver.java (its notification's stop button), both explained in docs/body_prompt959.md. This document still describes
+        # the own-brain piece, in which the layer had three files, and now says so.
         names = sorted(n for n in os.listdir(JAVA_DIR) if n.endswith(".java"))
-        self.assertEqual(names, ["LiteRtLmBridge.java", "MainActivity.java", "PyAccessibilityService.java"])
-        self.assertIn("the Java layer is now three thin files", self.text)
-        self.assertIn("the Java layer stays thin (three files)", self.text)
+        self.assertEqual(names, ["BodyService.java", "LiteRtLmBridge.java", "MainActivity.java", "PyAccessibilityService.java", "StopReceiver.java"])
+        self.assertIn("the Java layer was three thin files here; stage B, the body, made it five", self.text)
+        self.assertIn("the Java layer stays thin (three files in this piece; five after the body, stage B)", self.text)
 
     def test_the_seven_pinned_files_are_named_as_unchanged(self):
         for name in ("android_entry.py", "core/core.py", "ael/interpreter.py", "runtime_integration/bridge.py", "interface/server.py",
@@ -389,8 +411,10 @@ class TechnicalDocumentTests(unittest.TestCase):
         self.assertEqual(sorted(mine - named), [], "a test of this stage is not in the table of the technical document")
 
     def test_the_document_states_its_honest_limits(self):
+        # Prompt 959 (stage B; a conscious change of this pin, was "does not yet cancel a running answer"): the body made «ایست» ask the engine to drop a running
+        # answer (a request, only tried against a stand-in engine), so the document says that instead.
         for needle in ("Nothing ran on a phone.", "could not be re-verified", "Hugging Face may need a VPN in Iran", "only progresses while the app is open",
-                       "cannot be interrupted", "does not yet cancel a running answer", "Storage: 1-2.6 GB"):
+                       "cannot be interrupted", "asks the engine to drop a running answer", "Storage: 1-2.6 GB"):
             self.assertIn(needle, self.text)
 
 

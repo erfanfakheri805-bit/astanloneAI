@@ -107,7 +107,9 @@ class JavaPythonContractTests(unittest.TestCase):
     def test_native_features_are_exactly_the_implemented_ones(self):
         features = self.features()
         self.assertEqual(len(features), len(set(features)))
-        self.assertEqual(set(features), {"file_chooser", "permission_request", "voice_input", "accessibility", "share_target", "file_pick"})
+        # Prompt 959 (stage B; a conscious change of this pin, was the six features of Prompt 958): body_service - BodyService, the foreground service
+        # of long jobs with the notification's stop button (see tests/test_body_service_prompt959.py).
+        self.assertEqual(set(features), {"file_chooser", "permission_request", "voice_input", "accessibility", "share_target", "file_pick", "body_service"})
         # every name Python asks for is there ...
         for needed in (doors.VoiceDoor.FEATURE, screen.FEATURE, catalog.NATIVE_FILE_CHOOSER, catalog.NATIVE_PERMISSION_REQUEST):
             self.assertIn(needed, features)
@@ -115,7 +117,8 @@ class JavaPythonContractTests(unittest.TestCase):
         manifest = read(_MAIN, "AndroidManifest.xml")
         evidence = {"file_chooser": ("onShowFileChooser", self.main), "permission_request": ("requestPermissions", self.main),
                     "voice_input": ("ACTION_RECOGNIZE_SPEECH", self.main), "file_pick": ("ACTION_OPEN_DOCUMENT", self.main),
-                    "share_target": ("android.intent.action.SEND", manifest), "accessibility": ("BIND_ACCESSIBILITY_SERVICE", manifest)}
+                    "share_target": ("android.intent.action.SEND", manifest), "accessibility": ("BIND_ACCESSIBILITY_SERVICE", manifest),
+                    "body_service": ("FOREGROUND_SERVICE_TYPE_DATA_SYNC", java("BodyService.java"))}
         for feature, (needle, text) in evidence.items():
             self.assertIn(needle, text, feature)
 
@@ -279,13 +282,20 @@ class ManifestTests(unittest.TestCase):
         self.tree = ET.parse(os.path.join(_MAIN, "AndroidManifest.xml")).getroot()
         self.app = self.tree.find("application")
 
-    def test_permissions_are_exactly_internet_and_notifications(self):
+    def test_permissions_are_exactly_the_five_the_design_lists(self):
+        # Prompt 959 (stage B; a conscious change of this pin, was "exactly internet and notifications", with READ_SMS and FOREGROUND_SERVICE on the
+        # never-list): the body adds FOREGROUND_SERVICE + FOREGROUND_SERVICE_DATA_SYNC (a long download keeps a notification and stays alive) and READ_SMS
+        # (the newest one-time code, only when the user asks in the chat). The never-list keeps everything else - and the other foreground-service
+        # TYPES (location, microphone, camera, screen capture ...) and the ways of RECEIVING or SENDING messages.
         perms = [el.get(ANDROID + "name") for el in self.tree.findall("uses-permission")]
-        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS"])
+        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS", "android.permission.FOREGROUND_SERVICE",
+                                 "android.permission.FOREGROUND_SERVICE_DATA_SYNC", "android.permission.READ_SMS"])
         text = read(_MAIN, "AndroidManifest.xml")
         for never in ("RECORD_AUDIO", "CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "MANAGE_EXTERNAL_STORAGE", "SYSTEM_ALERT_WINDOW",
-                      "REQUEST_INSTALL_PACKAGES", "READ_SMS", "SEND_SMS", "CALL_PHONE", "ANSWER_PHONE_CALLS", "READ_CONTACTS", "ACCESS_FINE_LOCATION",
-                      "FOREGROUND_SERVICE", "RECEIVE_BOOT_COMPLETED", "QUERY_ALL_PACKAGES", "BIND_DEVICE_ADMIN", "WRITE_SETTINGS"):
+                      "REQUEST_INSTALL_PACKAGES", "RECEIVE_SMS", "SEND_SMS", "READ_PHONE_STATE", "CALL_PHONE", "ANSWER_PHONE_CALLS", "READ_CONTACTS",
+                      "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE_LOCATION", "FOREGROUND_SERVICE_MICROPHONE", "FOREGROUND_SERVICE_CAMERA",
+                      "FOREGROUND_SERVICE_MEDIA_PROJECTION", "FOREGROUND_SERVICE_SPECIAL_USE", "RECEIVE_BOOT_COMPLETED", "QUERY_ALL_PACKAGES",
+                      "BIND_DEVICE_ADMIN", "WRITE_SETTINGS", "SCHEDULE_EXACT_ALARM", "USE_FULL_SCREEN_INTENT"):
             self.assertNotIn(never, text, never)
 
     def test_the_visible_apps_are_exactly_the_assistants_the_teacher_knows(self):
@@ -313,16 +323,20 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual([(d.get(ANDROID + "mimeType"), d.attrib.keys() - {ANDROID + "mimeType"}) for d in send.findall("data")], [("text/plain", set())])
 
     def test_the_accessibility_service_is_declared_the_way_android_requires(self):
-        services = self.app.findall("service")
-        self.assertEqual(len(services), 1)
-        service = services[0]
+        # Prompt 959 (stage B; a conscious change of this pin, was "exactly one service"): the body's foreground service is the second one (not exported;
+        # tests/test_body_service_prompt959.py checks it), and its notification button's receiver is the only receiver.
+        services = {el.get(ANDROID + "name"): el for el in self.app.findall("service")}
+        self.assertEqual(set(services), {".PyAccessibilityService", ".BodyService"})
+        self.assertEqual(len(self.app.findall("service")), 2)
+        service = services[".PyAccessibilityService"]
         self.assertEqual(service.get(ANDROID + "name"), ".PyAccessibilityService")
         self.assertEqual(service.get(ANDROID + "permission"), "android.permission.BIND_ACCESSIBILITY_SERVICE")
         self.assertEqual([a.get(ANDROID + "name") for a in service.find("intent-filter").findall("action")], ["android.accessibilityservice.AccessibilityService"])
         meta = service.find("meta-data")
         self.assertEqual((meta.get(ANDROID + "name"), meta.get(ANDROID + "resource")), ("android.accessibilityservice", "@xml/accessibility_service_config"))
         self.assertTrue(os.path.isfile(os.path.join(_MAIN, "res", "xml", "accessibility_service_config.xml")))
-        self.assertEqual(self.app.findall("receiver") + self.app.findall("provider"), [])      # nothing else is exposed
+        self.assertEqual([el.get(ANDROID + "name") for el in self.app.findall("receiver")], [".StopReceiver"])
+        self.assertEqual(self.app.findall("provider"), [])                                        # nothing else is exposed
 
     def test_the_accessibility_config_asks_for_no_more_than_reading_and_acting(self):
         config = ET.parse(os.path.join(_MAIN, "res", "xml", "accessibility_service_config.xml")).getroot()
@@ -373,14 +387,34 @@ class GradleAndWorkflowTests(unittest.TestCase):
         # Prompt 959 (a conscious change of this pin, was "exactly one pickFirsts"): the phone's own brain engine (LiteRT-LM) has its own
         # `withLiteRtLm` condition with its own packaging block (its native files may collide with the C++ runtime and the LiteRT runtime
         # that other libraries ship); each engine's block sits inside its own condition, so an ordinary build has no packaging rule at all.
-        self.assertEqual(len(re.findall(r"pickFirsts\.add", gradle)), 4)
+        # Prompt 959 (stage B; a conscious change of this pin, was 4): the LiteRT-LM packaging block also keeps the first copy of the licence and
+        # notice files its libraries ship (one `resources { pickFirsts.addAll([...]) }` call), so 5 calls in all - three of them for native files.
+        self.assertEqual(len(re.findall(r"pickFirsts\.add", gradle)), 5)
         self.assertEqual(len(re.findall(r"\bpackaging \{", gradle)), 2)
         self.assertRegex(gradle, r"if \(project\.findProperty\('withLlm'\) == 'true'\) \{\s*packaging \{")
         self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*packaging \{")
-        self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*implementation 'com\.google\.ai\.edge\.litertlm:litertlm-android:latest\.release'\s*\}")
+        # Prompt 959 (stage B; a conscious change of this pin, was "litertlm-android:latest.release"): the engine's version is pinned to 0.19.1 (the one
+        # the first real build resolved from latest.release), so that every build is the same build; see tests/test_android_packaging_boundary_prompt815.py.
+        self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*implementation 'com\.google\.ai\.edge\.litertlm:litertlm-android:0\.19\.1'\s*\}")
         # ... and the AAR-metadata check is switched off only in that variant
         self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*tasks\.configureEach \{ task ->\s*if \(task\.name\.startsWith\('check'\) && task\.name\.endsWith\('AarMetadata'\)\) \{\s*task\.enabled = false")
         self.assertEqual(gradle.count("task.enabled = false"), 1)
+
+    def test_only_the_engine_variant_is_built_for_android_8(self):
+        # Prompt 959 (stage B): the first real LiteRT-LM build log said "Invoke-customs are only supported starting with Android O (--min-api 26)"
+        # (litertlm-android 0.19.1), so the engine variant - and only that one - is built with minSdk 26. The literal `minSdk 24` stays the default
+        # (the plain and the MediaPipe builds, and the pin in test_android_packaging_boundary), the later assignment wins.
+        gradle = self.no_comments(self.gradle)
+        self.assertEqual(len(re.findall(r"\bminSdk\s+\d+", gradle)), 2)
+        self.assertEqual(gradle.count("minSdk 24"), 1)
+        self.assertEqual(gradle.count("minSdk 26"), 1)
+        self.assertRegex(gradle, r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*defaultConfig \{\s*minSdk 26\s*\}\s*\}")
+        self.assertLess(gradle.index("minSdk 24"), gradle.index("minSdk 26"), "the engine variant's value must come LAST so that it wins")
+        self.assertRegex(gradle, r"resources \{\s*pickFirsts\.addAll\(\['META-INF/LICENSE\*', 'META-INF/NOTICE\*', 'META-INF/DEPENDENCIES', 'META-INF/INDEX\.LIST'\]\)\s*\}")
+        # the resource rule sits inside the engine variant's packaging block, never in the unconditional part
+        engine_block = re.search(r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*packaging \{.*?\n    \}\n", gradle, re.S).group(0)
+        self.assertIn("resources {", engine_block)
+        self.assertEqual(gradle.count("resources {"), 1)
 
     def test_the_identity_and_the_abi_are_unchanged(self):
         self.assertIn('applicationId "com.erfan.standaloneai"', self.gradle)
@@ -413,6 +447,7 @@ class GradleAndWorkflowTests(unittest.TestCase):
         self.assertIn("INCLUDED.", text)
         self.assertIn("NOT included", text)
         self.assertIn("$ENGINE_NOTE", text)
+        self.assertIn("This build needs Android 8.0 or newer.", text)             # Prompt 959: the engine variant is built for minSdk 26
         self.assertEqual(text.count("shell: bash\n        run: gradle --no-daemon :app:assembleDebug -P"), 2)   # `shell: bash` = pipefail: a failed gradle fails the step
 
     def test_the_workflow_keeps_every_earlier_rule(self):
@@ -421,7 +456,34 @@ class GradleAndWorkflowTests(unittest.TestCase):
         self.assertIn("needs: python-regression", text)
         for bad in ("secrets.", "assembleRelease"):
             self.assertNotIn(bad, text)
-        self.assertNotIn("keystore", text.lower())
+        # Prompt 959 (stage B; a conscious change of this pin, was "the word keystore appears nowhere"): the debug workflow now keeps GRADLE'S OWN
+        # DEBUG key in the Actions cache - the one file `~/.android/debug.keystore` that Android's tools create for debug builds - so that a new debug
+        # APK installs OVER the old one. That key is not a signing secret (no secret is read: `secrets.` stays forbidden above) and the word may
+        # appear only as that one path (and in the notes that name it); a release key, a password or a keystore file in the repo still may not.
+        rest = text.lower().replace("~/.android/debug.keystore", "").replace("$home/.android/debug.keystore", "").replace("debug-keystore-v1", "")
+        self.assertNotIn("keystore", rest)
+        for bad in ("storepassword", "keypassword", "keyalias", "base64 -d", "signingconfigs"):
+            self.assertNotIn(bad, text.lower())
+
+    def test_the_debug_signing_key_is_restored_before_the_first_build_and_saved_by_the_cache_only(self):
+        # Prompt 959 (stage B): without a stable key every new debug APK is refused over the old one ("App not installed") and the user has to
+        # uninstall - which deletes his chats and the downloaded brain. The cache restore comes BEFORE the first rung; the cache action saves the
+        # file at the end of a successful job (nothing of ours writes it); the release notes say which case this build is.
+        text = self.no_comments(self.workflow, "#")
+        step = text.index("      - name: Restore the debug signing key")
+        self.assertLess(step, text.index("-PwithLiteRtLm=true"))
+        block = text[step:text.index("\n      - ", step + 10)]
+        for needle in ("id: debug_key", "uses: actions/cache@v4", "path: ~/.android/debug.keystore", "key: debug-keystore-v1"):
+            self.assertIn(needle, block, needle)
+        self.assertEqual(text.count("actions/cache@"), 1)
+        self.assertNotIn("restore-keys", text, "a key that merely looks similar must never be restored")
+        self.assertIn("${{ steps.debug_key.outputs.cache-hit }}", text)
+        for needle in ("KEY_NOTE=Signing key: the SAVED debug key", "KEY_NOTE=Signing key: a NEW debug key (uninstall the previous app first",
+                       "that could NOT be saved", "$ENGINE_NOTE $KEY_NOTE"):
+            self.assertIn(needle, text, needle)
+        self.assertEqual(text.count("$HOME/.android/debug.keystore"), 1, "only the check that the key exists after the build reads it")
+        self.assertNotIn(".keystore >", text)
+        self.assertNotIn("> ~/.android", text)
 
 
 if __name__ == "__main__":

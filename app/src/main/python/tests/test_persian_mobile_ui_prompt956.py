@@ -260,11 +260,15 @@ class PortraitConfigTests(unittest.TestCase):
         self.assertIn("android.intent.category.LAUNCHER", self.manifest)
         self.assertIn('android:exported="true"', self.manifest)
 
-    def test_permissions_unchanged_except_notifications(self):
+    def test_permissions_unchanged_except_the_ones_later_stages_added(self):
         # Prompt 958 (a conscious change of this pin): POST_NOTIFICATIONS was added (Android 13+ needs the declaration before the
-        # user can be asked); every other permission is still absent.
+        # user can be asked); every other permission was still absent.
+        # Prompt 959 (stage B; a conscious change of this pin, was "INTERNET and POST_NOTIFICATIONS only"): the body added FOREGROUND_SERVICE,
+        # FOREGROUND_SERVICE_DATA_SYNC (the foreground service of long jobs) and READ_SMS (the newest one-time code, only on the user's word in the
+        # chat); the full reasoning and the never-list are in tests/test_android_files_prompt958.py. Everything else is still absent.
         perms = re.findall(r'<uses-permission android:name="([^"]+)"', self.manifest)
-        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS"])
+        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS", "android.permission.FOREGROUND_SERVICE",
+                                 "android.permission.FOREGROUND_SERVICE_DATA_SYNC", "android.permission.READ_SMS"])
         self.assertIn('android:usesCleartextTraffic="true"', self.manifest)
 
     def test_android_entry_not_modified(self):
@@ -283,10 +287,12 @@ class PortraitConfigTests(unittest.TestCase):
         # `withLlm` condition (see tests/test_android_files_prompt958.py).
         # Prompt 959 (a conscious change of this pin, was "appcompat + the MediaPipe engine"): the phone's own brain engine (Google's
         # LiteRT-LM), declared only inside the `withLiteRtLm` condition in the same way.
+        # Prompt 959 (stage B; a conscious change of this pin, was "litertlm-android:latest.release"): the engine's version is pinned to 0.19.1
+        # (see tests/test_android_packaging_boundary_prompt815.py).
         gradle = read(PROJECT_ROOT, "app", "build.gradle")
         deps = re.findall(r"^\s*(?:implementation|api|compileOnly|runtimeOnly)\s+['\"]([^'\"]+)", gradle, re.M)
         self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27",
-                                "com.google.ai.edge.litertlm:litertlm-android:latest.release"])
+                                "com.google.ai.edge.litertlm:litertlm-android:0.19.1"])
 
     def test_theme_resources_exist_and_resolve(self):
         styles = read(MAIN, "res", "values", "styles.xml")

@@ -14,6 +14,10 @@ platform_boot - the Python calls the Android activity makes outside the web page
                                      installed and not sent anywhere; the chat reads it only when the user says the answer came, or the
                                      user presses send on the copy the page puts into the message box.
                                      Returns a small JSON string for the page.
+    emergency_stop()                 the «ایست» button of the foreground service's notification (Prompt 959, stage B; Java: `StopReceiver`).
+                                     It runs the same stop as the chat word «ایست» for every hub of this process: the own brain's download
+                                     is cut, a running local answer is asked to stop, the cloud brain is halted (only when it was on) and
+                                     the service goes away. Returns a small JSON string; it never raises.
 
 Kept as a tiny top-level module (no import of the app at import time) so that it is cheap to call and cannot fail on start-up.
 """
@@ -22,8 +26,8 @@ import json
 import os
 import time
 
-__all__ = ["prepare", "inbox_dir", "hub_root", "on_shared_text", "HUB_DIRNAME", "INBOX_DIRNAME", "MAX_SHARED_CHARS", "MAX_OFFERED_CHARS",
-           "KEEP_SHARED_FILES"]
+__all__ = ["prepare", "inbox_dir", "hub_root", "on_shared_text", "emergency_stop", "HUB_DIRNAME", "INBOX_DIRNAME", "MAX_SHARED_CHARS",
+           "MAX_OFFERED_CHARS", "KEEP_SHARED_FILES"]
 
 HUB_DIRNAME = "brain_hub"                 # = brain_hub.service.ROOT_DIRNAME            (a test keeps them equal)
 INBOX_DIRNAME = "inbox"                   # = brain_hub.builtin_tools.INBOX_DIR
@@ -88,6 +92,26 @@ def on_shared_text(files_dir, text, clock=time.time):
         result["code"] = "io_error"
     except Exception:                                           # nothing may travel back to Java as an exception
         result["code"] = "error"
+    return json.dumps(result, ensure_ascii=False)
+
+
+def emergency_stop():
+    """The notification's «ایست»: stop whatever runs, in every hub of this process. Never raises; returns a JSON string
+
+        {"ok": bool, "hubs": int, "stopped": ["download" | "engine" | "cloud", ...], "released": bool}
+
+    `ok` is False when the stop itself could not run (the app's code could not be imported) and while a step that cannot be interrupted - the
+    own brain's installation and first test - still runs: the notification then stays and says that the stop was not done. An app with nothing
+    running answers `{"ok": true, "hubs": 1, "stopped": [], "released": false}`. "engine" means a loaded local model's engine was asked to drop
+    the answer it makes (the request is sent whether or not it was answering; never during that install), `released` that the foreground service
+    was up and has been released."""
+    result = {"ok": False, "hubs": 0, "stopped": [], "released": False}
+    try:
+        from brain_hub import body
+        done = body.emergency_stop_all()
+        result.update(ok=not done.get("busy"), hubs=int(done["hubs"]), stopped=[str(name) for name in done["stopped"]], released=bool(done.get("released")))
+    except Exception:                                           # nothing may travel back to Java as an exception
+        pass
     return json.dumps(result, ensure_ascii=False)
 
 

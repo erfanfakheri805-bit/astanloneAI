@@ -195,6 +195,17 @@ class PreflightTests(OwnBrainApp):
         self.start_app()
         self.assertRefusedBeforeAnything(self.ask(WISH), "موتورِ اجرای مغز", "چیزی دانلود نکردم", WISH)
 
+    def test_an_engine_that_does_not_match_the_app_is_refused_with_its_own_words(self):
+        self.bridge.probe_result = "ERR\napi_mismatch\nEngine.initialize()"
+        self.start_app()
+        reply = self.ask(WISH)
+        self.assertRefusedBeforeAnything(reply, "داخل برنامه هست ولی شکلش با چیزی که برنامه انتظار دارد نمی‌خواند", "Engine.initialize()", "چیزی دانلود نکردم",
+                                         "ایرادِ برنامه است", "api_mismatch")
+        self.assertNotIn("این نسخهٔ برنامه موتورِ اجرای مغزِ زبانی را ندارد", reply, "the engine IS there: do not say it is missing")
+        # the engine's real classes and signatures are in the message, so that a copy of it is enough to adapt the app to the real engine
+        self.assertIn("(همراهِ فهرستِ فنیِ زیر)", reply)
+        self.assertTrue(reply.rstrip().endswith("Engine: <init>(EngineConfig); initialize();"), reply[-120:])
+
     def test_no_internet_is_refused(self):
         self.connectivity = BridgeConnectivity("offline", "none")
         self.start_app()

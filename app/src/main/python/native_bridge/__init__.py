@@ -6,6 +6,8 @@ native_bridge - the doors from the app's Python out to the phone (and, with the 
     doors     clipboard, share/open app/open url, settings pages, notifications, speech, voice input, battery
     screen    the accessibility door: read / type into / click in OTHER apps (user-enabled, per-app allow-list, deny-list)
     rawjvm    the unsafe door for packs that declared `unsafe_native` (any allowed Android class)
+    body      the app's own doors (Prompt 959): the foreground service, phone facts, the user's order «کد پیامک را بخوان»
+    otp       finding a one-time code in a text message (pure)
     facade    `for_pack` / `for_app`: permission checks, rate limits, audit
 
 Nothing here changes the app by itself: a door only does what its caller asks, and the callers (chat commands, packs) are
@@ -14,4 +16,4 @@ gated by the user's confirmation.
 
 from .result import DoorPermissionError, DoorResult
 
-__all__ = ["DoorResult", "DoorPermissionError", "jvm", "doors", "screen", "rawjvm", "facade", "result"]
+__all__ = ["DoorResult", "DoorPermissionError", "jvm", "doors", "screen", "rawjvm", "facade", "result", "body", "otp"]

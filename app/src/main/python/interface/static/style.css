@@ -356,6 +356,26 @@ button, textarea { font-family: inherit; }
 .send-btn:active { transform: scale(0.97); }
 .send-btn:disabled { opacity: 0.55; cursor: default; }
 
+/* Prompt 959 (stage B, the body): the emergency stop. It exists only while an answer is being made, and then it takes the place of the
+   send button (which is disabled anyway), so the one big button on the right is always the thing that makes sense. */
+.stop-btn {
+  flex: 0 0 auto;
+  min-width: 64px;
+  min-height: 44px;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.stop-btn:active { transform: scale(0.97); }
+.stop-btn:disabled { opacity: 0.55; cursor: default; }
+.stop-btn[hidden] { display: none; }
+.composer[aria-busy="true"] .send-btn { display: none; }
+
 /* ---------------- Info sheet (bottom sheet) ---------------- */
 
 .sheet-backdrop {

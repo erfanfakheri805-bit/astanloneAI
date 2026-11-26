@@ -93,9 +93,9 @@ network failure, a cut-off or a rejected pack each produce a plain Persian sente
 ## 7. Honest limits
 
 * Everything above is proven against a SCRIPTED provider and a fake phone. It was never run against a real provider or on a real phone.
-* The chat is one request at a time: while the cloud brain writes a pack (usually tens of seconds, at most 3 minutes) the app's chat waits and
-  a message typed meanwhile is queued by the page. The emergency word «ایست» is therefore handled after that request ends; a stop control that
-  works independently of the chat is part of the next stage (the body of the app).
+* The chat is one request at a time: while the cloud brain writes a pack (usually tens of seconds, at most 3 minutes) the app's chat waits (the page
+  disables «ارسال», Enter sends nothing and what the user typed stays in the box; a message the page itself sends after a file pick waits in a short queue). The emergency stop button of the page (stage B, the body) takes the place of «ارسال»
+  while the answer is being made and sends «ایست» on a request of its own: it stops NEW cloud requests; the request that is already on its way is not recalled.
 * There is no automatic repair: a pack the review rejects is shown with the reasons; the user may ask again.
 * A model that writes a pack can be wrong; the review is a static scan plus the pack system's checks, not a proof of correctness. Nothing
   is installed without the user's second «بله».

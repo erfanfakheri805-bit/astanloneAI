@@ -9,6 +9,10 @@ the rest with `DoorPermissionError`:
     permission "screen"        screen (other apps' screens; the user must have enabled the accessibility service AND allowed the app)
     permission "unsafe_native" jvm (any allowed Android class)
 
+and three doors that ONLY the app itself has (Prompt 959; their permission names are not in `pack_system.limits.PERMISSIONS`, so no pack
+can declare them): "body" (the foreground service), "phone" (battery optimisation, build and memory facts), "sms" (the user's order
+«کد پیامک را بخوان»).
+
 Every door call is rate-limited per pack and (except quiet reads) written to the hub's hash-chained audit log - without the
 clipboard text, notification text or screen contents, which never go to a log.
 """
@@ -17,6 +21,7 @@ import threading
 import time
 
 from . import doors as _doors
+from .body import BodyDoor, PhoneDoor, SmsDoor
 from .jvm import detect_jvm
 from .rawjvm import RawJvm
 from .result import DoorPermissionError, fail
@@ -26,11 +31,14 @@ __all__ = ["Doors", "for_pack", "for_app", "set_jvm", "get_jvm", "set_allowed_ap
 
 # door -> (calls, seconds): a runaway pack cannot spam notifications or hammer the screen
 RATE_LIMITS = {"clipboard": (60, 600), "share": (20, 600), "settings": (10, 600), "notify": (12, 3600), "speech": (60, 3600),
-               "voice": (30, 600), "device": (120, 600), "screen": (900, 600)}
+               "voice": (30, 600), "device": (120, 600), "screen": (900, 600), "body": (900, 600), "phone": (60, 600), "sms": (6, 600)}
 _QUIET = frozenset({("screen", "read"), ("screen", "status"), ("screen", "active_package"), ("voice", "take_result"),
-                    ("clipboard", "get_text"), ("share", "visible"), ("share", "assistants_visible"), ("device", "battery"), ("device", "info")})
+                    ("clipboard", "get_text"), ("share", "visible"), ("share", "assistants_visible"), ("device", "battery"), ("device", "info"),
+                    ("body", "hold"), ("body", "running"), ("phone", "battery_optimization"), ("phone", "app_info"), ("phone", "memory"),
+                    ("sms", "has_permission")})
 _DOOR_PERMISSION = {"clipboard": "clipboard", "share": "android", "settings": "android", "notify": "android", "speech": "android",
-                    "voice": "android", "device": "android", "screen": "screen", "jvm": "unsafe_native"}
+                    "voice": "android", "device": "android", "screen": "screen", "jvm": "unsafe_native",
+                    "body": "body", "phone": "phone", "sms": "sms"}
 
 _LOCK = threading.RLock()
 _JVM = None
@@ -81,7 +89,8 @@ def _door_object(name, jvm):
             door = {"clipboard": lambda: _doors.ClipboardDoor(jvm), "share": lambda: _doors.ShareDoor(jvm),
                     "settings": lambda: _doors.SettingsDoor(jvm), "notify": lambda: _doors.NotifyDoor(jvm),
                     "speech": lambda: _doors.SpeechDoor(jvm), "voice": lambda: _doors.VoiceDoor(jvm),
-                    "device": lambda: _doors.DeviceDoor(jvm), "screen": lambda: ScreenDoor(jvm, _allowed_now)}[name]()
+                    "device": lambda: _doors.DeviceDoor(jvm), "screen": lambda: ScreenDoor(jvm, _allowed_now),
+                    "body": lambda: BodyDoor(jvm), "phone": lambda: PhoneDoor(jvm), "sms": lambda: SmsDoor(jvm)}[name]()
             _SHARED[name] = door
         return door
 
@@ -194,6 +203,18 @@ class Doors:
         return self._door("screen")
 
     @property
+    def body(self):
+        return self._door("body")
+
+    @property
+    def phone(self):
+        return self._door("phone")
+
+    @property
+    def sms(self):
+        return self._door("sms")
+
+    @property
     def jvm(self):
         self._need("jvm")
         return RawJvm(self._jvm_now())
@@ -209,5 +230,5 @@ def for_pack(pack_id, permissions, hub=None):
 
 
 def for_app(hub=None, *, jvm=None, clock=time.time):
-    """The doors the APP itself uses (the teacher, the chat commands): every door except the unsafe one."""
-    return Doors("app", ("android", "clipboard", "screen"), hub, jvm, clock)
+    """The doors the APP itself uses (the teacher, the chat commands): every door except the unsafe one - and the three only the app has."""
+    return Doors("app", ("android", "clipboard", "screen", "body", "phone", "sms"), hub, jvm, clock)

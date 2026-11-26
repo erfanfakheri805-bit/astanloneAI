@@ -23,7 +23,8 @@ import java.util.Map;
  * the string "ERR\n<code>\n<short detail>"; success is "OK\n<text>". The strings carry no user text except the model's own answer.
  *
  * The engine is used the way its Kotlin API documents (see Conversation / Engine / Config): an Engine is built from an
- * EngineConfig(modelPath, Backend.CPU, ..., maxNumTokens), initialised once (slow: seconds), and every answer is made in a
+ * EngineConfig(modelPath, Backend.CPU, null..., maxNumTokens, null...) - its one public constructor with every parameter - initialised
+ * once (slow: seconds), and every answer is made in a
  * fresh Conversation (system instruction + the last few turns as initial messages), which is closed afterwards - so the model's
  * context never grows without bound and nothing carries over by accident. CPU only: the GPU back-end is the most likely thing to
  * crash a phone natively, and a native crash cannot be caught from Java.
@@ -46,8 +47,12 @@ public final class LiteRtLmBridge {
     private static final Object LOCK = new Object();
     private static Object engine;                       // com.google.ai.edge.litertlm.Engine (guarded by LOCK)
     private static volatile boolean loaded;
-    private static volatile Object inFlight;            // the Conversation being answered (for cancel)
+    private static volatile Object inFlight;            // the Conversation being answered (for cancel; changed only while holding CANCEL_LOCK)
     private static volatile boolean stopRequested;
+    private static final Object CANCEL_LOCK = new Object();   // a cancelProcess() call never overlaps the end (and the closing) of the answer it is meant for
+    private static final long CANCEL_REPEAT_MS = 200L;         // while an answer goes on after a stop, the request is sent again this often ...
+    private static final long CANCEL_GIVE_UP_MS = 60000L;      // ... for at most this long
+    private static Object repeatingFor;                        // the Conversation the repeating thread works for (guarded by CANCEL_LOCK)
 
     private LiteRtLmBridge() {
     }
@@ -88,6 +93,200 @@ public final class LiteRtLmBridge {
             sb.append(';').append(name).append('=').append(found);
         }
         return sb.toString();
+    }
+
+    // ------------------------------------------------------------------ is the engine's API the one this file was written for?
+
+    /**
+     * Checks WITHOUT any model file that every piece of the engine's API that load() and chat() call exists in this APK (classes,
+     * constructors, methods). Fetching a model of gigabytes is only worth starting when this says OK. Returns "OK\nready",
+     * "ERR\ndependency_missing\nengine" (no engine in this APK) or "ERR\napi_mismatch\n<the first missing piece>". Never throws.
+     */
+    public static String probe() {
+        try {
+            if (!isPresent()) {
+                return err("dependency_missing", "engine");
+            }
+            String missing = firstMissingPiece();
+            return missing.length() == 0 ? "OK\nready" : err("api_mismatch", missing);
+        } catch (Throwable t) {
+            return errFrom(t, "api_mismatch");
+        }
+    }
+
+    /** The first piece of the engine's API that this file needs and the engine does not have ("" when nothing is missing). */
+    private static String firstMissingPiece() {
+        String[] needed = {"Engine", "EngineConfig", "Backend", "Backend$CPU", "Conversation", "ConversationConfig", "Contents", "Message"};
+        for (String name : needed) {
+            if (peek(name) == null) {
+                return name;
+            }
+        }
+        Class<?> backend = peek("Backend");
+        Class<?> cpu = peek("Backend$CPU");
+        Class<?> config = peek("EngineConfig");
+        Class<?> engineType = peek("Engine");
+        Class<?> conversationConfig = peek("ConversationConfig");
+        if (!hasCtor(cpu) && !hasCtor(cpu, Integer.class, Integer.class)) {
+            return "Backend.CPU()";
+        }
+        if (engineConfigConstructor(config, backend) == null) {
+            return "EngineConfig(String, Backend)";
+        }
+        try {
+            // The configuration load() builds before it touches any model file is plain data (a back-end and a settings object), so it can be
+            // built here as a dry run: an "OK" then means this call really works with this engine, not only that a constructor exists.
+            newEngineConfig(config, backend, "/probe/model.litertlm", newBackendCpu(), 2048);
+        } catch (Throwable t) {
+            return "EngineConfig(String, Backend): " + unwrap(t).getClass().getSimpleName();
+        }
+        if (!hasCtor(engineType, config)) {
+            return "Engine(EngineConfig)";
+        }
+        if (!hasMethod(engineType, "initialize")) {
+            return "Engine.initialize()";
+        }
+        if (!hasMethod(engineType, "createConversation", conversationConfig)) {
+            return "Engine.createConversation(ConversationConfig)";
+        }
+        if (ctorWithArity(conversationConfig, 11) == null && ctorWithArity(conversationConfig, 4) == null
+                && ctorWithArity(conversationConfig, 1) == null) {
+            return "ConversationConfig(...)";
+        }
+        if (!companionHas(peek("Contents"), "of")) {
+            return "Contents.of(String)";
+        }
+        if (!companionHas(peek("Message"), "user", "model")) {
+            return "Message.user/model(String)";
+        }
+        if (!hasSendMessage(peek("Conversation"))) {
+            return "Conversation.sendMessage(String)";
+        }
+        return "";
+    }
+
+    /**
+     * A compact listing of the public constructors and methods of the engine classes this file uses (class names and signatures only, no
+     * private data; at most about 6000 characters). It goes into the self-test report: when the engine's API is not what this file
+     * expects, THIS tells the developer what it is instead. Never throws.
+     */
+    public static String api() {
+        StringBuilder sb = new StringBuilder();
+        try {
+            String[] names = {"Engine", "EngineConfig", "Backend", "Backend$CPU", "Conversation", "ConversationConfig", "Contents", "Message",
+                    "SamplerConfig", "ThinkingConfig"};
+            for (String name : names) {
+                Class<?> type = peek(name);
+                sb.append(name).append(':');
+                if (type == null) {
+                    sb.append(" -\n");
+                    continue;
+                }
+                listMembers(sb, type);
+                try {
+                    Class<?> companion = type.getField("Companion").getType();
+                    sb.append(" Companion{");
+                    listMembers(sb, companion);
+                    sb.append(" }");
+                } catch (Throwable noCompanion) {
+                    // most classes have none
+                }
+                sb.append('\n');
+                if (sb.length() > 6000) {
+                    break;
+                }
+            }
+        } catch (Throwable t) {
+            sb.append("?");
+        }
+        String out = sb.toString();
+        return out.length() > 6000 ? out.substring(0, 6000) : out;
+    }
+
+    private static void listMembers(StringBuilder sb, Class<?> type) {
+        try {
+            for (Constructor<?> c : type.getConstructors()) {
+                sb.append(" <init>(").append(simpleNames(c.getParameterTypes())).append(");");
+            }
+            for (Method m : type.getMethods()) {
+                if (m.getDeclaringClass() == Object.class) {
+                    continue;
+                }
+                sb.append(' ').append(m.getName()).append('(').append(simpleNames(m.getParameterTypes())).append(");");
+            }
+        } catch (Throwable t) {
+            sb.append(" ?");
+        }
+    }
+
+    private static String simpleNames(Class<?>[] types) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < types.length; i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(types[i].getSimpleName());
+        }
+        return sb.toString();
+    }
+
+    /** The class (not initialised) or null. */
+    private static Class<?> peek(String simpleName) {
+        try {
+            return Class.forName(PKG + simpleName, false, LiteRtLmBridge.class.getClassLoader());
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static boolean hasCtor(Class<?> type, Class<?>... parameters) {
+        try {
+            type.getConstructor(parameters);
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static boolean hasMethod(Class<?> type, String name, Class<?>... parameters) {
+        try {
+            type.getMethod(name, parameters);
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** Does the Kotlin companion of `type` have a method with each of these names taking one String? */
+    private static boolean companionHas(Class<?> type, String... names) {
+        try {
+            Class<?> companion = type.getField("Companion").getType();
+            for (String name : names) {
+                companion.getMethod(name, String.class);
+            }
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** sendMessage(String) or the long form sendMessage(String, Map, ?, ?, ?, Integer): the two shapes sendMessage() below knows. */
+    private static boolean hasSendMessage(Class<?> type) {
+        try {
+            for (Method m : type.getMethods()) {
+                if (!"sendMessage".equals(m.getName())) {
+                    continue;
+                }
+                Class<?>[] p = m.getParameterTypes();
+                if ((p.length == 6 && p[0] == String.class && p[1] == Map.class && p[5] == Integer.class)
+                        || (p.length == 1 && p[0] == String.class)) {
+                    return true;
+                }
+            }
+        } catch (Throwable t) {
+            return false;
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------ load / unload
@@ -173,7 +372,12 @@ public final class LiteRtLmBridge {
                 }
                 int limit = maxOutputTokens < 1 ? 128 : (maxOutputTokens > 2048 ? 2048 : maxOutputTokens);
                 conversation = newConversation(system == null ? "" : system, parseHistory(history), limit);
-                inFlight = conversation;
+                synchronized (CANCEL_LOCK) {
+                    inFlight = conversation;
+                }
+                if (stopRequested) {
+                    return err("cancelled", "");                    // a stop that came while the conversation was being made: nothing is generated
+                }
                 Object message = sendMessage(conversation, question, limit);
                 if (stopRequested) {
                     return err("cancelled", "");
@@ -186,23 +390,84 @@ public final class LiteRtLmBridge {
                 }
                 return errFrom(t, "generate_failed");
             } finally {
-                inFlight = null;
+                synchronized (CANCEL_LOCK) {
+                    inFlight = null;                                // no cancelProcess() is running now, and none can start after this
+                }
                 closeQuietly(conversation);
             }
         }
     }
 
-    /** Asks the answer in progress (if any) to stop. Safe from any thread; never blocks, never throws. */
+    /**
+     * Asks the answer in progress (if any) to stop. Safe from any thread; never throws and never waits for the answer. The request is sent at
+     * once and then sent again every 200 ms for as long as the SAME answer goes on (at most a minute): one request that arrives a moment before
+     * the engine has really started to generate can be lost, and the user's «ایست» must not depend on that moment. The conversation is closed
+     * only after the last request has returned (see chat()), never while one is being made.
+     */
     public static void cancel() {
         stopRequested = true;
-        Object conversation = inFlight;
-        if (conversation == null) {
-            return;
+        Object conversation;
+        synchronized (CANCEL_LOCK) {
+            conversation = inFlight;
+            if (conversation == null) {
+                return;
+            }
+            requestStop(conversation);
         }
+        repeatStopWhileAnswering(conversation);
+    }
+
+    /** One request to the engine; the caller holds CANCEL_LOCK. */
+    private static void requestStop(Object conversation) {
         try {
             conversation.getClass().getMethod("cancelProcess").invoke(conversation);
         } catch (Throwable ignored) {
             // the answer then simply ends at its own deadline
+        }
+    }
+
+    /** One small background thread per answer sends the stop request again until that answer has ended (or a minute has passed). */
+    private static void repeatStopWhileAnswering(final Object conversation) {
+        synchronized (CANCEL_LOCK) {
+            if (repeatingFor == conversation) {
+                return;                                             // already repeating for this answer
+            }
+            repeatingFor = conversation;
+        }
+        try {
+            Thread repeater = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long until = System.currentTimeMillis() + CANCEL_GIVE_UP_MS;
+                    try {
+                        while (System.currentTimeMillis() < until) {
+                            Thread.sleep(CANCEL_REPEAT_MS);
+                            synchronized (CANCEL_LOCK) {
+                                if (inFlight != conversation) {
+                                    return;                         // that answer has ended
+                                }
+                                requestStop(conversation);
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        synchronized (CANCEL_LOCK) {
+                            if (repeatingFor == conversation) {
+                                repeatingFor = null;
+                            }
+                        }
+                    }
+                }
+            }, "litertlm-cancel");
+            repeater.setDaemon(true);
+            repeater.start();
+        } catch (Throwable t) {
+            synchronized (CANCEL_LOCK) {
+                if (repeatingFor == conversation) {
+                    repeatingFor = null;
+                }
+            }
         }
     }
 
@@ -222,23 +487,52 @@ public final class LiteRtLmBridge {
         }
     }
 
-    /** EngineConfig(modelPath, backend, visionBackend, audioBackend, maxNumTokens) - @JvmOverloads gives every shorter form too. */
+    /**
+     * The constructor of EngineConfig this file calls: the WIDEST public one that starts (String, Backend) and has only object types after
+     * that. Kotlin's `data class EngineConfig(modelPath, backend, visionBackend, audioBackend, maxNumTokens, maxNumImages, cacheDir)` has no
+     * @JvmOverloads, so Java sees ONE public constructor with every parameter (all but the first two are nullable: null means "the engine's
+     * own default"); a version of the class with fewer parameters, or with the shorter forms as well, is used the same way. Kotlin's synthetic
+     * "default values" constructor (an extra int and a marker at the end) is never taken: it has a primitive parameter.
+     */
+    private static Constructor<?> engineConfigConstructor(Class<?> configClass, Class<?> backendBase) {
+        Constructor<?> widest = null;
+        for (Constructor<?> c : configClass.getConstructors()) {
+            Class<?>[] p = c.getParameterTypes();
+            if (p.length < 2 || p[0] != String.class || p[1] != backendBase) {
+                continue;
+            }
+            boolean objectsOnly = true;
+            for (int i = 2; i < p.length; i++) {
+                if (p[i].isPrimitive()) {
+                    objectsOnly = false;
+                }
+            }
+            if (objectsOnly && (widest == null || p.length > widest.getParameterTypes().length)) {
+                widest = c;
+            }
+        }
+        return widest;
+    }
+
+    /** EngineConfig(path, backend, null, null, <token limit>, null, ...): the first Integer after the back-ends is maxNumTokens. */
     private static Object newEngineConfig(Class<?> configClass, Class<?> backendBase, String path, Object backend, int tokens)
             throws Exception {
-        for (Constructor<?> c : configClass.getConstructors()) {
-            Class<?>[] p = c.getParameterTypes();
-            if (p.length == 5 && p[0] == String.class && p[1] == backendBase && p[2] == backendBase && p[3] == backendBase
-                    && p[4] == Integer.class) {
-                return c.newInstance(path, backend, null, null, Integer.valueOf(tokens));
+        Constructor<?> c = engineConfigConstructor(configClass, backendBase);
+        if (c == null) {
+            throw new NoSuchMethodException("EngineConfig(String, Backend...)");
+        }
+        Class<?>[] p = c.getParameterTypes();
+        Object[] args = new Object[p.length];
+        args[0] = path;
+        args[1] = backend;
+        boolean limitSet = false;
+        for (int i = 2; i < p.length; i++) {
+            if (!limitSet && p[i] == Integer.class) {
+                args[i] = Integer.valueOf(tokens);
+                limitSet = true;
             }
         }
-        for (Constructor<?> c : configClass.getConstructors()) {
-            Class<?>[] p = c.getParameterTypes();
-            if (p.length == 2 && p[0] == String.class && p[1] == backendBase) {
-                return c.newInstance(path, backend);
-            }
-        }
-        throw new NoSuchMethodException("EngineConfig(String, Backend...)");
+        return c.newInstance(args);
     }
 
     private static Constructor<?> ctorWithArity(Class<?> type, int arity) {

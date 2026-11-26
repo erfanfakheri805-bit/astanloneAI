@@ -75,12 +75,15 @@ class GradleConfigTests(unittest.TestCase):
         # Prompt 959 (a conscious change of this pin, was "appcompat + the MediaPipe engine"): a second optional engine, Google's
         # LiteRT-LM (Apache-2.0; the phone's own brain), declared INSIDE `if (project.findProperty('withLiteRtLm') == 'true')` in the same
         # way. An ordinary build still has appcompat as its only dependency; the workflow now tries LiteRT-LM, then MediaPipe, then no engine.
+        # Prompt 959 (stage B; a conscious change of this pin, was "litertlm-android:latest.release"): the engine's version is pinned to 0.19.1, the
+        # one the first real build log showed `latest.release` resolving to, so that every build is the same build and a newer release with another
+        # API cannot change it unnoticed (the bridge reaches the engine by reflection and reports a different API as api_mismatch at run time).
         app = _read("app", "build.gradle")
         deps = re.findall(r"^\s*(?:implementation|api|compileOnly|runtimeOnly)\s+['\"]([^'\"]+)", app, re.M)
         self.assertEqual(deps, ["androidx.appcompat:appcompat:1.7.0", "com.google.mediapipe:tasks-genai:0.10.27",
-                                "com.google.ai.edge.litertlm:litertlm-android:latest.release"])
+                                "com.google.ai.edge.litertlm:litertlm-android:0.19.1"])
         self.assertRegex(_code(app, "//"), r"if \(project\.findProperty\('withLlm'\) == 'true'\) \{\s*implementation 'com\.google\.mediapipe:tasks-genai:0\.10\.27'\s*\}")
-        self.assertRegex(_code(app, "//"), r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*implementation 'com\.google\.ai\.edge\.litertlm:litertlm-android:latest\.release'\s*\}")
+        self.assertRegex(_code(app, "//"), r"if \(project\.findProperty\('withLiteRtLm'\) == 'true'\) \{\s*implementation 'com\.google\.ai\.edge\.litertlm:litertlm-android:0\.19\.1'\s*\}")
 
     def test_gitignore_blocks_bytecode_and_build_output(self):
         gi = _read(".gitignore")
@@ -90,20 +93,30 @@ class GradleConfigTests(unittest.TestCase):
 
 @unittest.skipUnless(_HAS_PROJECT, "Gradle project files not present")
 class ManifestAndJavaTests(unittest.TestCase):
-    def test_manifest_permissions_are_internet_and_notifications_only(self):
+    def test_manifest_permissions_are_the_five_the_design_lists(self):
         # Prompt 958 (a conscious change of this pin, was "internet only"): POST_NOTIFICATIONS is added because Android 13+ shows a
         # notification only after the user allowed it in a system dialog, and an app can ask for a permission only if it declares it.
         # Nothing else is added (no storage, microphone, camera, install, overlay or background-start permission).
+        # Prompt 959 (stage B; a conscious change of this pin, was "internet and notifications only"): the body adds three. FOREGROUND_SERVICE and
+        # FOREGROUND_SERVICE_DATA_SYNC (Android 14 asks for the permission of the service's TYPE as well) let a long job - the download of the
+        # assistant's own brain - keep a notification and stay alive with the screen off; READ_SMS lets the assistant read the newest one-time code
+        # when the user asks for it in the chat (Android's own dialog is shown only on his word; the text of a message is never kept or sent).
+        # Still nothing for storage, microphone, camera, install, overlay, boot, contacts, calls or location.
         manifest = _read("app", "src", "main", "AndroidManifest.xml")
         perms = re.findall(r'<uses-permission android:name="([^"]+)"', manifest)
-        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS"])
+        self.assertEqual(perms, ["android.permission.INTERNET", "android.permission.POST_NOTIFICATIONS", "android.permission.FOREGROUND_SERVICE",
+                                 "android.permission.FOREGROUND_SERVICE_DATA_SYNC", "android.permission.READ_SMS"])
 
     def test_single_launcher_activity(self):
         manifest = _read("app", "src", "main", "AndroidManifest.xml")
         self.assertEqual(manifest.count("<activity"), 1)
         self.assertIn("android.intent.category.LAUNCHER", manifest)
 
-    def test_java_layer_is_three_thin_files(self):
+    def test_java_layer_is_five_thin_files(self):
+        # Prompt 959 (stage B; a conscious change of this pin, was "three thin files"): the body adds two. Android requires a service and a
+        # broadcast receiver to be classes of their own: BodyService.java (the foreground service of long jobs; it may name ONE Python module,
+        # platform_boot, and call ONE function, emergency_stop, for the notification's stop button) and StopReceiver.java (that button; it only calls
+        # BodyService and never Python). tests/test_body_service_prompt959.py checks them closely.
         # Prompt 959 (a conscious change of this pin, was "two thin files"): the phone's own brain needs one narrow door to Google's
         # LiteRT-LM engine, LiteRtLmBridge.java. Like the other helper it never calls Python (Python calls its static methods) and it does
         # not import the engine either: the engine is reached by reflection, so an APK made without the engine still compiles and runs.
@@ -114,20 +127,27 @@ class ManifestAndJavaTests(unittest.TestCase):
         # name, argument count and key between the Java files and Python.
         java_root = os.path.join(_APP, "src", "main", "java")
         files = sorted(os.path.join(r, f) for r, _, fs in os.walk(java_root) for f in fs)
-        self.assertEqual([os.path.basename(f) for f in files], ["LiteRtLmBridge.java", "MainActivity.java", "PyAccessibilityService.java"])
-        bridge = _read_abs(files[0])
+        self.assertEqual([os.path.basename(f) for f in files], ["BodyService.java", "LiteRtLmBridge.java", "MainActivity.java", "PyAccessibilityService.java",
+                                                                "StopReceiver.java"])
+        body_service = _read_abs(files[0])
+        self.assertEqual(sorted(re.findall(r'getModule\("([^"]+)"\)', body_service)), ["platform_boot"])
+        self.assertEqual(sorted(re.findall(r'callAttr\("([^"]+)"', body_service)), ["emergency_stop"])
+        stop_receiver = _read_abs(files[4])
+        for forbidden in ("getModule", "callAttr", "com.chaquo"):
+            self.assertNotIn(forbidden, stop_receiver, forbidden)
+        bridge = _read_abs(files[1])
         for forbidden in ("getModule", "callAttr", "com.chaquo", "import com.google", "http://", "https://"):
             self.assertNotIn(forbidden, bridge, forbidden)
-        main = _read_abs(files[1])
+        main = _read_abs(files[2])
         self.assertEqual(sorted(re.findall(r'getModule\("([^"]+)"\)', main)), ["android_entry", "platform_boot", "platform_boot"])
         self.assertEqual(sorted(re.findall(r'callAttr\("([^"]+)"', main)), ["inbox_dir", "on_shared_text", "prepare", "start"])
-        service = _read_abs(files[2])
+        service = _read_abs(files[3])
         self.assertNotIn("getModule", service)
         self.assertNotIn("callAttr", service)
         self.assertNotIn("com.chaquo", service)
 
     def test_webview_targets_loopback_only(self):
-        for name in ("MainActivity.java", "PyAccessibilityService.java"):
+        for name in ("MainActivity.java", "PyAccessibilityService.java", "BodyService.java", "StopReceiver.java"):
             src = _read_abs(os.path.join(_APP, "src", "main", "java", "com", "erfan", "standaloneai", name))
             self.assertNotRegex(src, r"https?://")
         sys.path.insert(0, _PY_ROOT)
@@ -151,7 +171,13 @@ class WorkflowTests(unittest.TestCase):
     def test_no_secrets_or_signing(self):
         self.assertNotIn("secrets.", self.wf)
         self.assertNotIn("assembleRelease", self.wf)
-        self.assertNotIn("keystore", self.wf.lower())
+        # Prompt 959 (stage B; a conscious change of this pin, was "the word keystore appears nowhere"): the debug workflow keeps GRADLE'S OWN DEBUG key
+        # (the one file `~/.android/debug.keystore` that Android's tools create for debug builds) in the Actions cache, so that a new debug APK
+        # installs OVER the old one instead of forcing an uninstall that deletes the chats and the downloaded brain. That key is not a signing secret
+        # and no secret is read (`secrets.` stays forbidden above). The word may appear only as that path and the cache key name; a release key, a
+        # password or a keystore file in the repository are still forbidden (see tests/test_android_files_prompt958 and the release workflow tests).
+        rest = self.wf.lower().replace("~/.android/debug.keystore", "").replace("$home/.android/debug.keystore", "").replace("debug-keystore-v1", "")
+        self.assertNotIn("keystore", rest)
 
     def test_builds_debug_with_matching_toolchain(self):
         self.assertIn(":app:assembleDebug", self.wf)

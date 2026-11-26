@@ -83,6 +83,18 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
+      # Prompt 959 (stage B): a debug APK is signed with the debug key that Android's tools create on the runner. A fresh runner means a
+      # fresh key every time, and Android refuses to install a build over one signed with another key ("App not installed"): the user would
+      # have to uninstall first, which also deletes his chats and the downloaded brain (gigabytes). So that one file is kept in the Actions
+      # cache: the first build after the cache is empty creates a key and saves it at the end of a SUCCESSFUL job; every later build restores
+      # it. It is Android's own DEBUG key (public by convention, only for debug builds) and no secret is read; GitHub may drop an unused cache
+      # (about a week), then the next build makes a new key and the app has to be uninstalled once more. The release notes say which case it is.
+      - name: Restore the debug signing key (a new build then installs OVER the old app)
+        id: debug_key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: debug-keystore-v1
       # Prompt 959: a ladder of three builds, so that there is ALWAYS an APK to install. The first one includes the
       # engine that runs the phone's OWN brain (Google's LiteRT-LM: ".litertlm" model files that the app downloads by
       # itself). If it cannot be built (for example the library cannot be resolved or does not fit this project), the
@@ -128,11 +140,21 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.with_litertlm.outcome }}" = "success" ]; then
-            echo "ENGINE_NOTE=Brain engine: LiteRT-LM (${LITERTLM_VERSION:-version unknown}) INCLUDED. The phone's own brain can be downloaded and run." >> "$GITHUB_ENV"
+            echo "ENGINE_NOTE=Brain engine: LiteRT-LM (${LITERTLM_VERSION:-version unknown}) INCLUDED. The phone's own brain can be downloaded and run. This build needs Android 8.0 or newer." >> "$GITHUB_ENV"
           elif [ "${{ steps.with_engine.outcome }}" = "success" ]; then
             echo "ENGINE_NOTE=Brain engine: LiteRT-LM NOT included in this build (the build that includes it failed; its log is in the litertlm-build-log artifact). The older MediaPipe engine is INCLUDED, so only .task model files can run; the app cannot run the downloaded own brain." >> "$GITHUB_ENV"
           else
             echo "ENGINE_NOTE=Brain engine: NOT included in this build (both builds that include an engine failed; their logs are in the litertlm-build-log and engine-build-log artifacts). The app starts and chats, but it cannot run a language-model file." >> "$GITHUB_ENV"
+          fi
+      - name: Note which signing key this APK has
+        shell: bash
+        run: |
+          if [ "${{ steps.debug_key.outputs.cache-hit }}" = "true" ]; then
+            echo "KEY_NOTE=Signing key: the SAVED debug key, so this build installs OVER an earlier build that used it (chats and the downloaded brain stay)." >> "$GITHUB_ENV"
+          elif [ -f "$HOME/.android/debug.keystore" ]; then
+            echo "KEY_NOTE=Signing key: a NEW debug key (uninstall the previous app first - that deletes its chats and brain). It is saved now, so later builds should install over this one while GitHub keeps its cache." >> "$GITHUB_ENV"
+          else
+            echo "KEY_NOTE=Signing key: a NEW debug key that could NOT be saved for later builds (uninstall the previous app first)." >> "$GITHUB_ENV"
           fi
       - uses: actions/upload-artifact@v4
         with:
@@ -148,5 +170,5 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Debug APK build ${{ github.run_number }}" \
-            --notes "Debug APK built from commit $GITHUB_SHA. $ENGINE_NOTE Download the .apk file below and install it on your Android phone." \
+            --notes "Debug APK built from commit $GITHUB_SHA. $ENGINE_NOTE $KEY_NOTE Download the .apk file below and install it on your Android phone." \
             --prerelease

@@ -63,8 +63,12 @@ The Java layer stays thin: five files now (`BodyService.java`, `LiteRtLmBridge.j
 ## 4. The life of a background job
 
 1. The user says «بله» to the own brain's download. The own brain tells its notifier (`Body.on_ownbrain`) its status on every change.
-2. While the phase is `downloading` or `installing` the body registers the job `ownbrain` with a title, a line of text and a percent (`describe_ownbrain`: the
-   percent, "N of M", the time left; while the file is verified or installed the percent is unknown and the bar moves without a number).
+2. While the phase is `downloading` or `installing` the body registers the job `ownbrain` with a title, a line of text and a percent (`describe_ownbrain`: while
+   downloading the percent, "N of M" and the time left; while installing (stage B3) the install account of the own brain's status - the title, the real percent as a
+   determinate bar, "step N of 4: <stage>" and the elapsed time, with `(حدودی)` after the percent when it is an estimate (only the file check is measured; see
+   `docs/own_brain_prompt959.md`). A status without that account, or one in the instant before the first step, keeps the old words and the percent -1, so the bar
+   moves without a number). While it installs the own brain refreshes the notifier on a heartbeat, so the elapsed time moves; the door still passes an update on
+   at most every 1.5 seconds.
 3. `Body._sync` calls `BodyDoor.hold` -> `BodyService.hold`, which starts the foreground service (or, when it already runs, only updates its notification: the
    same notification id). One door call at a time, so a late `hold` can never come after a `release`; a progress update of the same job is passed on at most
    every 1.5 seconds, a new or ended job always goes through; more than one job shows «و N کارِ دیگر» after the first job's text.

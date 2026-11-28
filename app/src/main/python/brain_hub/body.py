@@ -64,10 +64,50 @@ def _eta(seconds):
     return "حدود %s ساعت%s مانده" % (_fa(hours), (" و %s دقیقه" % _fa(rest)) if rest else "")
 
 
+def _whole(value, default=0):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value != value or value in (float("inf"), float("-inf")):
+        return default
+    return int(value)
+
+
+def _elapsed(seconds):
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)) or seconds != seconds or seconds in (float("inf"), float("-inf")) or seconds < 0:
+        return ""
+    seconds = int(seconds)
+    if seconds < 60:
+        return "%s ثانیه" % _fa(seconds)
+    minutes, rest = divmod(seconds, 60)
+    if minutes < 60:
+        return "%s دقیقه%s" % (_fa(minutes), (" و %s ثانیه" % _fa(rest)) if rest else "")
+    hours, minutes = divmod(minutes, 60)
+    return "%s ساعت%s" % (_fa(hours), (" و %s دقیقه" % _fa(minutes)) if minutes else "")
+
+
+_INSTALL_STEPS_FA = {"verify": "بررسیِ فایل", "compatibility": "سازگاری", "load": "بارگذاریِ مغز", "smoke": "آزمایشِ اول"}
+
+
+def _describe_install(inst):
+    """The notification of the install step from `status()["install"]`, or None when that holds no step yet (an older status, or the file is just
+    being registered). The percent is the service's; «حدودی» marks the steps whose percent is an estimate; the time is what really passed."""
+    if not isinstance(inst, dict) or _whole(inst.get("step")) < 1 or _whole(inst.get("steps")) < 1:
+        return None
+    percent, stage = max(0, min(100, _whole(inst.get("percent")))), inst.get("stage")
+    parts = ["%s٪%s" % (_fa(percent), " (حدودی)" if inst.get("estimated") else ""),
+             "مرحلهٔ %s از %s: %s" % (_fa(_whole(inst.get("step"))), _fa(_whole(inst.get("steps"))),
+                                     _INSTALL_STEPS_FA.get(stage, "…") if isinstance(stage, str) else "…")]
+    passed = _elapsed(inst.get("elapsed"))
+    if passed:
+        parts.append(passed)
+    return "در حال نصبِ مغز", " · ".join(parts), percent
+
+
 def describe_ownbrain(status):
     """`(title, text, percent)` of the notification for the own brain's `status()`; percent is -1 when it cannot be told. Pure."""
     phase = str((status or {}).get("phase") or "")
     if phase == "installing":
+        described = _describe_install((status or {}).get("install"))
+        if described is not None:
+            return described
         return "در حال نصبِ مغز", "فایل بررسی و مغز آزمایش می‌شود؛ چند دقیقه طول می‌کشد.", -1
     have, total = int((status or {}).get("bytes") or 0), int((status or {}).get("total") or 0)
     percent = max(0, min(100, int((status or {}).get("percent") or 0))) if total > 0 else -1

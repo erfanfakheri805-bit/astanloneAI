@@ -245,6 +245,15 @@ class GuideMessagesTests(unittest.TestCase):
             ("مغز به پرسشِ آزمایشی جواب نداد", BM.failure_text("smoke_test_failed"), ("پرسشِ آزمایشی", "«آماده» نمی‌گویم")),
             ("مغزِ خودم در N ثانیه جواب نداد", BM.llm_timeout(170), ("مغزِ خودم در ", " ثانیه جواب نداد", "کند است")),
             ("این مرحله را نمی‌شود وسطش قطع کرد", BM.busy_installing(), ("این مرحله را نمی‌شود وسطش قطع کرد", "چند دقیقه")),
+            # Prompt 959 (stage B3; a conscious change of this pin, was: the fifteen rows above): the install step now shows its own line, and a blocked
+            # download now names the address - both are things the user reads on the phone, so both are explained in the guide's table, and the app's
+            # real words are held against the guide here like every other row.
+            ("نصب: ۵۷٪ (حدودی) — مرحلهٔ ۳ از ۴", "\n".join(BM.install_lines({"step": 3, "steps": 4, "stage": "load", "percent": 57, "stage_percent": None,
+                                                                          "elapsed": 72, "estimated": True, "slow": False})),
+             ("نصب: ۵۷٪ (حدودی) — مرحلهٔ ۳ از ۴", "بارگذاریِ مغز در موتور", "۱ دقیقه و ۱۲ ثانیه از شروعِ نصب گذشته", "برآوردِ من از زمانِ گذشته")),
+            ("دانلود متوقف شد و چیزی نصب نشد: شبکهٔ گوشی برای سایتِ مغز (huggingface.co) یک آدرسِ داخلی برگرداند",
+             BM.failure_text("blocked_address", "private ip=198.18.0.5"),
+             ("دانلود متوقف شد و چیزی نصب نشد: شبکهٔ گوشی برای سایتِ مغز (huggingface.co) یک آدرسِ داخلی برگرداند", "198.18.0.5", "blocked_address")),
         )
 
     def test_every_row_is_in_the_guide_and_in_the_apps_words(self):

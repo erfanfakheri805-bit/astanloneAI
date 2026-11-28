@@ -253,9 +253,10 @@ class ToolsMixin:
         except Exception:
             return _model_failure(model_id)
 
-    def prepare_model(self, model_id):
-        """Run the whole pipeline (verify -> compatibility -> load -> real smoke test). Returns a `PipelineReport`."""
-        return self._model_manager().prepare(model_id)
+    def prepare_model(self, model_id, progress=None):
+        """Run the whole pipeline (verify -> compatibility -> load -> real smoke test). Returns a `PipelineReport`. `progress`
+        (optional) is `progress(stage, fraction, done, total)`, see `ModelManager.prepare`."""
+        return self._model_manager().prepare(model_id, progress)
 
     def remove_model(self, model_id):
         try:

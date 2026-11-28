@@ -50,6 +50,18 @@ TRANSITIONS: Dict[str, frozenset] = {
     "failed": frozenset({"registered", "downloading", "downloaded"}),
 }
 _COPY_CHUNK = 1 << 20
+_PROGRESS_EVERY = 0.5                      # seconds between two progress reports while a long file is read (Prompt 959, stage B3)
+
+
+def _tell(progress, stage: str, fraction=None, done: int = 0, total: int = 0) -> None:
+    """Tell the caller's progress function where the pipeline is (`stage`, how much of it is done as 0..1 or None when nothing can be
+    measured, and bytes done/total when the stage reads a file). A progress function that fails must never break the pipeline."""
+    if progress is None:
+        return
+    try:
+        progress(stage, fraction, int(done), int(total))
+    except Exception:
+        pass
 _MAX_PROMPT_CHARS = 8000
 _MIB = 1024 * 1024
 
@@ -527,7 +539,7 @@ class ModelManager:
 
     # ---- the verification pipeline -----------------------------------------------
 
-    def verify(self, model_id: str) -> ModelStatus:
+    def verify(self, model_id: str, progress: Optional[Callable[..., None]] = None) -> ModelStatus:
         with self._op_lock:
             with self._lock:
                 entry = self._ensure().get(model_id)
@@ -536,12 +548,15 @@ class ModelManager:
                 if entry["state"] not in ("downloaded", "verified", "compatible", "usable"):
                     return self._refuse(model_id, "illegal_state", "verify_refused", [entry["state"]])
                 card, path = self._card(entry), self._file_path(entry)
-            digest, size = hashlib.sha256(), 0
+            digest, size, last_tell = hashlib.sha256(), 0, time.monotonic()
             try:
                 with open(path, "rb") as handle:                              # the long part: no short lock is held while the file is read
                     for chunk in iter(lambda: handle.read(_COPY_CHUNK), b""):
                         digest.update(chunk)
                         size += len(chunk)
+                        if progress is not None and time.monotonic() - last_tell >= _PROGRESS_EVERY:
+                            last_tell = time.monotonic()
+                            _tell(progress, "verify", min(1.0, size / card.size_bytes) if card.size_bytes else None, size, card.size_bytes)
             except OSError:
                 with self._lock:
                     return self._fail(model_id, "verify", "file_missing")
@@ -660,12 +675,15 @@ class ModelManager:
                 self._trusted.add(model_id)
                 return self._status(model_id, True, "ok", stage="smoke")
 
-    def prepare(self, model_id: str) -> PipelineReport:
-        """verify -> compatibility -> load -> smoke test, stopping at the first stage that does not pass."""
+    def prepare(self, model_id: str, progress: Optional[Callable[..., None]] = None) -> PipelineReport:
+        """verify -> compatibility -> load -> smoke test, stopping at the first stage that does not pass. `progress(stage, fraction, done, total)`
+        (optional) is told when each stage begins and, while the file is being checked, how many bytes are done; the engine reports nothing while
+        it loads the model or answers the first question, so for those two stages `fraction` stays None."""
         stages: List[StageReport] = []
         last = self.status(model_id)
-        for name, step in (("verify", self.verify), ("compatibility", self.check_compatibility),
+        for name, step in (("verify", lambda mid: self.verify(mid, progress)), ("compatibility", self.check_compatibility),
                            ("load", self.load), ("smoke", self.smoke_test)):
+            _tell(progress, name, 0.0 if name == "verify" else None)
             last = step(model_id)
             stages.append(StageReport(name, last.ok, last.code))
             if not last.ok:

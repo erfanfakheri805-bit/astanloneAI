@@ -362,10 +362,11 @@ def _test(ob, st, soft=False):
 def _retry(ob, st):
     if st["phase"] == "idle":
         return BM.status(st)
+    kind = "install" if ob.file_on_phone() else "download"                  # read BEFORE the retry starts: it decides what the retry does
     result = ob.retry()
     if not result.ok:
         return BM.blocked(result.code, result.detail, ob.choice(st["choice"]), ob.facts())
-    return BM.retry_started() + "\n\n" + BM.status(ob.status())
+    return BM.retry_started(kind) + "\n\n" + BM.status(ob.status())
 
 
 # ================================================================== the emergency words

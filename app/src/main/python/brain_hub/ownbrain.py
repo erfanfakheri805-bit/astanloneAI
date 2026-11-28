@@ -21,22 +21,33 @@ What it never does
 
 State survives a restart (`ownbrain_state`); a download the user agreed to continues by itself after the app is opened again (`tick`), a
 download he stopped does not. One worker thread at most; every public method is safe to call from the chat thread and never raises.
+
+The install step has its own account (Prompt 959, stage B3): after the download the model is checked once more, tested for compatibility, loaded
+into the engine and asked a real question - minutes during which the user must see that something is going on. `status()["install"]` says which
+of the four steps it is in, how far (`INSTALL_STEPS`) and for how long it has been going; only the file check can be MEASURED (bytes read), the
+engine reports nothing while it loads the model and answers the first question, so for those the percent is an estimate from the time passed and
+`estimated` says so. A heartbeat refreshes the listener (the notification) every couple of seconds while the step runs.
 """
 
+import inspect
 import os
 import shutil
+import socket
 import threading
 import time
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 from net_tools import CallableGate
 from net_tools.permission import NETWORK
+from net_tools.policy import classify_ip
 from net_tools.resumable import discard_partial, download_resumable, partial_size
 
 from . import ownbrain_catalog as catalog
 from . import ownbrain_state as ST
 
-__all__ = ["OwnBrain", "StartResult", "get_ownbrain", "IDLE_UNLOAD_SECONDS", "PROGRESS_NOTIFY_SECONDS", "RESUMABLE_FAILURES"]
+__all__ = ["OwnBrain", "StartResult", "get_ownbrain", "IDLE_UNLOAD_SECONDS", "PROGRESS_NOTIFY_SECONDS", "RESUMABLE_FAILURES", "INSTALL_STEPS",
+           "INSTALL_HEARTBEAT_SECONDS"]
 
 IDLE_UNLOAD_SECONDS = 10 * 60          # the engine's memory (about 3 GB for the strong brain) is given back after this long without a question
 PROGRESS_NOTIFY_SECONDS = 2.0
@@ -47,6 +58,16 @@ GRACE_SECONDS = 3.0                    # a stop that the downloader does not see
 RESUMABLE_FAILURES = frozenset({"interrupted", "insufficient_space", "permission_denied", "io_error", "timeout", "offline", "dns_failure",
                                 "connect_refused", "tls_error", "protocol_error", "http_error", "unknown_error", "too_many_redirects"})
 _TEST_PROMPT = "سلام! خودت را در یک جمله‌ی کوتاه و ساده معرفی کن."
+INSTALL_HEARTBEAT_SECONDS = 2.0        # while the install step runs the listener is told this often (the engine reports nothing for a long while)
+# The install step as the user sees it, `(step, from_percent, to_percent, expected_seconds)`: the names are the stages of `ModelManager.prepare`. The
+# file check (`expected_seconds` None) is MEASURED - bytes read / size of the file. The two engine steps report no progress at all, so their percent is
+# an ESTIMATE from the time passed in the step: `elapsed / (elapsed + expected)` of the step's span, which climbs steadily, is halfway after
+# `expected_seconds` and never reaches the end of the step before the step is really over (so "99%" is never said while it is still running).
+INSTALL_STEPS = (("verify", 0, 30, None), ("compatibility", 30, 32, 2.0), ("load", 32, 82, 45.0), ("smoke", 82, 98, 20.0))
+SLOW_FACTOR = 4.0                      # an estimated step that has lasted this many times its expected time is called slow (the text says so)
+_NO_INSTALL = {"stage": "", "step": 0, "steps": len(INSTALL_STEPS), "percent": 0, "stage_percent": None, "elapsed": 0, "estimated": False,
+               "slow": False}
+_BLOCKED_IPS = 2                       # how many of the addresses behind a blocked download are written into the failure's detail
 
 
 @dataclass(frozen=True)
@@ -58,7 +79,7 @@ class StartResult:
 
 class OwnBrain:
     def __init__(self, hub, *, catalog_choices=None, clock=None, monotonic=time.monotonic, sleep=time.sleep, meminfo=ST._MEMINFO,
-                 usage_fn=None, downloader=None, notifier=None, idle_unload_seconds=IDLE_UNLOAD_SECONDS, use_thread=True):
+                 usage_fn=None, downloader=None, notifier=None, idle_unload_seconds=IDLE_UNLOAD_SECONDS, use_thread=True, resolver=None):
         self._hub = hub
         self._choices = tuple(catalog_choices) if catalog_choices is not None else catalog.CHOICES
         self._clock = clock or getattr(hub, "clock", None) or time.time
@@ -66,6 +87,7 @@ class OwnBrain:
         self._usage_fn = usage_fn or getattr(hub, "_free_space_fn", None) or shutil.disk_usage
         self._downloader = downloader or download_resumable
         self._notifier = notifier
+        self._resolver = resolver              # `getaddrinfo`-like; only used to name the address behind a blocked download (default: the system's)
         self._idle_s = float(idle_unload_seconds)
         self._use_thread = bool(use_thread)
         self._dir = os.path.join(hub.root, ST.DIR_NAME)
@@ -78,6 +100,10 @@ class OwnBrain:
         self._speed, self._last_sample, self._last_bytes = 0.0, 0.0, 0
         self._last_save = self._last_notify = 0.0
         self._pause_code = "user_paused"
+        self._install = None                   # the install step's clock while it runs (see `_install_begin`)
+        self._beat = None                      # the heartbeat's stop flag while the install step runs
+        self._seq, self._delivered = 0, 0      # numbers the accounts handed to the listener: an older one never arrives after a newer one
+        self._seq_lock, self._deliver_lock = threading.Lock(), threading.Lock()
         self._auto_done = False
         self._idle_timer = None
         self._gate = CallableGate(lambda permission: permission == NETWORK and self._net_open and self.network_on())
@@ -197,18 +223,31 @@ class OwnBrain:
         if not force and now - self._last_notify < PROGRESS_NOTIFY_SECONDS:
             return
         self._last_notify = now
+        with self._seq_lock:
+            self._seq += 1
+            seq = self._seq
         try:
-            notifier(self.status())
+            account = self.status()
         except Exception:
-            pass
+            return
+        with self._deliver_lock:                                            # the heartbeat and the worker both tell the listener: the newer account wins
+            if seq < self._delivered:
+                return
+            self._delivered = seq
+            try:
+                notifier(account)
+            except Exception:
+                pass
 
     def _running(self):
         thread = self._thread
         return bool(thread is not None and thread.is_alive())
 
     def status(self, deep=False):
-        """The honest account: `{phase, sub, choice, title_fa, model_id, bytes, total, percent, speed, eta, code, detail, resumable, consent, guard}`.
-        `deep=True` also asks the model manager whether a model recorded as ready really is (it may have been removed by another command)."""
+        """The honest account: `{phase, sub, choice, title_fa, model_id, bytes, total, percent, speed, eta, code, detail, resumable, consent, install}`.
+        `install` is `{stage, step, steps, percent, stage_percent, elapsed, estimated, slow}` while the phase is "installing" (see `INSTALL_STEPS`) and
+        all zeros otherwise; `percent` (the download's) stays 100 during the install. `deep=True` also asks the model manager whether a model
+        recorded as ready really is (it may have been removed by another command)."""
         if deep:
             self._reconcile()
         with self._lock:
@@ -231,7 +270,8 @@ class OwnBrain:
         return {"phase": state["phase"], "sub": sub, "choice": state["choice"], "title_fa": choice.short_fa if choice else "",
                 "model_id": state["model_id"] or (choice.model_id if choice else ""), "bytes": have, "total": total, "percent": percent,
                 "speed": speed, "eta": eta, "code": state["code"], "detail": state["detail"], "consent": bool(state["consent_at"]),
-                "resumable": bool(choice and (state["phase"] == "paused" or (state["phase"] == "failed" and self._resumable(state))))}
+                "resumable": bool(choice and (state["phase"] == "paused" or (state["phase"] == "failed" and self._resumable(state)))),
+                "install": self._install_view(state["phase"])}
 
     def _resumable(self, state):
         choice = self.choice(state["choice"])
@@ -279,6 +319,12 @@ class OwnBrain:
         except Exception:
             return False
         return False
+
+    def file_on_phone(self, choice=None):
+        """Is the whole model file of `choice` (default: the brain of the job) already in the model store? Then a retry installs it and does not
+        download anything. False when there is no such brain."""
+        choice = choice or self.choice(self._state["choice"])
+        return bool(choice is not None and self._file_on_phone(choice))
 
     def _preflight(self, choice):
         facts = self.facts()
@@ -342,7 +388,8 @@ class OwnBrain:
 
     def retry(self):
         """After a failure that is not about the download (the model would not load, the test answer failed, the app died while loading):
-        forget the unfinished-load marker and run the checks again. The user's explicit «مغز را دوباره امتحان کن»."""
+        forget the unfinished-load marker and run the checks again. The user's explicit «مغز را دوباره امتحان کن». When the file is NOT on the
+        phone (the download itself failed) there is nothing to check: the download starts again, and the phase says "downloading", not "installing"."""
         with self._lock:
             state = self._state
             choice = self.choice(state["choice"])
@@ -354,9 +401,13 @@ class OwnBrain:
                 return StartResult(False, "nothing_to_resume")
             if self._needs_internet_but_off(choice):
                 return StartResult(False, "network_off")
+            on_phone = self._file_on_phone(choice)
             self._reset_guard(choice)
             self._cancel.clear()
-            self._set(phase="installing", code="", detail="")
+            if on_phone:
+                self._set(phase="installing", code="", detail="")
+            else:
+                self._set(phase="downloading", code="", detail="", bytes=self.partial_bytes(choice))
             self._launch(choice)
         return StartResult(True, "started")
 
@@ -500,6 +551,7 @@ class OwnBrain:
             thread.start()
         except RuntimeError:
             self._thread = None
+            self._install_end()
             self._set(phase="failed", code="no_thread", detail="")
 
     def _worker(self, choice):
@@ -511,6 +563,7 @@ class OwnBrain:
         finally:
             self._net_open = False
             self._sub = ""
+            self._install_end()
 
     def _on_progress(self, phase, done, total):
         now = self._mono()
@@ -560,8 +613,32 @@ class OwnBrain:
         if result.code == "cancelled":                                      # the user's stop - or the app's internet switch turned off meanwhile
             self._set(phase="paused", code=self._pause_code if self._cancel.is_set() else "net_off", detail="", bytes=self.partial_bytes(choice))
         else:
-            self._set(phase="failed", code=str(result.code)[:60], detail=str(result.detail or "")[:120], bytes=self.partial_bytes(choice))
+            detail = str(result.detail or "")
+            if result.code == "blocked_address":
+                detail = self._blocked_detail(choice, detail)
+            self._set(phase="failed", code=str(result.code)[:60], detail=detail[:120], bytes=self.partial_bytes(choice))
         return False
+
+    def _blocked_detail(self, choice, detail):
+        """`blocked_address` says only that the address the phone's name lookup gave for the model's site is not a public one. WHICH address decides
+        what is wrong (a VPN's, the provider's block page, ...) and the user cannot see it, so it is written into the failure's detail:
+        «private ip=10.10.34.34». The lookup is the same one the download just made (the catalog's own host, never anything else), made again only
+        while the app's internet switch is on; what cannot be found is left out. Never raises."""
+        try:
+            if not self.network_on():
+                return detail
+            host = urlsplit(choice.url).hostname or ""
+            if host not in catalog.ALLOWED_HOSTS:
+                return detail
+            rows = (self._resolver or socket.getaddrinfo)(host, 443, type=socket.SOCK_STREAM)
+            found = []
+            for row in rows:
+                ip = str(row[4][0]).split("%", 1)[0]
+                if ip not in found and classify_ip(ip) != "public":
+                    found.append(ip)
+            return ("%s ip=%s" % (detail, ",".join(found[:_BLOCKED_IPS]))).strip() if found else detail
+        except Exception:
+            return detail
 
     def _pipeline(self, choice):
         hub, model_id = self._hub, choice.model_id
@@ -576,8 +653,11 @@ class OwnBrain:
                 hub.remove_model(model_id)
                 state = "unregistered"
         if state in ("unregistered", "registered"):
+            if self._state["phase"] != "downloading":                       # a retry that has to fetch the file again must not call it "installing"
+                self._set(phase="downloading", code="", detail="", bytes=self.partial_bytes(choice))
             if not self._download(choice):
                 return None
+            self._install_begin()
             self._set(phase="installing", code="", detail="", bytes=self._state["total"] or self._state["bytes"])
             path = os.path.join(self._dir, choice.rel_dest)
             try:
@@ -595,8 +675,9 @@ class OwnBrain:
             except OSError:
                 pass
         else:
+            self._install_begin()
             self._set(phase="installing", code="", detail="")
-        report = hub.prepare_model(model_id)
+        report = self._prepare(model_id)
         if getattr(report, "ok", False) and getattr(report.status, "usable", False):
             return self._ready(choice)
         last = report.stages[-1] if getattr(report, "stages", None) else None
@@ -605,6 +686,93 @@ class OwnBrain:
     def _ready(self, choice):
         self._set(phase="ready", code="", detail="", model_id=choice.model_id, ready_at=float(self._clock()))
         self.touch()
+
+    # ================================================================== the install step's account (Prompt 959, stage B3)
+    def _prepare(self, model_id):
+        """The model pipeline (verify, compatibility, load, the real first answer) with the install account listening. A hub whose `prepare_model`
+        takes no progress function (an older one) is called the old way."""
+        prepare = self._hub.prepare_model
+        try:
+            listens = "progress" in inspect.signature(prepare).parameters
+        except (TypeError, ValueError):
+            listens = False
+        return prepare(model_id, progress=self._install_progress) if listens else prepare(model_id)
+
+    def _install_begin(self):
+        """The install step starts: from now on `status()["install"]` has the clock, and a heartbeat refreshes the listener while it runs."""
+        now = self._mono()
+        with self._lock:
+            if self._install is not None:
+                return
+            self._install = {"started": now, "stage": "", "stage_started": now, "fraction": None, "floor": 0.0}
+        self._start_heartbeat()
+
+    def _install_progress(self, stage, fraction=None, done=0, total=0):
+        """`ModelManager.prepare`'s progress function: which step the pipeline is in now and, for the file check, how much of the file is read
+        (`fraction` 0..1; None for the steps that cannot be measured). Never raises."""
+        try:
+            now, changed = self._mono(), False
+            with self._lock:
+                inst = self._install
+                if inst is None:
+                    return
+                if stage != inst["stage"]:
+                    inst["stage"], inst["stage_started"], changed = str(stage), now, True
+                number = isinstance(fraction, (int, float)) and not isinstance(fraction, bool) and fraction == fraction
+                inst["fraction"] = max(0.0, min(1.0, float(fraction))) if number else None
+            self._notify(force=changed)
+        except Exception:
+            pass
+
+    def _install_view(self, phase):
+        """The dict under `status()["install"]` (see `INSTALL_STEPS`); all zeros unless the phase is "installing" and the step has begun."""
+        with self._lock:
+            inst = self._install
+            if phase != "installing" or inst is None:
+                return dict(_NO_INSTALL)
+            now = self._mono()
+            elapsed = max(0.0, now - inst["started"])
+            names = [row[0] for row in INSTALL_STEPS]
+            if inst["stage"] not in names:                                  # registering / moving the file: instant, no step of its own
+                return dict(_NO_INSTALL, elapsed=int(elapsed))
+            index = names.index(inst["stage"])
+            _name, low, high, expected = INSTALL_STEPS[index]
+            in_step = max(0.0, now - inst["stage_started"])
+            if expected is None:                                            # measured
+                fraction, estimated, slow = inst["fraction"] or 0.0, False, False
+            else:                                                           # estimated from the time passed
+                fraction, estimated, slow = in_step / (in_step + expected), True, in_step > SLOW_FACTOR * expected
+            percent = max(inst["floor"], low + (high - low) * fraction)     # never backwards, and never 100 before the model really answered
+            inst["floor"] = percent
+            return {"stage": inst["stage"], "step": index + 1, "steps": len(INSTALL_STEPS), "percent": min(99, int(percent)),
+                    "stage_percent": min(99, int(fraction * 100)) if estimated else int(fraction * 100), "elapsed": int(elapsed),
+                    "estimated": estimated, "slow": slow}
+
+    def _start_heartbeat(self):
+        """While the install step runs, tell the listener every `INSTALL_HEARTBEAT_SECONDS`: the engine reports nothing for a long while, and a
+        notification that stood still would look like a hang. Only with a worker thread (a synchronous test run has nothing to refresh)."""
+        if not self._use_thread or self._beat is not None:
+            return
+        stop = threading.Event()
+
+        def beat():
+            while not stop.wait(INSTALL_HEARTBEAT_SECONDS):
+                self._notify(force=True)
+
+        thread = threading.Thread(target=beat, name="own-brain-heartbeat", daemon=True)
+        self._beat = stop
+        try:
+            thread.start()
+        except RuntimeError:
+            self._beat = None
+
+    def _install_end(self):
+        """The worker is done (or never got to install): stop the heartbeat and forget the clock. Safe to call at any time, any number of times."""
+        stop, self._beat = self._beat, None
+        if stop is not None:
+            stop.set()
+        with self._lock:
+            self._install = None
 
     # ================================================================== use
     def tick(self):

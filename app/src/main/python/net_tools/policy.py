@@ -30,7 +30,7 @@ from typing import Optional, Tuple, Union
 
 __all__ = [
     "DEFAULT_CONTENT_TYPES", "FetchPolicy", "ParsedUrl", "UrlError",
-    "classify_ip", "parse_url", "is_public_ip",
+    "classify_ip", "parse_url", "is_public_ip", "is_vpn_fake_ip",
 ]
 
 DEFAULT_CONTENT_TYPES: Tuple[str, ...] = (
@@ -61,6 +61,12 @@ class FetchPolicy:
     `allow_private_addresses` exists ONLY so tests can talk to a loopback server.
     Turning it on lets a request reach this device and the private network
     behind the user's router (SSRF). Never enable it in the app.
+
+    `allow_vpn_fake_ips` (Prompt 959, stage B3) is the one narrow exception that IS on in the app: a NAME that a DNS answer sends into the
+    blocks VPN apps use for "fake" answers (`is_vpn_fake_ip`: 198.18.0.0/15 and fc00::/18) is not refused, because the VPN's own tunnel turns
+    such an address back into the real site (Clash, sing-box, v2ray "FakeIP/FakeDNS"). Without it, every download and every web page was
+    refused with `blocked_address` for a user whose VPN works that way. It never applies to an IP written in a URL, and every other private,
+    loopback, link-local, metadata or carrier-grade address stays refused.
     """
 
     timeout_s: float = 8.0
@@ -73,6 +79,7 @@ class FetchPolicy:
     max_url_length: int = 2048
     user_agent: str = "StandaloneAI-LocalFirst/1.0"
     max_text_chars: int = 100000
+    allow_vpn_fake_ips: bool = True
 
     def __post_init__(self) -> None:
         s = object.__setattr__
@@ -81,7 +88,7 @@ class FetchPolicy:
         s(self, "max_redirects", _num("max_redirects", self.max_redirects, 0, 5, int))
         s(self, "max_url_length", _num("max_url_length", self.max_url_length, 64, 8192, int))
         s(self, "max_text_chars", _num("max_text_chars", self.max_text_chars, 100, 2_000_000, int))
-        for name in ("allow_http", "allow_private_addresses"):
+        for name in ("allow_http", "allow_private_addresses", "allow_vpn_fake_ips"):
             if not isinstance(getattr(self, name), bool):
                 raise ValueError("%s must be a bool" % name)
         if self.oversize not in _OVERSIZE_MODES:
@@ -111,6 +118,22 @@ _METADATA_V4 = ipaddress.ip_address("169.254.169.254")
 _METADATA_V6 = ipaddress.ip_address("fd00:ec2::254")
 _CGNAT = ipaddress.ip_network("100.64.0.0/10")
 _NAT64 = ipaddress.ip_network("64:ff9b::/96")
+# What VPN apps answer for a name instead of the real address (Clash / sing-box / v2ray "FakeIP"): 198.18.0.0/15 is the RFC 2544
+# benchmarking block (nobody has a real server there) and fc00::/18 is sing-box's default fake IPv6 range (the other half of fc00::/7 is
+# reserved, so no real network uses it either). See `FetchPolicy.allow_vpn_fake_ips`.
+_FAKE_IP_NETS = (ipaddress.ip_network("198.18.0.0/15"), ipaddress.ip_network("fc00::/18"))
+
+
+def is_vpn_fake_ip(ip) -> bool:
+    """True for an address inside the blocks VPN apps hand out as "fake" DNS answers. Only the transport asks, and only for an address that
+    came out of a DNS answer for a NAME - never for an IP written in a URL. Unparseable input is False (it stays refused)."""
+    try:
+        addr = ipaddress.ip_address(str(ip).split("%", 1)[0])
+    except ValueError:
+        return False
+    if addr.version == 6 and addr.ipv4_mapped is not None:
+        addr = addr.ipv4_mapped
+    return any(addr.version == net.version and addr in net for net in _FAKE_IP_NETS)
 
 
 def _classify(addr) -> str:

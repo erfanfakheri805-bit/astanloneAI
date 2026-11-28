@@ -57,6 +57,27 @@ def eta_text(seconds):
     return "حدود %s ساعت%s" % (fa(hours), (" و %s دقیقه" % fa(rest)) if rest else "")
 
 
+def _whole(value, default=0):
+    """A whole number from a status value; anything that is not a finite number (text, a bool, None, nan, inf) gives `default`."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value != value or value in (float("inf"), float("-inf")):
+        return default
+    return int(value)
+
+
+def elapsed_text(seconds):
+    """«۴۵ ثانیه» / «۱ دقیقه و ۱۲ ثانیه» / «۲ دقیقه» - time that has REALLY passed (the install step shows it so that a long wait is visibly alive)."""
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)) or seconds != seconds or seconds in (float("inf"), float("-inf")) or seconds < 0:
+        return ""
+    seconds = int(seconds)
+    if seconds < 60:
+        return "%s ثانیه" % fa(seconds)
+    minutes, rest = divmod(seconds, 60)
+    if minutes < 60:
+        return "%s دقیقه%s" % (fa(minutes), (" و %s ثانیه" % fa(rest)) if rest else "")
+    hours, minutes = divmod(minutes, 60)
+    return "%s ساعت%s" % (fa(hours), (" و %s دقیقه" % fa(minutes)) if minutes else "")
+
+
 def ram_use(choice):
     """About how much memory the engine takes while it answers (an estimate from the file size, said as an estimate)."""
     half_gb = max(1, int(round(choice.size_hint * 1.2 / (_GB / 2))))
@@ -189,7 +210,8 @@ def started(choice, resumed=False, net_turned_on=False):
     lines = ["%s دارم «%s» را می‌گیرم (حدود %s)." % ("ادامه دادم ✅" if resumed else "شروع کردم ✅", choice.short_fa, size(choice.exact_size or choice.size_hint)),
              "• پیشرفت را با «%s» ببین؛ «%s» هم کار می‌کند." % (STATUS, PAUSE),
              "• تا تمام نشود جمله‌های آزاد را نمی‌فهمم؛ بقیهٔ کارهایم (یادگرفتن، ابزارها و …) مثل قبل کار می‌کنند.",
-             "• برنامه را باز نگه دار؛ هنوز در پس‌زمینه با اعلانِ ثابت ادامه نمی‌دهم. اگر اندروید برنامه را ببندد، دفعهٔ بعد که بازش کنی از همان‌جا ادامه می‌دهم."]
+             "• برنامه را باز نگه دار؛ در حینِ کار یک اعلانِ ثابت پیشرفت را نشان می‌دهد (اگر اجازهٔ اعلان داده باشی) و اندروید کمتر برنامه را می‌بندد؛ "
+             "روی بعضی گوشی‌ها (مثل شیائومی) ممکن است باز هم ببندَدش، و اگر بست، دفعهٔ بعد که بازش کنی از همان‌جا ادامه می‌دهم."]
     if net_turned_on:
         lines.append("• «اینترنتِ برنامه» را هم روشن کردم (چون گفتی بله)؛ با «اینترنت را خاموش کن» دانلود همان لحظه می‌ایستد.")
     return "\n".join(lines)
@@ -205,12 +227,58 @@ def _speed_part(st):
     return ("؛ " + "، ".join(parts)) if parts else ""
 
 
+_INSTALL_STEP_FA = {"verify": "بررسیِ فایل", "compatibility": "بررسیِ سازگاری با این گوشی", "load": "بارگذاریِ مغز در موتور",
+                    "smoke": "آزمایشِ اول (یک پرسشِ واقعی)"}
+_VERY_LONG_INSTALL = 600                   # seconds: after this long the text also says what can be done if it is really stuck
+
+
+def install_lines(inst):
+    """The install step in words (`inst` = `OwnBrain.status()["install"]`; a status without it - or one that is not installing - gives no line):
+    the percent, which step of how many, the time that has really passed, and - said as such - that the percent of the two engine steps is an
+    estimate, because the engine reports no progress while it loads the model and answers the first question."""
+    if not isinstance(inst, dict) or _whole(inst.get("steps")) < 1:
+        return []
+    passed = elapsed_text(inst.get("elapsed"))
+    clock = ("%s از شروعِ نصب گذشته" % passed) if passed else ""
+    step, steps, stage = _whole(inst.get("step")), _whole(inst.get("steps")), inst.get("stage")
+    if step < 1:                                                            # the file is being registered and moved into the model store: instant
+        return ["⏳ نصب شروع شد؛ فایل در جای مدل‌ها ثبت می‌شود…" + ((" · " + clock) if clock else "")]
+    estimated = bool(inst.get("estimated"))
+    head = "⏳ نصب: %s%s — مرحلهٔ %s از %s: %s" % (percent(_whole(inst.get("percent"))), " (حدودی)" if estimated else "", fa(step), fa(steps),
+                                                _INSTALL_STEP_FA.get(stage, "…") if isinstance(stage, str) else "…")
+    if not estimated and inst.get("stage_percent") is not None:
+        head += " (%s از فایل خوانده شد)" % percent(_whole(inst["stage_percent"]))
+    lines = [head + ((" · " + clock) if clock else "")]
+    if estimated:
+        lines.append("• درصدِ بررسیِ فایل واقعی است، ولی موتور موقعِ بارگذاریِ مغز و آزمایشِ اول پیشرفتی گزارش نمی‌دهد؛ پس درصدِ این دو مرحله برآوردِ من "
+                     "از زمانِ گذشته است و تا جواب نیامده نمی‌گویم تمام شد.")
+    if inst.get("slow"):
+        lines.append("• این مرحله از معمول طولانی‌تر شده ولی هنوز تمام نشده؛ کار در جریان است، صبر کن.")
+    if _whole(inst.get("elapsed")) >= _VERY_LONG_INSTALL:
+        lines.append("• اگر بیش از چند دقیقهٔ دیگر هم تغییری نکرد، برنامه را ببند و دوباره باز کن (چیزی پاک نمی‌شود)؛ بعد «%s» را بگو." % RETRY)
+    return lines
+
+
 _STAGE_FA = {"load": "بارگذاریِ مغز در حافظه", "smoke": "پرسشِ آزمایشی", "compat": "بررسیِ سازگاری با این گوشی", "verify": "بررسیِ فایل",
              "adopt": "جابه‌جاییِ فایل به جای مدل‌ها", "register": "ثبتِ مغز"}
 
 
 def _again(next_step):
     return (" بعد از رفع مشکل «%s» را بگو." % RETRY) if next_step else ""
+
+
+def _blocked_address_text(detail):
+    """`blocked_address`: the phone's name lookup gave the model's site an address that is not a public internet address (the service writes WHICH one
+    after « ip=» in the detail, when it could find out). Says what that usually means and what to try - never that the cause is certain."""
+    kind, _, found = str(detail).partition(" ip=")
+    ips = [ip for ip in found.split(",") if ip][:2]
+    where = (" (آدرسی که گرفت: %s)" % "، ".join(ips)) if ips else ""
+    send = "همین پیام را با آدرسِ بالا برای سازندهٔ برنامه بفرست." if ips else "همین پیام را برای سازندهٔ برنامه بفرست."
+    note = "blocked_address" + ((" " + kind.strip()) if kind.strip() else "") + ((" " + ",".join(ips)) if ips else "")
+    return ("دانلود متوقف شد و چیزی نصب نشد: شبکهٔ گوشی برای سایتِ مغز (huggingface.co) یک آدرسِ داخلی برگرداند، نه آدرسِ اینترنتیِ واقعیِ آن%s؛ "
+            "برنامه برای امنیت به آدرسِ داخلی وصل نمی‌شود. اغلب علتش فیلترشکن یا DNSِ گوشی است (مثلاً فیلترشکن به‌جای آدرسِ واقعی یک آدرسِ مجازی می‌دهد، "
+            "یا ارائه‌دهندهٔ اینترنت سایت را به صفحهٔ مسدودسازی می‌برد). فیلترشکن را خاموش و دوباره روشن کن (اگر گزینهٔ DNS از راهِ خودِ فیلترشکن را دارد، "
+            "روشنش کن). اگر باز هم همین شد، %s (نکتهٔ فنی: %s)" % (where, send, note))
 
 
 def failure_text(code, detail="", *, next_step=True):
@@ -235,6 +303,8 @@ def failure_text(code, detail="", *, next_step=True):
         if "نصب نشد" not in text:
             text += " چیزی نصب نشد."
         return text + " اگر هر بار همین شد، یعنی فایلِ روی سرور عوض شده و باید برنامه با اثرانگشتِ تازه ساخته شود." + _again(next_step)
+    if code == "blocked_address":
+        return _blocked_address_text(detail) + _again(next_step)
     if code == "permission_denied":
         return RESUMABLE_MESSAGES[code][0] + " اول «اینترنت را روشن کن» را بگو." + _again(next_step)
     if code in RESUMABLE_MESSAGES or code in ("offline", "dns_failure", "connect_refused", "timeout", "tls_error", "protocol_error", "http_error",
@@ -265,8 +335,10 @@ def status(st, brain_title=""):
             return "🧠 «%s» کامل آمد؛ دارم اثرانگشتش را با مقدارِ ثبت‌شده در برنامه مقایسه می‌کنم (چند دقیقه؛ تا تمام نشود چیزی نصب نمی‌شود)." % title
         return "🧠 دارم «%s» را می‌گیرم: %s (%s از %s)%s." % (title, pct, size(st.get("bytes")), size(st.get("total")), _speed_part(st))
     if phase == "installing":
-        return ("🧠 فایل کامل و تأییدشده است؛ دارم مغز را نصب و برای بار اول آزمایش می‌کنم (بارگذاریِ مدل چند دقیقه طول می‌کشد). "
-                "تا وقتی یک پرسشِ واقعی را جواب نداده «آماده» نمی‌گویم.")
+        lines = ["🧠 فایل کامل و تأییدشده است؛ دارم مغز را نصب و برای بار اول آزمایش می‌کنم (بارگذاریِ مدل چند دقیقه طول می‌کشد). "
+                 "تا وقتی یک پرسشِ واقعی را جواب نداده «آماده» نمی‌گویم."]
+        lines.extend(install_lines(st.get("install")))
+        return "\n".join(lines)
     if phase == "paused":
         code = st.get("code")
         why = {"user_paused": "به خواستِ تو متوقف شد", "halted": "با «ایست» متوقف شد", "app_closed": "برنامه بسته شد و دانلود نیمه ماند",
@@ -354,8 +426,18 @@ def test_failed(code, seconds):
     return "آزمایش ناموفق بود (%s)؛ برای همین «آماده» نمی‌گویم. «%s» را بگو." % (code or "نامشخص", RETRY)
 
 
-def retry_started():
-    return "دوباره امتحان می‌کنم: فایل را از نو بررسی و مغز را بارگذاری و با یک پرسشِ واقعی آزمایش می‌کنم."
+def retry_started(kind=""):
+    """The first words of «مغز را دوباره امتحان کن» - what the retry REALLY does: `kind` "install" when the model's file is already on the phone (it is checked,
+    loaded and tested again, nothing is downloaded), "download" when it is not (the earlier download did not finish: it starts again, and only then is the
+    file installed). Without `kind` both are said."""
+    if kind == "install":
+        return ("دوباره امتحان می‌کنم: فایلِ مغز روی گوشی هست و دوباره دانلودش نمی‌کنم؛ آن را از نو بررسی، در موتور بارگذاری و با یک پرسشِ واقعی "
+                "آزمایش می‌کنم.")
+    if kind == "download":
+        return ("دوباره امتحان می‌کنم: فایلِ مغز روی گوشی کامل نیست (دانلودِ قبلی تمام نشد)، پس اول دانلود را دوباره شروع می‌کنم (اگر تکه‌ای از "
+                "قبل گرفته شده، از همان‌جا) و بعد نصب و آزمایشش می‌کنم.")
+    return ("دوباره امتحان می‌کنم: اگر فایلِ مغز روی گوشی کامل باشد آن را بررسی، بارگذاری و با یک پرسشِ واقعی آزمایش می‌کنم، و اگر نه، دانلود را "
+            "دوباره شروع می‌کنم.")
 
 
 # ================================================================== the model's answers in the chat
@@ -415,7 +497,7 @@ def lead_short(phase, pct=0):
     return "یا بگو «%s» تا خودم برای خودم یک مغزِ زبانی بگیرم (بدون کلید و هزینه)." % START
 
 
-__all__ = ["size", "percent", "eta_text", "ram_use", "what_it_is", "offer_card", "clarify_consent", "cancelled", "setup_failed", "blocked", "none_fits",
+__all__ = ["size", "percent", "eta_text", "elapsed_text", "install_lines", "ram_use", "what_it_is", "offer_card", "clarify_consent", "cancelled", "setup_failed", "blocked", "none_fits",
            "started", "failure_text", "status", "paused", "nothing_running", "busy_installing", "halted_note", "install_not_stoppable_note", "net_off_note", "resumed_note", "ask_delete", "deleted",
            "delete_cancelled", "nothing_to_delete", "not_ready_for_test", "test_ok", "test_failed", "retry_started", "first_answer_note",
            "llm_timeout", "llm_failed", "lead_line", "lead_short", "about_line", "START", "STATUS", "PAUSE", "RESUME", "DELETE", "TEST", "RETRY"]

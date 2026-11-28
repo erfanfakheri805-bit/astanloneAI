@@ -97,7 +97,11 @@ def _ownbrain(brain):
     if not isinstance(st, dict):
         return {"known": False}
     keys = ("phase", "sub", "choice", "percent", "bytes", "total", "code", "detail", "resumable", "consent")
-    return dict({k: _scalar(st.get(k)) for k in keys}, known=True)
+    out = dict({k: _scalar(st.get(k)) for k in keys}, known=True)
+    inst = st.get("install")
+    if st.get("phase") == "installing" and isinstance(inst, dict) and inst.get("step"):      # where the install is (only while it runs)
+        out.update({"install_" + k: _scalar(inst.get(k)) for k in ("step", "steps", "stage", "percent", "elapsed", "estimated")})
+    return out
 
 
 def _network(hub, brain):

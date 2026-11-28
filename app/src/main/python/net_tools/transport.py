@@ -49,7 +49,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Iterator, List, Mapping, Optional, Tuple
 
-from .policy import FetchPolicy, classify_ip
+from .policy import FetchPolicy, classify_ip, is_vpn_fake_ip
 
 __all__ = [
     "TRANSPORT_CODES", "TransportError", "TransportRequest", "TransportResponse",
@@ -352,7 +352,7 @@ class HttpClientTransport:
         deadline = self._clock() + float(total)
         idle = float(req.timeout_s)
         candidates = self._candidates(req, deadline, idle)
-        sock, peer_ip = self._connect(candidates, deadline, idle)
+        sock, peer_ip = self._connect(candidates, deadline, idle, from_name=_as_ip(req.host) is None)
         token = _track(sock)
         try:
             if req.scheme == "https":
@@ -450,11 +450,10 @@ class HttpClientTransport:
                 found = [(socket.AF_INET, literal, (literal, req.port))]
         else:
             found = self._resolve(req.host, req.port, min(idle, deadline - self._clock()))
-        if not self._policy.allow_private_addresses:
-            for _family, ip, _addr in found:
-                reason = classify_ip(ip)
-                if reason != "public":
-                    raise TransportError("blocked_address", reason)
+        for _family, ip, _addr in found:
+            reason = self._refusal(ip, from_name=literal is None)
+            if reason:
+                raise TransportError("blocked_address", reason)
         out: List[Tuple[int, str, tuple]] = []
         for family, ip, sockaddr in found:
             if family == socket.AF_INET6:
@@ -464,7 +463,19 @@ class HttpClientTransport:
             out.append((family, ip, sockaddr))
         return out[:_MAX_CANDIDATES]
 
-    def _connect(self, candidates: List[Tuple[int, str, tuple]], deadline: float, idle: float):
+    def _refusal(self, ip: str, from_name: bool) -> str:
+        """'' when this address may be contacted, otherwise the `classify_ip` word that says why not. `from_name` is True for an address that
+        a DNS answer gave for a NAME (the only place the VPN "fake address" exception applies, see `FetchPolicy.allow_vpn_fake_ips`)."""
+        if self._policy.allow_private_addresses:
+            return ""
+        reason = classify_ip(ip)
+        if reason == "public":
+            return ""
+        if from_name and self._policy.allow_vpn_fake_ips and is_vpn_fake_ip(ip):
+            return ""
+        return reason
+
+    def _connect(self, candidates: List[Tuple[int, str, tuple]], deadline: float, idle: float, from_name: bool = False):
         last: Optional[TransportError] = None
         for index, (family, _ip, sockaddr) in enumerate(candidates):
             remaining = deadline - self._clock()
@@ -476,10 +487,9 @@ class HttpClientTransport:
                 sock.settimeout(attempt)
                 sock.connect(sockaddr)
                 peer = str(sock.getpeername()[0])
-                if not self._policy.allow_private_addresses:
-                    reason = classify_ip(peer)
-                    if reason != "public":
-                        raise TransportError("blocked_address", "peer_" + reason)
+                reason = self._refusal(peer, from_name)
+                if reason:
+                    raise TransportError("blocked_address", "peer_" + reason)
                 return sock, peer
             except TransportError:
                 sock.close()

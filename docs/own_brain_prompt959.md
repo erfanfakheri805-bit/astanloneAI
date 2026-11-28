@@ -82,6 +82,24 @@ Phases: `idle -> downloading -> installing -> ready`, plus `paused` and `failed`
   way forward («اینترنت را روشن کن», then the same command again) - unless the whole file is already on the phone (including a model whose load
   failed but whose file is still in the store): then nothing needs the network and nothing is asked. A download stopped by the switch is not continued
   automatically by a restart; the install step and the first test use no network and are not touched by the switch.
+* **The install step has an account** (stage B3). `status()["install"]` = `{stage, step, steps, percent, stage_percent, elapsed, estimated, slow}` while the phase
+  is `installing` (all zeros otherwise; the download's own `percent` stays 100). `ModelManager.prepare(model_id, progress)` announces each stage (`verify`,
+  `compatibility`, `load`, `smoke`) before it runs and, during the file check, the bytes read (at most every 0.5 s); `OwnBrain` turns that into
+  `INSTALL_STEPS` (spans 0-30-32-82-98 %). **Only the file check is measured.** The engine reports nothing while it loads or answers the first question, so
+  for those two steps the percent is an ESTIMATE `elapsed / (elapsed + expected)` of the step's span (expected 45 s and 20 s - a guess, not a measurement),
+  flagged `estimated`; it never goes backwards, never reaches the end of its span and never says 100 before the first real answer. A step that lasts 4 times
+  its expected time is `slow`. While the step runs a heartbeat (`INSTALL_HEARTBEAT_SECONDS`, only with a worker thread) refreshes the listener - the body's
+  notification - so the elapsed time moves; deliveries are numbered, so an old account never arrives after a newer one (a finished install must not leave its
+  notification up). The notification (`describe_ownbrain`) carries the real percent as a determinate bar, the step and the time; a status without the key keeps
+  the old words and the moving bar. The copy-paste test report says where the install is while it runs.
+* **A retry says what it does.** `retry()` puts the phase at `downloading` when the model's file is not on the phone (the download itself failed) and at
+  `installing` when it is; `_pipeline` flips the phase to `downloading` before it fetches a file it cannot reopen. `OwnBrain.file_on_phone()` lets the chat
+  say, before the retry starts, which of the two words it uses (`retry_started(kind)`). Before B3 a retry that had to download called itself
+  "installing" and claimed to re-check a file.
+* **A blocked download names the address.** `blocked_address` means the phone's name lookup gave the model's site an address that is not public. The cause
+  (a VPN's fake address, a provider's block page, ...) cannot be seen otherwise, so the failure's detail gets ` ip=<addresses>` (at most two, the non-public
+  ones) from ONE more lookup of the catalog's own host, made only while the app's internet switch is on and never raising. The failure's words say what that
+  usually means and what to try; they do not claim to know the cause.
 * **The install step cannot be interrupted** (a native model load and a first question take minutes). While it runs, a pause, a delete and «ایست» say so
   plainly, change nothing and remove nothing from under it; the chat itself never waits for it.
 * **Delete** asks first (the file, the partial and the state; it reports the space really freed) and is refused while the install runs.
@@ -175,7 +193,13 @@ This reading is of the engine's `main` branch; the pinned release (0.19.1) could
 * **Nothing ran on a phone.** The engine, its speed, its memory use, its Persian quality and its stability are unmeasured. The first real answer after a
   load is slow; a 2.6 GB model on a phone with 6 GB of RAM may be killed by Android (the crash guard stops a loop; it cannot catch a native crash).
 * **The strong brain's hash could not be re-verified** in this session (see section 3); the light brain's was.
-* **Hugging Face may need a VPN in Iran.** Python's HTTPS on the phone (the CA store under Chaquopy) was not verified in the field.
+* **Hugging Face may need a VPN in Iran.** Python's HTTPS on the phone (the CA store under Chaquopy) was not verified in the field. On a real phone with a
+  VPN on, the first download stopped at once with `blocked_address`. Probable cause (NOT proven): the VPN's DNS answers names from its fake-address block
+  (`198.18.0.0/15`, `fc00::/18`; Clash / sing-box / v2ray "FakeIP"), which the guard refused as private. Stage B3 lets such an address through ONLY when a name
+  resolved to it (`FetchPolicy.allow_vpn_fake_ips`, default on): never for an IP written in the URL, never for the other private ranges, one real private
+  address in the same answer still refuses the whole answer, and the TLS handshake is still made for the original name. If the phone's real cause is
+  another address (for example a provider's block page) the download is still refused and the message now shows the address. Not verified on the phone.
+* **The install percent is partly an estimate** (see section 4): measured only for the file check; the expected times of the engine steps are guesses.
 * **The download is kept alive by the background service of the body** (stage B, the body: `body_prompt959.md`), which was not run on a phone either: Android may
   refuse to start it from the background (Android 12+). Without the service the download only progresses while the app is open; if Android closes the
   app the download continues from the partial next time.
@@ -204,10 +228,13 @@ All under `app/src/main/python/tests/`; none touches the real network or a real 
 | `test_ownbrain_chat_prompt959.py` | the real chat path (`POST /api/message` style) for every step, every reply built from the facts, the one open question |
 | `test_ownbrain_threaded_prompt959.py` | a REAL worker thread against a gated loopback server: live status, «ایست», delete in the middle, the chat never waiting |
 | `test_ownbrain_install_step_prompt959.py` | the install / first-test step that cannot be interrupted, and the stop commands' effect on the sockets |
+| `test_ownbrain_install_progress_prompt959.py` | the install step's account: measured vs estimated percent, never backwards / never 100, garbage progress, the heartbeat and its end, a stale account never after a newer one, a hub without a progress function, a held install on a real worker thread |
+| `test_ownbrain_retry_blocked_prompt959.py` | a retry's phase and words (download vs install), `file_on_phone`, the address behind `blocked_address` (only non-public, at most two, only with the switch on, only the catalog's host), the failure's words |
 | `test_ownbrain_internet_prompt959.py` | the internet switch: the gate, the yes that switches it on (and only a successful start), the refusals that never switch it on, the live download stopped by «اینترنت را خاموش کن» and by a revoke that bypasses the chat |
 | `test_net_tools_resumable_prompt959.py`, `test_net_tools_abort_prompt959.py` | the resumable download (Range, checks before the first byte, hash, cancel) and `abort_all` against a silent real socket |
 | `test_litertlm_runtime_prompt959.py`, `test_litertlm_bridge_jvm_prompt959.py` | the runtime and the crash guard against a fake bridge; the Java bridge compiled against a stand-in engine (a drifted API is reported, not fatal) |
 | `test_model_runtime_locks_prompt959.py` | the two locks, readers and the stop never blocked by an answer, no deadlock under stress |
+| `test_model_progress_prompt959.py`, `test_install_notification_prompt959.py`, `test_net_vpn_fake_ip_prompt959.py` | (stage B3) the model pipeline's progress report; the notification, the chat lines and the test report of the install step; the narrow fake-address exception of the net guard |
 | `test_docs_own_brain_prompt959.py` | this document and the Persian guide stay true: the numbers are the code's, every sentence the guide tells the user to say is understood by the real classifiers |
 
 Mutation checks were run on the risky parts (the lock design against the old single lock, the stop paths, the resume ordering): the new tests fail

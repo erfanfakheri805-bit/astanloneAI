@@ -37,6 +37,12 @@ _FEATURE_STATES = {"ready": "آماده ✅", "permission_required": "مجوز �
 _SETTINGS_TITLES = {"battery": "تنظیمات باتری (فهرستِ بهینه‌سازیِ اندروید)", "app": "صفحهٔ این برنامه در تنظیمات", "notifications": "تنظیمات اعلانِ این برنامه"}
 
 
+def _whole(value, default=0):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value != value or value in (float("inf"), float("-inf")):
+        return default
+    return int(value)
+
+
 def _yes_no(value, yes, no, unknown="نامعلوم"):
     return yes if value is True else no if value is False else unknown
 
@@ -100,6 +106,10 @@ def selftest(facts):
         part = [_PHASES.get(brain.get("phase"), str(brain.get("phase") or "؟"))]
         if brain.get("phase") == "downloading" and brain.get("total"):
             part.append("%s٪ (%s از %s)" % (fa(int(brain.get("percent") or 0)), size(int(brain.get("bytes") or 0)), size(int(brain["total"]))))
+        if brain.get("phase") == "installing" and brain.get("install_stage"):
+            part.append("مرحلهٔ %s از %s (%s) · %s٪%s · %s ثانیه از شروعِ نصب" % (
+                fa(_whole(brain.get("install_step"))), fa(_whole(brain.get("install_steps"))), brain["install_stage"],
+                fa(_whole(brain.get("install_percent"))), " (حدودی)" if brain.get("install_estimated") else "", fa(_whole(brain.get("install_elapsed")))))
         if brain.get("code"):
             part.append("کد: %s%s" % (brain["code"], (" / %s" % brain["detail"]) if brain.get("detail") else ""))
         lines.append("🧩 مغزِ خودکار: " + " · ".join(part))
